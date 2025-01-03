@@ -9,7 +9,7 @@ const Sidebar: React.FC = () => (
         Dashboard
       </a>
       <a
-        href="Courses"
+        href="/courses"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         Courses
