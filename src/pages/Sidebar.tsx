@@ -1,25 +1,27 @@
+import { Link } from "react-router-dom";
+
 const Sidebar: React.FC = () => (
   <aside className="w-64 bg-blue-100 text-blue-900 h-screen p-4">
     <h1 className="text-lg font-bold">Byway</h1>
     <nav className="mt-6 space-y-4">
-      <a
-        href="/"
+      <Link
+        to="/"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         Dashboard
-      </a>
-      <a
-        href="/courses"
+      </Link>
+      <Link
+        to="/courses"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         Courses
-      </a>
-      <a
-        href="#"
+      </Link>
+      <Link
+        to="#"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         Users
-      </a>
+      </Link>
       <a
         href="#"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
