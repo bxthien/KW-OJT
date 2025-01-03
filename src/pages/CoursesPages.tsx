@@ -3,64 +3,7 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import ChatBot from "./ChatBot";
-import { Course } from "../shared/constant/course";
-
-const courses: Course[] = [
-  {
-    tag: "FOR KNU",
-    title: "GLOBAL INTERNSHIP - KNU",
-    id: "#21453",
-    chapters: 13,
-    orders: 16,
-    certificates: 10,
-    reviews: 0,
-    addedToShelf: 16,
-  },
-  {
-    tag: "BEGINNER",
-    title: "Beginner's Guide to Design",
-    id: "#15735",
-    chapters: 13,
-    orders: 254,
-    certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-  },
-  {
-    tag: "INTERMEDIATE",
-    title: "Intermediate's Guide to Design",
-    id: "#75179",
-    chapters: 20,
-    orders: 126,
-    certificates: 21,
-    reviews: 34,
-    addedToShelf: 207,
-  },
-  {
-    tag: "BEGINNER",
-    title: "Beginner's Web Guide",
-    id: "#69821",
-    chapters: 13,
-    orders: 254,
-    certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-  },
-  {
-    tag: "INTERMEDIATE",
-    title: "Intermediate's Web Guide",
-    id: "#28927",
-    chapters: 13,
-    orders: 254,
-    certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-  },
-];
-
-interface CourseCardProps {
-  course: Course;
-}
+import { Course, courses } from "../shared/constant/course";
 
 const CourseCard: React.FC<{ course: Course }> = ({ course }) => (
   <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
@@ -105,7 +48,7 @@ const CoursesPage: React.FC = () => (
         </button>
       </div>
       <div className="grid grid-cols-3 gap-6">
-        {courses.map((course, index) => (
+        {courses.map((course: Course, index: number) => (
           <CourseCard key={index} course={course} />
         ))}
       </div>
