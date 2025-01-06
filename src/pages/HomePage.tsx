@@ -1,21 +1,7 @@
 import Sidebar from "./Sidebar";
 import ChatBot from "./ChatBot";
-
-// Metrics 컴포넌트
-const MetricsCard = ({ title, value }: { title: string; value: string }) => (
-  <div className="p-4 bg-white shadow rounded-md">
-    <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-    <p className="text-xl font-semibold text-gray-800 mt-2">{value}</p>
-  </div>
-);
-
-// Review 컴포넌트
-const ReviewCard = ({ label, value }: { label: string; value: string }) => (
-  <div className="p-4 bg-white shadow rounded-md">
-    <h4 className="text-xs font-medium text-gray-500">{label}</h4>
-    <p className="text-lg font-bold text-gray-800">{value}</p>
-  </div>
-);
+import ReviewCard from "../features/HomePage/ui/ReviewCard";
+import MetricsCard from "../features/HomePage/ui/MetricsCard";
 
 // Course 컴포넌트
 const CourseCard = ({
