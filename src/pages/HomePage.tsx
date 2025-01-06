@@ -1,69 +1,17 @@
-import Sidebar from "./Sidebar";
 import ChatBot from "./ChatBot";
-
-// Metrics 컴포넌트
-const MetricsCard = ({ title, value }: { title: string; value: string }) => (
-  <div className="p-4 bg-white shadow rounded-md">
-    <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-    <p className="text-xl font-semibold text-gray-800 mt-2">{value}</p>
-  </div>
-);
-
-// Review 컴포넌트
-const ReviewCard = ({ label, value }: { label: string; value: string }) => (
-  <div className="p-4 bg-white shadow rounded-md">
-    <h4 className="text-xs font-medium text-gray-500">{label}</h4>
-    <p className="text-lg font-bold text-gray-800">{value}</p>
-  </div>
-);
-
-// Course 컴포넌트
-const CourseCard = ({
-  title,
-  price,
-  chapters,
-  orders,
-  certificates,
-  reviews,
-}: {
-  title: string;
-  price: string;
-  chapters: number;
-  orders: number;
-  certificates: number;
-  reviews: number;
-}) => (
-  <div className="p-4 bg-white shadow rounded-md">
-    <span className="text-xs font-bold text-gray-500 uppercase">Free</span>
-    <h3 className="text-lg font-semibold mt-2">{title}</h3>
-    <p className="text-sm text-gray-400">${price}</p>
-    <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-      <div>
-        <p className="text-xl font-bold">{chapters}</p>
-        <p className="text-xs text-gray-500">Chapters</p>
-      </div>
-      <div>
-        <p className="text-xl font-bold">{orders}</p>
-        <p className="text-xs text-gray-500">Orders</p>
-      </div>
-      <div>
-        <p className="text-xl font-bold">{certificates}</p>
-        <p className="text-xs text-gray-500">Certificates</p>
-      </div>
-    </div>
-    <p className="text-sm text-gray-500 mt-4">{reviews} Reviews</p>
-  </div>
-);
+import ReviewCard from "../features/HomePage/ui/ReviewCard";
+import MetricsCard from "../features/HomePage/ui/MetricsCard";
+import CourseCard from "../features/HomePage/ui/CourseCard";
 
 // Home Page 컴포넌트
 const HomePage = () => {
   return (
-    <div className="flex">
+    <div className="">
       {/* Sidebar */}
-      <Sidebar />
+      {/* <Sidebar /> */}
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-100 p-6">
+      <main className="flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
