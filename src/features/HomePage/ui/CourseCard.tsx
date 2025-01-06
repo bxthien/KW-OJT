@@ -1,40 +1,35 @@
-const CourseCard = ({
-  title,
-  price,
-  chapters,
-  orders,
-  certificates,
-  reviews,
-}: {
-  title: string;
-  price: string;
-  chapters: number;
-  orders: number;
-  certificates: number;
-  reviews: number;
-}) => {
-  return (
-    <div className="p-4 bg-white shadow rounded-md">
-      <span className="text-xs font-bold text-gray-500 uppercase">Free</span>
-      <h3 className="text-lg font-semibold mt-2">{title}</h3>
-      <p className="text-sm text-gray-400">${price}</p>
-      <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p className="text-xl font-bold">{chapters}</p>
-          <p className="text-xs text-gray-500">Chapters</p>
-        </div>
-        <div>
-          <p className="text-xl font-bold">{orders}</p>
-          <p className="text-xs text-gray-500">Orders</p>
-        </div>
-        <div>
-          <p className="text-xl font-bold">{certificates}</p>
-          <p className="text-xs text-gray-500">Certificates</p>
-        </div>
-      </div>
-      <p className="text-sm text-gray-500 mt-4">{reviews} Reviews</p>
+// src/components/CourseCard.tsx
+import React from "react";
+import { Course } from "../../../shared/constant/course";
+
+interface CourseCardProps {
+  course: Course;
+  onClick: (course: Course) => void;
+}
+
+const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => (
+  <div
+    className="bg-white p-4 rounded-lg shadow-md border border-gray-200 min-w-[250px] max-w-[300px] cursor-pointer"
+    onClick={() => onClick(course)}
+  >
+    <div className="mb-2 text-sm font-bold text-gray-500 uppercase">
+      {course.tag}
     </div>
-  );
-};
+    <h2 className="text-lg font-bold mb-2 text-gray-800 hover:underline">
+      {course.title}
+    </h2>
+    <p className="text-sm text-gray-500 mb-4">ID: {course.id}</p>
+    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+      <div>
+        <p>Chapters:</p>
+        <p>{course.chapters}</p>
+      </div>
+      <div>
+        <p>Orders:</p>
+        <p>{course.orders}</p>
+      </div>
+    </div>
+  </div>
+);
 
 export default CourseCard;

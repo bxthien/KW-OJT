@@ -1,79 +1,98 @@
+import React, { useState } from "react";
 import ChatBot from "./ChatBot";
-import ReviewCard from "../features/HomePage/ui/ReviewCard";
-import MetricsCard from "../features/HomePage/ui/MetricsCard";
+import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
+import { Course, courses } from "../shared/constant/course";
+import ideaImage from "../assets/idea.png"; // 이미지 파일 import
 
-// Home Page 컴포넌트
-const HomePage = () => {
+const HomePage: React.FC = () => {
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+
+  const handleCourseClick = (course: Course) => {
+    setSelectedCourse(course);
+  };
+
+  const closeModal = () => {
+    setSelectedCourse(null);
+  };
+
   return (
-    <div className="">
-      {/* Sidebar */}
-      {/* <Sidebar /> */}
-
-      {/* Main Content */}
-      <main className="flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
+    <div className="bg-gray-100 min-h-screen">
+      <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
-        <header className="flex justify-between items-center mb-6">
+        <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-md">
-            Add Course
-          </button>
         </header>
 
-        {/* Metrics */}
-        <section className="grid grid-cols-3 gap-6 mb-6">
-          <MetricsCard title="Life Time Courses Commission" value="$1K" />
-          <MetricsCard title="Life Time Received Commission" value="$800.0" />
-          <MetricsCard title="Life Time Pending Commission" value="$200.0" />
-        </section>
+        {/* Profile Section */}
+        <div className="flex items-center mb-6 bg-white p-6 rounded-lg shadow-md">
+          {/* Profile Card */}
+          <ProfileCard />
 
-        {/* Sales Chart (임시 대체) */}
-        <section className="bg-white shadow rounded-md p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Life Time Sales</h3>
-          <div className="h-40 bg-gray-200"></div>{" "}
-          {/* 차트 라이브러리로 대체 */}
-        </section>
+          {/* 오른쪽 텍스트 및 이미지 섹션 */}
+          <div className="ml-12 flex items-center flex-1 justify-between gap-12">
+            {/* 텍스트 섹션 */}
+            <div className="flex flex-col">
+              <h1 className="text-4xl font-bold text-black mb-4">
+                Hello, Username 👋
+              </h1>
+              <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
+            </div>
 
-        {/* Reviews */}
-        <section className="grid grid-cols-6 gap-4 mb-6">
-          <ReviewCard label="Total Reviews" value="1000" />
-          <ReviewCard label="1 star reviews" value="100" />
-          <ReviewCard label="2 star reviews" value="100" />
-          <ReviewCard label="3 star reviews" value="100" />
-          <ReviewCard label="4 star reviews" value="100" />
-          <ReviewCard label="5 star reviews" value="100" />
-        </section>
+            {/* 이미지 섹션 */}
+            <img
+              src={ideaImage}
+              alt="Idea"
+              className="w-80 h-auto object-cover"
+            />
+          </div>
+        </div>
 
-        {/* Courses */}
-        <section className="grid grid-cols-3 gap-6">
-          <CourseCard
-            title="Beginner's Guide to Design"
-            price="50.00"
-            chapters={13}
-            orders={254}
-            certificates={25}
-            reviews={25}
-          />
-          <CourseCard
-            title="Beginner's Guide to Design"
-            price="50.00"
-            chapters={13}
-            orders={254}
-            certificates={25}
-            reviews={25}
-          />
-          <CourseCard
-            title="Beginner's Guide to Design"
-            price="50.00"
-            chapters={13}
-            orders={254}
-            certificates={25}
-            reviews={25}
-          />
+        {/* Courses Section */}
+        <section className="mb-6">
+          <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
+          {/* 가로 스크롤 가능한 섹션 */}
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
+            {courses.map((course: Course, index: number) => (
+              <CourseCard
+                key={index}
+                course={course}
+                onClick={handleCourseClick}
+              />
+            ))}
+          </div>
         </section>
       </main>
-      {/* Chatbot Icon */}
+
+      {/* ChatBot Icon */}
       <ChatBot />
+
+      {/* Modal */}
+      {selectedCourse && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">{selectedCourse.title}</h2>
+            <p className="text-gray-600">Quiz Count: {selectedCourse.orders}</p>
+            <textarea
+              className="w-full mt-4 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add a description..."
+              rows={4}
+            />
+            <button
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
