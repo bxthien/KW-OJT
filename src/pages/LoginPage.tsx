@@ -1,8 +1,12 @@
 // src/pages/LoginPage.tsx
 import React, { useState } from "react";
 import signInImage from "../assets/studentimg.png"; // 이미지 경로 추가
-
+import RegisterModal from "./RegisterPage"; // RegisterModal 추가
 const LoginPage: React.FC = () => {
+  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const openRegisterModal = () => setRegisterModalOpen(true);
+  const closeRegisterModal = () => setRegisterModalOpen(false);
+
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
@@ -20,9 +24,12 @@ const LoginPage: React.FC = () => {
         <p className="mt-4 text-gray-600">
           If you don’t have an account register <br />
           You can{" "}
-          <a href="/register" className="text-indigo-600 font-semibold">
+          <button
+            onClick={openRegisterModal}
+            className="text-indigo-600 font-semibold"
+          >
             Register here!
-          </a>
+          </button>
         </p>
         <img src={signInImage} alt="Sign in" className="mt-10 w-64" />
       </div>
@@ -34,7 +41,7 @@ const LoginPage: React.FC = () => {
           <div className="mb-4">
             <input
               type="email"
-              placeholder="Enter email or user name"
+              placeholder="Enter email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-4 bg-gray-100 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-gray-500"
@@ -89,6 +96,10 @@ const LoginPage: React.FC = () => {
           </button>
         </div>
       </div>
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={closeRegisterModal}
+      />
     </div>
   );
 };

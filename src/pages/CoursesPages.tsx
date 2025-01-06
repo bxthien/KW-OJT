@@ -1,7 +1,6 @@
 // Install TailwindCSS by following the official docs: https://tailwindcss.com/docs/installation
 
 import React from "react";
-import Sidebar from "./Sidebar";
 import ChatBot from "./ChatBot";
 import { Course, courses } from "../shared/constant/course";
 
@@ -38,9 +37,8 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => (
 );
 
 const CoursesPage: React.FC = () => (
-  <div className="flex">
-    <Sidebar />
-    <div className="w-4/5 p-8">
+  <div>
+    <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Courses</h1>
         <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">

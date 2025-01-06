@@ -1,4 +1,3 @@
-import Sidebar from "./Sidebar";
 import ChatBot from "./ChatBot";
 import ReviewCard from "../features/HomePage/ui/ReviewCard";
 import MetricsCard from "../features/HomePage/ui/MetricsCard";
@@ -7,12 +6,12 @@ import CourseCard from "../features/HomePage/ui/CourseCard";
 // Home Page 컴포넌트
 const HomePage = () => {
   return (
-    <div className="flex">
+    <div className="">
       {/* Sidebar */}
-      <Sidebar />
+      {/* <Sidebar /> */}
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-100 p-6">
+      <main className="flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
