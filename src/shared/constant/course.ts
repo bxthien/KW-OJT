@@ -1,4 +1,5 @@
 export interface Course {
+  description: string;
   tag: string;
   title: string;
   id: string;
@@ -19,6 +20,7 @@ export const courses: Course[] = [
     certificates: 10,
     reviews: 0,
     addedToShelf: 16,
+    description: "hello",
   },
   {
     tag: "BEGINNER",
@@ -29,6 +31,7 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
+    description: "hello",
   },
   {
     tag: "INTERMEDIATE",
@@ -39,6 +42,7 @@ export const courses: Course[] = [
     certificates: 21,
     reviews: 34,
     addedToShelf: 207,
+    description: "hello",
   },
   {
     tag: "BEGINNER",
@@ -49,6 +53,7 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
+    description: "hello",
   },
   {
     tag: "INTERMEDIATE",
@@ -59,5 +64,6 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
+    description: "hello",
   },
 ];

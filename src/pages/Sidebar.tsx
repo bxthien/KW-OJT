@@ -26,7 +26,7 @@ const Sidebar: React.FC = () => (
       </Link>
       <Link
         to="users"
-        className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
+        className="flex items-center py-2 px-4 bg-blue-100 text-black rounded hover:bg-blue-300 transition-colors text-base font-medium"
       >
         Users
       </Link>
