@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Sidebar: React.FC = () => (
   <aside className="w-64 bg-blue-100 text-blue-900 h-screen p-4">
-    <h1 className="text-lg font-bold">Byway</h1>
+    <h1 className="text-lg font-bold">HOTDOG</h1>
     <nav className="mt-6 space-y-4">
       <Link
         to="/"
@@ -17,7 +17,7 @@ const Sidebar: React.FC = () => (
         Courses
       </Link>
       <Link
-        to="#"
+        to="users"
         className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         Users

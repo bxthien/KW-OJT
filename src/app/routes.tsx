@@ -4,6 +4,7 @@ import CoursesPage from "../pages/CoursesPages";
 import LoginPage from "../pages/LoginPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import Layout from "./layout";
+import UserPage from "../pages/UserPage";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "/courses",
         element: <CoursesPage />,
+      },
+      {
+        path: "/users",
+        element: <UserPage />,
       },
     ],
   },
