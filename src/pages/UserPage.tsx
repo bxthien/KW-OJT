@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs, Table } from "antd";
 import type { TabsProps } from "antd";
+import ChatBot from "./ChatBot";
 
 const UserPage: React.FC = () => {
   const userColumns = [
@@ -139,10 +140,15 @@ const UserPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen font-sans bg-gray-100">
+    <div className="flex h-screen font-sans bg-gray-100 relative">
       <div className="flex-grow bg-gray-50 p-5">
         <h1 className="text-2xl font-bold mb-5 text-black">Users</h1>
         <Tabs defaultActiveKey="1" items={items} />
+      </div>
+
+      {/* ChatBot Component */}
+      <div className="absolute bottom-5 right-5">
+        <ChatBot />
       </div>
     </div>
   );
