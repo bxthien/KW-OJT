@@ -1,8 +1,16 @@
 import { Link } from "react-router-dom";
 
 const Sidebar: React.FC = () => (
-  <aside className="w-64 bg-blue-100 text-blue-900 h-screen p-4">
-    <h1 className="text-lg font-bold">HOTDOG</h1>
+  <aside className="w-64 bg-blue-100 text-blue-900 h-screen p-4 relative">
+    {/* Logo Section with Image */}
+    <div className="flex items-center space-x-2">
+      <img
+        src="https://img.icons8.com/?size=100&id=2AIrctH82xog&format=png&color=000000" // 여기에 원하는 이미지 링크를 넣으세요!
+        alt="Logo"
+        className="w-8 h-8"
+      />
+      <h1 className="text-lg font-bold">HOTDOG</h1>
+    </div>
     <nav className="mt-6 space-y-4">
       <Link
         to="/"
@@ -35,9 +43,6 @@ const Sidebar: React.FC = () => (
         Setting
       </a>
     </nav>
-    <div className="absolute bottom-4 left-4 text-sm text-blue-700">
-      Hi, John
-    </div>
   </aside>
 );
 
