@@ -37,8 +37,8 @@ const Sidebar: React.FC = () => (
         Courses
       </Link>
       <Link
-        to="#"
-        className="flex items-center py-2 px-4 bg-blue-100 text-black rounded hover:bg-blue-300 transition-colors text-base font-medium"
+        to="users"
+        className="block py-2 px-4 bg-blue-100 text-blue-900 rounded hover:bg-blue-300 transition-colors"
       >
         <img
           src="https://img.icons8.com/?size=100&id=82751&format=png&color=000000"

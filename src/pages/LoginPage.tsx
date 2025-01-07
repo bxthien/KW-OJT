@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import React, { useState } from "react";
 import signInImage from "../assets/studentimg.png"; // 이미지 경로 추가
-import RegisterModal from "./RegisterPage"; // RegisterModal 추가
+import RegisterModal from "./Register"; // RegisterModal 추가
 const LoginPage: React.FC = () => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
   const openRegisterModal = () => setRegisterModalOpen(true);
