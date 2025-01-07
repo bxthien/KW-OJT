@@ -45,7 +45,7 @@ const HomePage = () => {
         </section>
 
         {/* Courses */}
-        <section className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6">
           <CourseCard
             title="Beginner's Guide to Design"
             price="50.00"
@@ -70,7 +70,7 @@ const HomePage = () => {
             certificates={25}
             reviews={25}
           />
-        </section>
+        </div>
       </main>
       {/* Chatbot Icon */}
       <ChatBot />
