@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import signInImage from "../assets/studentimg.png"; // 이미지 경로 추가
 import RegisterModal from "./RegisterPage"; // RegisterModal 추가
+import ForgotPasswordModal from "./ForgotPasswordModal"; // ForgotPasswordModal 추가
 
 const LoginPage: React.FC = () => {
+  // Modal States
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const [isForgotPasswordModalOpen, setForgotPasswordModalOpen] =
+    useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
+  // Register Modal handlers
   const openRegisterModal = () => setRegisterModalOpen(true);
   const closeRegisterModal = () => setRegisterModalOpen(false);
+
+  // Forgot Password Modal handlers
+  const openForgotPasswordModal = () => setForgotPasswordModalOpen(true);
+  const closeForgotPasswordModal = () => setForgotPasswordModalOpen(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,12 +88,13 @@ const LoginPage: React.FC = () => {
 
           {/* Forgot Password */}
           <div className="text-right mb-4">
-            <a
-              href="/forgot-password"
+            <button
+              type="button"
+              onClick={openForgotPasswordModal}
               className="text-indigo-600 text-sm hover:underline"
             >
               Forgot Password?
-            </a>
+            </button>
           </div>
 
           <button
@@ -96,9 +106,14 @@ const LoginPage: React.FC = () => {
         </form>
       </div>
 
+      {/* Modals */}
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={closeRegisterModal}
+      />
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordModalOpen}
+        onClose={closeForgotPasswordModal}
       />
     </div>
   );

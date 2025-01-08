@@ -5,11 +5,16 @@ import LoginPage from "../pages/LoginPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import Layout from "./layout";
 import UserPage from "../pages/UserPage";
+import ChangePasswordPage from "../pages/ChangePasswordPage";
 
 const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/change-password",
+    element: <ChangePasswordPage />,
   },
   {
     path: "/",
