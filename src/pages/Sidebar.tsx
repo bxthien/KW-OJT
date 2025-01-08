@@ -36,14 +36,12 @@ const Sidebar: React.FC = () => {
         {/* 접기/펼치기 버튼 */}
         <button
           onClick={toggleSidebar}
-          className="p-2 hover:bg-blue-200 rounded-full transition duration-300"
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-blue-300 transition duration-300"
         >
           <img
             src={isOpen ? closeIconUrl : openIconUrl}
             alt="Toggle Icon"
-            className={`${
-              isOpen ? "w-6 h-6" : "w-8 h-8"
-            } transition-all duration-300`}
+            className="w-6 h-6"
           />
         </button>
       </div>
@@ -53,7 +51,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -69,7 +67,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/courses"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -85,7 +83,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/users"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -101,7 +99,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/communication"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -119,7 +117,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/settings"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
