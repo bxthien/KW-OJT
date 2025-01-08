@@ -1,4 +1,5 @@
 export interface Course {
+  color: string;
   description: string;
   tag: string;
   title: string;
@@ -20,7 +21,8 @@ export const courses: Course[] = [
     certificates: 10,
     reviews: 0,
     addedToShelf: 16,
-    description: "hello",
+    description: "A detailed guide to global internships at KNU.",
+    color: "blue",
   },
   {
     tag: "BEGINNER",
@@ -31,7 +33,8 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
-    description: "hello",
+    description: "A detailed guide to global internships at KNU.",
+    color: "blue",
   },
   {
     tag: "INTERMEDIATE",
@@ -42,7 +45,8 @@ export const courses: Course[] = [
     certificates: 21,
     reviews: 34,
     addedToShelf: 207,
-    description: "hello",
+    description: "A detailed guide to global internships at KNU.",
+    color: "blue",
   },
   {
     tag: "BEGINNER",
@@ -53,7 +57,8 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
-    description: "hello",
+    description: "A detailed guide to global internships at KNU.",
+    color: "blue",
   },
   {
     tag: "INTERMEDIATE",
@@ -64,6 +69,7 @@ export const courses: Course[] = [
     certificates: 25,
     reviews: 25,
     addedToShelf: 500,
-    description: "hello",
+    description: "A detailed guide to global internships at KNU.",
+    color: "blue",
   },
 ];
