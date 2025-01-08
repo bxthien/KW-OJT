@@ -1,5 +1,8 @@
 export interface Course {
+<<<<<<< HEAD
   color: string;
+=======
+>>>>>>> f59a578eab2f8abd6255003a5a5830d0751de161
   description: string;
   tag: string;
   title: string;
