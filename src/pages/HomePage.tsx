@@ -3,7 +3,6 @@ import ChatBot from "./ChatBot";
 import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
-import ideaImage from "../assets/idea.png"; // 이미지 파일 import
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -29,22 +28,12 @@ const HomePage: React.FC = () => {
           {/* Profile Card */}
           <ProfileCard />
 
-          {/* 오른쪽 텍스트 및 이미지 섹션 */}
-          <div className="ml-12 flex items-center flex-1 justify-between gap-12">
-            {/* 텍스트 섹션 */}
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-bold text-black mb-4">
-                Hello, Username 👋
-              </h1>
-              <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
-            </div>
-
-            {/* 이미지 섹션 */}
-            <img
-              src={ideaImage}
-              alt="Idea"
-              className="w-80 h-auto object-cover"
-            />
+          {/* 오른쪽 텍스트 섹션 */}
+          <div className="ml-12 flex flex-col">
+            <h1 className="text-4xl font-bold text-black mb-4">
+              Hello, Username 👋
+            </h1>
+            <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
           </div>
         </div>
 
@@ -85,7 +74,7 @@ const HomePage: React.FC = () => {
               rows={4}
             />
             <button
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
               onClick={closeModal}
             >
               Close
