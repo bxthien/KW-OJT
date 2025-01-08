@@ -1,42 +1,16 @@
 import React, { useState } from "react";
-import { Button, Drawer, Pagination } from "antd";
+import { Button, Drawer, Pagination, ColorPicker } from "antd";
 import ChatBot from "./ChatBot";
 import { Course, courses as initialCourses } from "../shared/constant/course";
-
-const generateRandomColor = (() => {
-  const pastelColors = [
-    "#F5DF4D", // Pantone Yellow
-    "#00539C", // Pantone Classic Blue
-    "#D81159", // Pantone Fiesta Red
-    "#F94877", // Pantone Coral Pink
-    "#6A0572", // Pantone Purple
-    "#88B04B", // Pantone Greenery
-    "#FF6F61", // Pantone Living Coral
-    "#009473", // Pantone Jade Green
-    "#F7CAC9", // Pantone Rose Quartz
-    "#92A8D1", // Pantone Serenity
-  ];
-  const usedColors = new Set();
-
-  return () => {
-    const availableColors = pastelColors.filter(
-      (color) => !usedColors.has(color)
-    );
-    if (availableColors.length === 0) {
-      usedColors.clear();
-    }
-    const color =
-      availableColors[Math.floor(Math.random() * availableColors.length)];
-    usedColors.add(color);
-    return color;
-  };
-})();
 
 const CourseCard: React.FC<{
   course: Course & { color: string };
   onClick: (course: Course) => void;
 }> = ({ course, onClick }) => (
-  <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative">
+  <div
+    className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg"
+    onClick={() => onClick(course)}
+  >
     <div
       className="w-full h-32 rounded-md mb-4"
       style={{ backgroundColor: course.color }}
@@ -44,12 +18,7 @@ const CourseCard: React.FC<{
     <div className="mb-2 text-sm font-bold text-gray-500 uppercase">
       {course.tag}
     </div>
-    <h2
-      className="text-lg font-bold mb-2 text-gray-800 hover:underline cursor-pointer"
-      onClick={() => onClick(course)}
-    >
-      {course.title}
-    </h2>
+    <h2 className="text-lg font-bold mb-2 text-gray-800">{course.title}</h2>
     <div className="flex space-x-4 text-xs text-gray-600">
       <p>
         <span className="font-bold">Chapters:</span> {course.chapters}
@@ -65,7 +34,7 @@ const CoursesPage: React.FC = () => {
   const [courses, setCourses] = useState(
     initialCourses.map((course) => ({
       ...course,
-      color: generateRandomColor(),
+      color: "#1677ff", // Default color
     }))
   );
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -78,6 +47,7 @@ const CoursesPage: React.FC = () => {
     chapters: "",
     orders: "",
     tag: "",
+    color: "#1677ff", // Default color
   });
 
   const handleCourseClick = (course: Course) => {
@@ -88,45 +58,48 @@ const CoursesPage: React.FC = () => {
       chapters: course.chapters.toString() || "",
       orders: course.orders.toString() || "",
       tag: course.tag || "",
+      color: course.color || "#1677ff",
     });
     setIsDrawerOpen(true);
   };
 
   const closeDrawer = () => {
-    setSelectedCourse(null);
-    setNewCourse({
-      title: "",
-      description: "",
-      chapters: "",
-      orders: "",
-      tag: "",
-    });
-    setIsDrawerOpen(false);
-  };
-
-  const showDrawer = () => {
-    setIsDrawerOpen(true);
+    setIsDrawerOpen(false); // Close the drawer first
+    setTimeout(() => {
+      // Reset states after the drawer has closed
+      setSelectedCourse(null);
+      setNewCourse({
+        title: "",
+        description: "",
+        chapters: "",
+        orders: "",
+        tag: "",
+        color: "#1677ff",
+      });
+    }, 300); // Add a delay matching the drawer's animation duration
   };
 
   const handleSaveCourse = () => {
-    if (newCourse.title && newCourse.description) {
-      const newCourseData = {
-        id: (courses.length + 1).toString(),
-        title: newCourse.title,
-        tag: newCourse.tag || "New", // Use input tag or default to "New"
-        chapters: Number(newCourse.chapters) || 0, // Convert chapters to number
-        orders: Number(newCourse.orders) || 0, // Convert orders to number
-        certificates: 0, // Default certificates
-        reviews: 0, // Default reviews
-        addedToShelf: 0,
-        description: newCourse.description,
-        color: generateRandomColor(),
-      };
-      setCourses([...courses, newCourseData]);
-      closeDrawer();
-    } else {
-      alert("Please fill in all fields.");
+    if (!newCourse.title || !newCourse.description) {
+      alert("Please fill in all required fields.");
+      return;
     }
+
+    const newCourseData = {
+      id: (courses.length + 1).toString(),
+      title: newCourse.title,
+      tag: newCourse.tag || "New",
+      chapters: Number(newCourse.chapters) || 0,
+      orders: Number(newCourse.orders) || 0,
+      certificates: 0,
+      reviews: 0,
+      addedToShelf: 0,
+      description: newCourse.description,
+      color: newCourse.color,
+    };
+
+    setCourses([...courses, newCourseData]);
+    closeDrawer();
   };
 
   const handleEditCourse = () => {
@@ -145,7 +118,7 @@ const CoursesPage: React.FC = () => {
                   ? Number(newCourse.orders)
                   : course.orders,
                 tag: newCourse.tag || course.tag,
-                color: course.color, // Preserve the color
+                color: newCourse.color || course.color,
               }
             : course
         )
@@ -174,7 +147,7 @@ const CoursesPage: React.FC = () => {
       <div className="p-8 h-screen overflow-auto bg-gray-100">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-black">Courses</h1>
-          <Button type="primary" onClick={showDrawer}>
+          <Button type="primary" onClick={() => setIsDrawerOpen(true)}>
             Add Course
           </Button>
         </div>
@@ -195,11 +168,9 @@ const CoursesPage: React.FC = () => {
             onChange={handlePageChange}
           />
         </div>
-        {/* ChatBot Icon */}
         <ChatBot />
       </div>
 
-      {/* Drawer for Course Details */}
       <Drawer
         title={
           selectedCourse
@@ -211,69 +182,120 @@ const CoursesPage: React.FC = () => {
         open={isDrawerOpen}
       >
         <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Course Title"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newCourse.title}
-            onChange={(e) =>
-              setNewCourse({ ...newCourse, title: e.target.value })
-            }
-          />
-          <textarea
-            placeholder="Course Description"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={4}
-            value={newCourse.description}
-            onChange={(e) =>
-              setNewCourse({ ...newCourse, description: e.target.value })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Number of Chapters"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newCourse.chapters}
-            onChange={(e) =>
-              setNewCourse({ ...newCourse, chapters: e.target.value })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Number of Orders"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newCourse.orders}
-            onChange={(e) =>
-              setNewCourse({ ...newCourse, orders: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Tag (e.g., Beginner for KNU)"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newCourse.tag}
-            onChange={(e) =>
-              setNewCourse({ ...newCourse, tag: e.target.value })
-            }
-          />
-          <Button
-            type="primary"
-            className="w-full"
-            onClick={selectedCourse ? handleEditCourse : handleSaveCourse}
-          >
-            {selectedCourse ? "Edit Course" : "Save Course"}
-          </Button>
-          {/* Add this Delete button */}
-          {selectedCourse && (
+          {/* Course Title Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">
+              Course Title
+            </label>
+
+            <input
+              type="text"
+              placeholder="Course Title"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={newCourse.title}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, title: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Course Description Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">
+              Course Description
+            </label>
+            <textarea
+              placeholder="Course Description"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              rows={4}
+              value={newCourse.description}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, description: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Number of Chapters Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">
+              Number of Chapters
+            </label>
+            <input
+              type="number"
+              placeholder="Number of Chapters"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={newCourse.chapters}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, chapters: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Number of Orders Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">
+              Number of Orders
+            </label>
+            <input
+              type="number"
+              placeholder="Number of Orders"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={newCourse.orders}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, orders: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Course Tag Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Tag
+            </label>
+            <input
+              type="text"
+              placeholder="Tag (e.g., Beginner for KNU)"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={newCourse.tag}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, tag: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Color Picker Input */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Select Color
+            </label>
+            <ColorPicker
+              value={newCourse.color}
+              onChange={(color) =>
+                setNewCourse({ ...newCourse, color: color.toHexString() })
+              }
+            />
+          </div>
+
+          {/* Buttons for Save and Delete */}
+          <div className="flex justify-between space-x-4">
+            {selectedCourse && (
+              <Button
+                type="default"
+                danger
+                onClick={handleDeleteCourse}
+                className="w-full"
+              >
+                Delete
+              </Button>
+            )}
             <Button
-              type="default"
-              danger
-              className="w-full mt-2"
-              onClick={handleDeleteCourse}
+              type="primary"
+              onClick={selectedCourse ? handleEditCourse : handleSaveCourse}
+              className="w-full"
             >
-              Delete Course
+              {selectedCourse ? "Save" : "Add"}
             </Button>
-          )}
+          </div>
         </div>
       </Drawer>
     </div>
