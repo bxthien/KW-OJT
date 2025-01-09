@@ -15,16 +15,13 @@ const CourseCard: React.FC<{
       className="w-full h-32 rounded-md mb-4"
       style={{ backgroundColor: course.color }}
     ></div>
-    <div className="mb-2 text-sm font-bold text-gray-500 uppercase">
-      {course.tag}
-    </div>
     <h2 className="text-lg font-bold mb-2 text-gray-800">{course.title}</h2>
     <div className="flex space-x-4 text-xs text-gray-600">
       <p>
         <span className="font-bold">Chapters:</span> {course.chapters}
       </p>
       <p>
-        <span className="font-bold">Orders:</span> {course.orders}
+        <span className="font-bold">Quizzes:</span> {course.orders}
       </p>
     </div>
   </div>
@@ -46,7 +43,6 @@ const CoursesPage: React.FC = () => {
     description: "",
     chapters: "",
     orders: "",
-    tag: "",
     color: "#1677ff", // Default color
   });
 
@@ -57,7 +53,6 @@ const CoursesPage: React.FC = () => {
       description: course.description || "",
       chapters: course.chapters.toString() || "",
       orders: course.orders.toString() || "",
-      tag: course.tag || "",
       color: course.color || "#1677ff",
     });
     setIsDrawerOpen(true);
@@ -73,7 +68,6 @@ const CoursesPage: React.FC = () => {
         description: "",
         chapters: "",
         orders: "",
-        tag: "",
         color: "#1677ff",
       });
     }, 300); // Add a delay matching the drawer's animation duration
@@ -85,10 +79,9 @@ const CoursesPage: React.FC = () => {
       return;
     }
 
-    const newCourseData = {
-      id: (courses.length + 1).toString(),
+    const newCourseData: Course = {
+      id: (courses.length + 1).toString(), // Generate a new ID
       title: newCourse.title,
-      tag: newCourse.tag || "New",
       chapters: Number(newCourse.chapters) || 0,
       orders: Number(newCourse.orders) || 0,
       certificates: 0,
@@ -96,6 +89,7 @@ const CoursesPage: React.FC = () => {
       addedToShelf: 0,
       description: newCourse.description,
       color: newCourse.color,
+      chapterDetails: [], // Initialize with an empty array
     };
 
     setCourses([...courses, newCourseData]);
@@ -117,7 +111,6 @@ const CoursesPage: React.FC = () => {
                 orders: newCourse.orders
                   ? Number(newCourse.orders)
                   : course.orders,
-                tag: newCourse.tag || course.tag,
                 color: newCourse.color || course.color,
               }
             : course
@@ -187,7 +180,6 @@ const CoursesPage: React.FC = () => {
             <label className="block text-xs font-semibold text-gray-500 mb-1">
               Course Title
             </label>
-
             <input
               type="text"
               placeholder="Course Title"
@@ -231,34 +223,18 @@ const CoursesPage: React.FC = () => {
             />
           </div>
 
-          {/* Number of Orders Input */}
+          {/* Number of Quizzes Input */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Number of Orders
+              Number of Quizzes
             </label>
             <input
               type="number"
-              placeholder="Number of Orders"
+              placeholder="Number of Quizzes"
               className="w-full p-2 border border-gray-300 rounded-lg"
               value={newCourse.orders}
               onChange={(e) =>
                 setNewCourse({ ...newCourse, orders: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Course Tag Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Tag
-            </label>
-            <input
-              type="text"
-              placeholder="Tag (e.g., Beginner for KNU)"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={newCourse.tag}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, tag: e.target.value })
               }
             />
           </div>
@@ -274,6 +250,24 @@ const CoursesPage: React.FC = () => {
                 setNewCourse({ ...newCourse, color: color.toHexString() })
               }
             />
+          </div>
+
+          {/* New Chapter Section */}
+          <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-bold text-gray-800">
+                {newCourse.title || "New Chapter"}
+              </h2>
+              <div className="text-sm text-gray-600">
+                <span className="font-bold">
+                  {newCourse.chapters || "0"} Chapters
+                </span>
+                {" • "}
+                <span className="font-bold">
+                  {newCourse.orders || "0"} Quizzes
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Buttons for Save and Delete */}

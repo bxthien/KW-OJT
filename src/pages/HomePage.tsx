@@ -1,8 +1,21 @@
 import React, { useState } from "react";
+import { DownOutlined } from "@ant-design/icons";
+import { Dropdown, Space } from "antd";
 import ChatBot from "./ChatBot";
 import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
+
+const items = [
+  {
+    key: "1",
+    label: "Login",
+  },
+  {
+    key: "2",
+    label: "Logout",
+  },
+];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -21,6 +34,21 @@ const HomePage: React.FC = () => {
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
+          <div className="flex items-center gap-4">
+            <img
+              src="/path/to/avatar.png" // Replace with the actual path to the avatar image
+              alt="User Avatar"
+              className="w-10 h-10 rounded-full"
+            />
+            <Dropdown menu={{ items }}>
+              <a onClick={(e) => e.preventDefault()}>
+                <Space>
+                  Harsh
+                  <DownOutlined />
+                </Space>
+              </a>
+            </Dropdown>
+          </div>
         </header>
 
         {/* Profile Section */}
