@@ -3,17 +3,23 @@ import { loginUser } from "../supabase/authService";
 import { useNavigate } from "react-router-dom";
 import signInImage from "../assets/studentimg.png";
 import RegisterModal from "./Register";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 const LoginPage: React.FC = () => {
-  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<"register" | "forgot" | null>(
+    null
+  );
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const openRegisterModal = () => setRegisterModalOpen(true);
-  const closeRegisterModal = () => setRegisterModalOpen(false);
+  // Modal Handlers
+  const openModal = (modalType: "register" | "forgot") =>
+    setActiveModal(modalType);
+  const closeModal = () => setActiveModal(null);
 
+  // Form Submission Handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -41,7 +47,7 @@ const LoginPage: React.FC = () => {
           If you don't have an account register <br />
           You can{" "}
           <button
-            onClick={openRegisterModal}
+            onClick={() => openModal("register")}
             className="text-indigo-600 font-semibold"
           >
             Register here!
@@ -94,6 +100,17 @@ const LoginPage: React.FC = () => {
             />
           </div>
 
+          {/* Forgot Password */}
+          <div className="text-right mb-4">
+            <button
+              type="button"
+              onClick={() => openModal("forgot")}
+              className="text-indigo-600 text-sm hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <button
             type="submit"
             className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700"
@@ -103,10 +120,13 @@ const LoginPage: React.FC = () => {
         </form>
       </div>
 
-      <RegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={closeRegisterModal}
-      />
+      {/* Modals */}
+      {activeModal === "register" && (
+        <RegisterModal isOpen={true} onClose={closeModal} />
+      )}
+      {activeModal === "forgot" && (
+        <ForgotPasswordModal isOpen={true} onClose={closeModal} />
+      )}
     </div>
   );
 };

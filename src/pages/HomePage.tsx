@@ -7,8 +7,13 @@ import { getUserName, getCourseNames, getCourseDescriptions } from "../supabase/
 import ChatBot from "./ChatBot";
 import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
+<<<<<<< HEAD
 import { Course } from "../shared/constant/course";
 import ideaImage from "../assets/idea.png";
+=======
+import { Course, courses } from "../shared/constant/course";
+import UserProfileDropdown from "../pages/UserProfileDropdown"; // 컴포넌트 경로에 맞게 수정
+>>>>>>> c4f31b7473989e7c9db4986242caf013ab221693
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -125,6 +130,7 @@ const HomePage: React.FC = () => {
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
+<<<<<<< HEAD
           <div>
             {user ? (
               <button
@@ -142,10 +148,16 @@ const HomePage: React.FC = () => {
               </button>
             )}
           </div>
+=======
+
+          {/* 프로필 드롭다운 */}
+          <UserProfileDropdown />
+>>>>>>> c4f31b7473989e7c9db4986242caf013ab221693
         </header>
 
         {/* Profile Section */}
         <div className="flex items-center mb-6 bg-white p-6 rounded-lg shadow-md">
+<<<<<<< HEAD
           <ProfileCard username={userName} />
           <div className="ml-12 flex items-center flex-1 justify-between gap-12">
             <div className="flex flex-col">
@@ -159,10 +171,19 @@ const HomePage: React.FC = () => {
               alt="Idea"
               className="w-80 h-auto object-cover"
             />
+=======
+          <ProfileCard />
+          <div className="ml-12 flex flex-col">
+            <h1 className="text-4xl font-bold text-black mb-4">
+              Hello, Username 👋
+            </h1>
+            <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
+>>>>>>> c4f31b7473989e7c9db4986242caf013ab221693
           </div>
         </div>
 
         {/* Courses Section */}
+<<<<<<< HEAD
         {user && (
           <section className="mb-6">
             <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
@@ -177,6 +198,20 @@ const HomePage: React.FC = () => {
             </div>
           </section>
         )}
+=======
+        <section className="mb-6">
+          <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
+            {courses.map((course: Course, index: number) => (
+              <CourseCard
+                key={index}
+                course={course}
+                onClick={handleCourseClick}
+              />
+            ))}
+          </div>
+        </section>
+>>>>>>> c4f31b7473989e7c9db4986242caf013ab221693
       </main>
 
       <ChatBot />
