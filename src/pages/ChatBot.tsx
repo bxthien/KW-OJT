@@ -1,71 +1,46 @@
 import React, { useState } from "react";
 
-const ChatbotIcon: React.FC = () => {
+const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() !== "") {
-      setMessages([...messages, inputValue]);
-      setInputValue("");
-    }
-  };
+  // 닥스훈트 이미지 링크
+  const idleImage =
+    "https://img.icons8.com/?size=100&id=KZyhUKGJ27my&format=png&color=000000"; // 앉아있는 닥스훈트 이미지
+  const runningImage =
+    "https://img.icons8.com/?size=100&id=Jl3TTGXuPWVx&format=png&color=000000"; // 달리는 닥스훈트 이미지
+
+  // 현재 이미지 상태 결정 (호버 또는 클릭 여부에 따라)
+  const currentImage = isHovered || isOpen ? runningImage : idleImage;
 
   return (
     <>
       {/* 챗봇 아이콘 */}
       <button
-        className="fixed bottom-4 right-4 bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 focus:outline-none"
+        className="fixed bottom-4 right-8 bg-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center border border-gray-300 focus:outline-none z-[1000] transition-transform transform hover:scale-110"
         onClick={() => setIsOpen(!isOpen)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-10 h-10"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fillRule="evenodd"
-            d="M12 2a7 7 0 00-7 7v4.59a1 1 0 01-.293.707L3.586 16H7a1 1 0 011 1v3.414l2.707-2.707A1 1 0 0111.414 18H17a1 1 0 011-1h3.414l-1.121-1.121A1 1 0 0120 13.59V9a7 7 0 00-7-7zm-5 7a5 5 0 1110 0v5.59l1.707 1.707A1 1 0 0119.414 16H17v3.414l-2.707-2.707A1 1 0 0113.586 16H11a1 1 0 01-.707-.293L8 13.414V9z"
-            clipRule="evenodd"
-          />
-        </svg>
+        <img src={currentImage} alt="Chatbot Icon" className="w-12 h-12" />
       </button>
 
       {/* 챗봇 대화창 */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-96 h-96 bg-white p-4 shadow-lg rounded-md flex flex-col text-sm">
-          <h3 className="text-base font-semibold mb-2">Chatbot</h3>
-          {/* 대화 내용 */}
-          <div className="flex-1 overflow-y-auto mb-4 border border-gray-300 rounded-md p-2 bg-gray-50 text-xs">
-            {messages.length > 0 ? (
-              messages.map((message, index) => (
-                <div
-                  key={index}
-                  className="mb-2 p-2 bg-blue-100 text-gray-800 rounded-md text-xs"
-                >
-                  {message}
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-400">No messages yet</p>
-            )}
+        <div className="absolute bottom-24 right-8 w-96 h-96 bg-white p-4 shadow-2xl rounded-md flex flex-col z-[1100]">
+          <h3 className="text-lg font-semibold mb-4 text-center text-blue-600">
+            HOTDOG LMS Chatbot
+          </h3>
+          <div className="flex-1 overflow-y-auto border border-gray-300 rounded-md p-4 bg-gray-50">
+            <p className="text-gray-400">Start a conversation...</p>
           </div>
-          {/* 입력란과 버튼 */}
-          <div className="flex items-center gap-2">
+          <div className="mt-4 flex items-center">
             <input
               type="text"
-              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Type a message..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             />
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
-              onClick={handleSendMessage}
-            >
+            <button className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
               Send
             </button>
           </div>
@@ -75,4 +50,4 @@ const ChatbotIcon: React.FC = () => {
   );
 };
 
-export default ChatbotIcon;
+export default ChatBot;
