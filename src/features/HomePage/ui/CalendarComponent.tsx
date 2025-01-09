@@ -29,7 +29,7 @@ const getListData = (value: Dayjs) => {
 const dateCellRender = (value: Dayjs) => {
   const listData = getListData(value);
 
-  if (listData.length === 0) return null; // 배지가 없으면 렌더링 안 함
+  if (listData.length === 0) return null;
 
   return (
     <div className="flex justify-center gap-2">
@@ -44,12 +44,13 @@ const dateCellRender = (value: Dayjs) => {
 
 const CalendarComponent: React.FC = () => {
   return (
-    <div className="w-full max-w-[600px] aspect-square bg-white p-4 rounded-lg shadow-lg">
+    <div className="w-full max-w-[600px] aspect-square bg-white p-4 rounded-lg shadow-lg relative z-0">
       <Calendar
         fullscreen={false}
         headerRender={() => null}
         mode="month"
         cellRender={dateCellRender}
+        style={{ zIndex: 1 }} // Calendar의 z-index 낮춤
       />
     </div>
   );

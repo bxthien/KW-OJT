@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
-import UserProfileDropdown from "../pages/UserProfileDropdown";
+import UserProfileDropdown from "../features/HomePage/ui/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 
@@ -49,7 +49,7 @@ const HomePage: React.FC = () => {
                   imageUrl:
                     "https://plus.unsplash.com/premium_vector-1720534517470-8815da9e3998?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3R1ZHl8ZW58MHx8MHx8fDA%3D",
                   text: "Add your courses",
-                  textColor: "text-blue-500",
+                  textColor: "text-red-400",
                 },
                 {
                   key: 3,
@@ -80,7 +80,7 @@ const HomePage: React.FC = () => {
 
         {/* Courses Section */}
         <section className="mb-6">
-          <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
+          <h3 className="text-2xl font-semibold mb-4 text-black">Courses</h3>
           <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
             {courses.map((course: Course, index: number) => (
               <CourseCard
