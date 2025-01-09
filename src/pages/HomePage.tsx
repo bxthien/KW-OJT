@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import ChatBot from "./ChatBot";
-import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
-import UserProfileDropdown from "../pages/UserProfileDropdown"; // 컴포넌트 경로에 맞게 수정
+import UserProfileDropdown from "../pages/UserProfileDropdown";
+import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
+import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -27,16 +28,55 @@ const HomePage: React.FC = () => {
           <UserProfileDropdown />
         </header>
 
-        {/* Profile Section */}
-        <div className="flex items-center mb-6 bg-white p-6 rounded-lg shadow-md">
-          <ProfileCard />
-          <div className="ml-12 flex flex-col">
-            <h1 className="text-4xl font-bold text-black mb-4">
-              Hello, Username 👋
-            </h1>
-            <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
+        {/* Carousel + 캘린더 섹션 */}
+        <section className="grid grid-cols-4 gap-6 mb-6">
+          {/* Carousel 섹션 */}
+          <div className="bg-white p-6 rounded-lg shadow-md col-span-3 flex flex-col h-full">
+            <h3 className="text-3xl font-bold mb-2 text-black flex items-center">
+              Welcome! <span className="ml-2">👋</span>
+            </h3>
+            <CarouselComponent
+              items={[
+                {
+                  key: 1,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1724224259580-04c544bd1fad?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG90ZG9nfGVufDB8fDB8fHww",
+                  text: "Welcome to HOTDOG LMS!",
+                  textColor: "text-yellow-300",
+                },
+                {
+                  key: 2,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1720534517470-8815da9e3998?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3R1ZHl8ZW58MHx8MHx8fDA%3D",
+                  text: "Add your courses",
+                  textColor: "text-blue-500",
+                },
+                {
+                  key: 3,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1733900623866-fc9102b17450?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGpvaW58ZW58MHx8MHx8fDA%3D",
+                  text: "Join our LMS",
+                  textColor: "text-black-500",
+                },
+                {
+                  key: 4,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1731582099083-969d4dfe2580?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8JUVCJUFBJUE5JUVEJTkxJTlDfGVufDB8fDB8fHww",
+                  text: "Achieve your goals!",
+                  textColor: "text-white",
+                },
+              ]}
+            />
           </div>
-        </div>
+
+          {/* 캘린더 섹션 */}
+          <div className="bg-white p-6 rounded-lg shadow-md col-span-1 h-full">
+            <h3 className="text-3xl font-bold mb-2 text-black flex items-center">
+              Calendar <span className="ml-2">📅</span>
+            </h3>
+            <CalendarComponent />
+          </div>
+        </section>
 
         {/* Courses Section */}
         <section className="mb-6">
