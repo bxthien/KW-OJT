@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
-  // ì‚¬ì´ë“œë°” ìƒíƒœ ê´€ë¦¬ (ì ‘ê¸°/íŽ¼ì¹˜ê¸°)
+  // ?‚¬?´?“œë°? ?ƒ?ƒœ ê´?ë¦? (? ‘ê¸?/?Ž¼ì¹˜ê¸°)
   const [isOpen, setIsOpen] = useState(true);
 
-  // PNG ì´ë¯¸ì§€ ë§í¬ ì„¤ì •
+  // PNG ?´ë¯¸ì?? ë§í¬ ?„¤? •
   const openIconUrl =
-    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000"; // ì‚¬ì´ë“œë°” íŽ¼ì¹˜ê¸° ì•„ì´ì½˜
+    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000"; // ?‚¬?´?“œë°? ?Ž¼ì¹˜ê¸° ?•„?´ì½?
   const closeIconUrl =
-    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000"; // ì‚¬ì´ë“œë°” ì ‘ê¸° ì•„ì´ì½˜
+    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000"; // ?‚¬?´?“œë°? ? ‘ê¸? ?•„?´ì½?
 
-  // ì‚¬ì´ë“œë°” ì ‘ê¸°/íŽ¼ì¹˜ê¸° í† ê¸€
+  // ?‚¬?´?“œë°? ? ‘ê¸?/?Ž¼ì¹˜ê¸° ?† ê¸?
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
@@ -20,7 +20,7 @@ const Sidebar: React.FC = () => {
         isOpen ? "w-72" : "w-24"
       } bg-blue-100 text-black h-screen p-4 transition-all duration-300`}
     >
-      {/* ì‚¬ì´ë“œë°” í—¤ë” */}
+      {/* ?‚¬?´?“œë°? ?—¤?” */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <img
@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
           </h1>
         </div>
 
-        {/* ì ‘ê¸°/íŽ¼ì¹˜ê¸° ë²„íŠ¼ */}
+        {/* ? ‘ê¸?/?Ž¼ì¹˜ê¸° ë²„íŠ¼ */}
         <button
           onClick={toggleSidebar}
           className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-blue-300 transition duration-300"
@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* ë„¤ë¹„ê²Œì´ì…˜ ë©”ë‰´ */}
+      {/* ?„¤ë¹„ê²Œ?´?…˜ ë©”ë‰´ */}
       <nav className="mt-6 space-y-4">
         <NavLink
           to="/"

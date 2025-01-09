@@ -1,4 +1,10 @@
-const ProfileCard = () => {
+import React from "react";
+
+interface ProfileCardProps {
+  username: string | null; // 유저 이름을 전달받기 위한 prop
+}
+
+const ProfileCard: React.FC<ProfileCardProps> = ({ username }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-5 mb-6 max-w-sm">
       {/* 배경 이미지 */}
@@ -21,7 +27,7 @@ const ProfileCard = () => {
 
       {/* 프로필 정보 */}
       <h2 className="text-2xl font-bold mb-2 text-center text-black">
-        Username
+        {username || "Username"} {/* 전달된 유저 이름 표시, 없으면 기본값 */}
       </h2>
       <div className="bg-gray-100 p-5 rounded-lg shadow-inner mt-4 text-center">
         <p className="text-gray-600 mb-2">KNU Course Manager</p>
