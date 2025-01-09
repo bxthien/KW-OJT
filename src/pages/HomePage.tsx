@@ -3,6 +3,7 @@ import ChatBot from "./ChatBot";
 import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
+import UserProfileDropdown from "../pages/UserProfileDropdown"; // 컴포넌트 경로에 맞게 수정
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -21,14 +22,14 @@ const HomePage: React.FC = () => {
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
+
+          {/* 프로필 드롭다운 */}
+          <UserProfileDropdown />
         </header>
 
         {/* Profile Section */}
         <div className="flex items-center mb-6 bg-white p-6 rounded-lg shadow-md">
-          {/* Profile Card */}
           <ProfileCard />
-
-          {/* 오른쪽 텍스트 섹션 */}
           <div className="ml-12 flex flex-col">
             <h1 className="text-4xl font-bold text-black mb-4">
               Hello, Username 👋
@@ -40,7 +41,6 @@ const HomePage: React.FC = () => {
         {/* Courses Section */}
         <section className="mb-6">
           <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
-          {/* 가로 스크롤 가능한 섹션 */}
           <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
             {courses.map((course: Course, index: number) => (
               <CourseCard

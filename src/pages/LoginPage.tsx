@@ -4,21 +4,21 @@ import RegisterModal from "./RegisterPage"; // RegisterModal 추가
 import ForgotPasswordModal from "./ForgotPasswordModal"; // ForgotPasswordModal 추가
 
 const LoginPage: React.FC = () => {
-  // Modal States
-  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  const [isForgotPasswordModalOpen, setForgotPasswordModalOpen] =
-    useState(false);
+  // Active Modal State
+  const [activeModal, setActiveModal] = useState<"register" | "forgot" | null>(
+    null
+  );
+
+  // Login State
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  // Register Modal handlers
-  const openRegisterModal = () => setRegisterModalOpen(true);
-  const closeRegisterModal = () => setRegisterModalOpen(false);
+  // Modal Handlers
+  const openModal = (modalType: "register" | "forgot") =>
+    setActiveModal(modalType);
+  const closeModal = () => setActiveModal(null);
 
-  // Forgot Password Modal handlers
-  const openForgotPasswordModal = () => setForgotPasswordModalOpen(true);
-  const closeForgotPasswordModal = () => setForgotPasswordModalOpen(false);
-
+  // Form Submission Handler
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     alert(`Email: ${email}, Password: ${password}`);
@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
           If you don’t have an account register <br />
           You can{" "}
           <button
-            onClick={openRegisterModal}
+            onClick={() => openModal("register")}
             className="text-indigo-600 font-semibold"
           >
             Register here!
@@ -90,7 +90,7 @@ const LoginPage: React.FC = () => {
           <div className="text-right mb-4">
             <button
               type="button"
-              onClick={openForgotPasswordModal}
+              onClick={() => openModal("forgot")}
               className="text-indigo-600 text-sm hover:underline"
             >
               Forgot Password?
@@ -107,14 +107,12 @@ const LoginPage: React.FC = () => {
       </div>
 
       {/* Modals */}
-      <RegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={closeRegisterModal}
-      />
-      <ForgotPasswordModal
-        isOpen={isForgotPasswordModalOpen}
-        onClose={closeForgotPasswordModal}
-      />
+      {activeModal === "register" && (
+        <RegisterModal isOpen={true} onClose={closeModal} />
+      )}
+      {activeModal === "forgot" && (
+        <ForgotPasswordModal isOpen={true} onClose={closeModal} />
+      )}
     </div>
   );
 };
