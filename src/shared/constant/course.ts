@@ -1,7 +1,11 @@
+// courses.ts
+export interface Chapter {
+  name: string;
+  quizCount: number;
+  correctAnswers: number;
+}
+
 export interface Course {
-  color: string;
-  description: string;
-  tag: string;
   title: string;
   id: string;
   chapters: number;
@@ -9,67 +13,43 @@ export interface Course {
   certificates: number;
   reviews: number;
   addedToShelf: number;
+  description: string;
+  color: string;
+  chapterDetails: Chapter[]; // 챕터 상세 정보
 }
 
 export const courses: Course[] = [
   {
-    tag: "FOR KNU",
-    title: "GLOBAL INTERNSHIP - KNU",
+    title: "KNU",
     id: "#21453",
-    chapters: 13,
+    chapters: 3,
     orders: 16,
     certificates: 10,
     reviews: 0,
     addedToShelf: 16,
     description: "A detailed guide to global internships at KNU.",
     color: "blue",
+    chapterDetails: [
+      { name: "Introduction to KNU", quizCount: 3, correctAnswers: 2 },
+      { name: "Applying for Internships", quizCount: 5, correctAnswers: 4 },
+      { name: "Cultural Tips", quizCount: 2, correctAnswers: 2 },
+    ],
   },
   {
-    tag: "BEGINNER",
-    title: "Beginner's Guide to Design",
-    id: "#15735",
-    chapters: 13,
-    orders: 254,
+    title: "WEB DEVELOPMENT BOOTCAMP",
+    id: "#34567",
+    chapters: 4,
+    orders: 30,
     certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-    description: "A detailed guide to global internships at KNU.",
-    color: "blue",
-  },
-  {
-    tag: "INTERMEDIATE",
-    title: "Intermediate's Guide to Design",
-    id: "#75179",
-    chapters: 20,
-    orders: 126,
-    certificates: 21,
-    reviews: 34,
-    addedToShelf: 207,
-    description: "A detailed guide to global internships at KNU.",
-    color: "blue",
-  },
-  {
-    tag: "BEGINNER",
-    title: "Beginner's Web Guide",
-    id: "#69821",
-    chapters: 13,
-    orders: 254,
-    certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-    description: "A detailed guide to global internships at KNU.",
-    color: "blue",
-  },
-  {
-    tag: "INTERMEDIATE",
-    title: "Intermediate's Web Guide",
-    id: "#28927",
-    chapters: 13,
-    orders: 254,
-    certificates: 25,
-    reviews: 25,
-    addedToShelf: 500,
-    description: "A detailed guide to global internships at KNU.",
-    color: "blue",
+    reviews: 10,
+    addedToShelf: 22,
+    description: "Learn modern web development techniques.",
+    color: "green",
+    chapterDetails: [
+      { name: "HTML Basics", quizCount: 2, correctAnswers: 2 },
+      { name: "CSS Fundamentals", quizCount: 3, correctAnswers: 2 },
+      { name: "JavaScript Essentials", quizCount: 4, correctAnswers: 3 },
+      { name: "React Basics", quizCount: 5, correctAnswers: 4 },
+    ],
   },
 ];

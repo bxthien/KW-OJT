@@ -1,10 +1,23 @@
 import React, { useState } from "react";
+import { DownOutlined } from "@ant-design/icons";
+import { Dropdown, Space } from "antd";
 import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course, courses } from "../shared/constant/course";
 import UserProfileDropdown from "../features/HomePage/ui/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
+
+const items = [
+  {
+    key: "1",
+    label: "Login",
+  },
+  {
+    key: "2",
+    label: "Logout",
+  },
+];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
