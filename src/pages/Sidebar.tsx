@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { DoubleRightOutlined, DoubleLeftOutlined } from "@ant-design/icons"; // Ant Design 아이콘 가져오기
 
 const Sidebar: React.FC = () => {
   // 사이드바 상태 관리 (접기/펼치기)
   const [isOpen, setIsOpen] = useState(true);
-
-  // PNG 이미지 링크 설정
-  const openIconUrl =
-    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000"; // 사이드바 펼치기 아이콘
-  const closeIconUrl =
-    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000"; // 사이드바 접기 아이콘
 
   // 사이드바 접기/펼치기 토글
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -36,15 +31,13 @@ const Sidebar: React.FC = () => {
         {/* 접기/펼치기 버튼 */}
         <button
           onClick={toggleSidebar}
-          className="p-2 hover:bg-blue-200 rounded-full transition duration-300"
+          className="flex items-center w-12 justify-center h-12 rounded-full hover:bg-blue-300 transition duration-300"
         >
-          <img
-            src={isOpen ? closeIconUrl : openIconUrl}
-            alt="Toggle Icon"
-            className={`${
-              isOpen ? "w-6 h-6" : "w-8 h-8"
-            } transition-all duration-300`}
-          />
+          {isOpen ? (
+            <DoubleLeftOutlined className="text-xl" />
+          ) : (
+            <DoubleRightOutlined className="text-xl" />
+          )}
         </button>
       </div>
 
@@ -53,7 +46,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -69,7 +62,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/courses"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -85,7 +78,7 @@ const Sidebar: React.FC = () => {
         <NavLink
           to="/users"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
@@ -99,27 +92,25 @@ const Sidebar: React.FC = () => {
         </NavLink>
 
         <NavLink
-          to="/communication"
+          to="/profile"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
         >
           <img
-            src="https://img.icons8.com/?size=100&id=a8cZMQaCOiz0&format=png&color=000000"
+            src="https://img.icons8.com/?size=100&id=tiTDCgtmOFZL&format=png&color=000000"
             alt="Communication Icon"
             className="w-6 h-6 mr-2"
           />
-          <span className={`${isOpen ? "block" : "hidden"}`}>
-            Communication
-          </span>
+          <span className={`${isOpen ? "block" : "hidden"}`}>Profile</span>
         </NavLink>
 
         <NavLink
           to="/settings"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded ${
+            `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
             } hover:bg-blue-300 transition-colors`
           }
