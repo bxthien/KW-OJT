@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import {
   Tabs,
@@ -14,7 +15,7 @@ import {
   userData as initialUserData,
   studentData as initialStudentData,
 } from "../shared/constant/user";
-
+import type { Course } from "../shared/constant/course";
 import { courses } from "../shared/constant/course";
 
 const UserPage: React.FC = () => {
@@ -34,7 +35,8 @@ const UserPage: React.FC = () => {
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // 한 페이지에 표시할 데이터 수
@@ -144,7 +146,7 @@ const UserPage: React.FC = () => {
         if (currentTab === "1") {
           if (selectedUser) {
             // Update existing user
-            const updatedData = userData.map((user) =>
+            const updatedData = userData.map((user: any) =>
               user.key === selectedUser.key ? { ...user, ...values } : user
             );
             setUserData(updatedData);

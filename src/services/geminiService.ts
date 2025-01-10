@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 
 const API_KEY = "AIzaSyD7b5APqoteW9I0PZIYXFWxYoX7Cdg5UoI";
@@ -5,19 +6,15 @@ const BASE_URL = "https://api.gemini.com/v1";
 
 export const callGeminiAPI = async (endpoint: string, payload: any) => {
   try {
-    const response = await axios.post(
-      `${BASE_URL}/${endpoint}`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axios.post(`${BASE_URL}/${endpoint}`, payload, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error("Gemini API È£Ãâ ½ÇÆÐ:", error);
+    console.error("Gemini API È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½:", error);
     throw error;
   }
 };

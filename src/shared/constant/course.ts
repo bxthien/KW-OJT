@@ -15,7 +15,8 @@ export interface Course {
   addedToShelf: number;
   description: string;
   color: string;
-  chapterDetails: Chapter[]; // 챕터 상세 정보
+  chapterDetails: Chapter[];
+  tag?: string;
 }
 
 export const courses: Course[] = [

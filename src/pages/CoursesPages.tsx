@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Button, Drawer, Pagination, ColorPicker, Input } from "antd";
-import ChatBot from "./ChatBot";
 import { Course } from "../shared/constant/course";
 import { getCoursesWithColors } from "../supabase/dataService";
 import { supabase } from "../supabase/supabaseClient";
@@ -41,6 +40,7 @@ const CoursesPage: React.FC = () => {
         chapters: Math.floor(Math.random() * 10) + 1,
         orders: Math.floor(Math.random() * 50) + 1,
         description: `${course.course_name} Description`,
+        chapterDetails: [],
         tag: "General",
         certificates: 0,
         reviews: 0,

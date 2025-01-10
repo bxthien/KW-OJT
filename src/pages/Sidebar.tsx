@@ -5,11 +5,6 @@ import { DoubleRightOutlined, DoubleLeftOutlined } from "@ant-design/icons"; // 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
 
-  const openIconUrl =
-    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000";
-  const closeIconUrl =
-    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000";
-
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (

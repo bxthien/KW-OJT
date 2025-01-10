@@ -37,8 +37,12 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
       setPassword("");
       setConfirmPassword("");
       onClose();
-    } catch (err: any) {
-      setError(err.message || "An error occurred during registration.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "An error occurred during registration.");
+      } else {
+        setError("An error occurred during registration.");
+      }
       console.error("Registration error:", err);
     }
   };
@@ -46,7 +50,9 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-10 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-bold text-black mb-4">Create an Account</h1>
+        <h1 className="text-3xl font-bold text-black mb-4">
+          Create an Account
+        </h1>
         <p className="text-gray-600 mb-6">
           Already have an account?{" "}
           <button onClick={onClose} className="text-indigo-600">
@@ -55,9 +61,15 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
         </p>
         <form onSubmit={handleSubmit}>
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-          {success && <p className="text-green-500 text-sm mb-4">Registration successful!</p>}
+          {success && (
+            <p className="text-green-500 text-sm mb-4">
+              Registration successful!
+            </p>
+          )}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
             <input
               type="text"
               placeholder="Enter your username"
@@ -68,7 +80,9 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               placeholder="Enter your email"
@@ -79,7 +93,9 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
             <input
               type="password"
               placeholder="Enter your password"
@@ -90,7 +106,9 @@ const RegisterPage: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
             <input
               type="password"
               placeholder="Re-enter your password"
