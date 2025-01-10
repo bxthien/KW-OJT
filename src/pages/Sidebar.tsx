@@ -3,10 +3,13 @@ import { NavLink } from "react-router-dom";
 import { DoubleRightOutlined, DoubleLeftOutlined } from "@ant-design/icons"; // Ant Design 아이콘 가져오기
 
 const Sidebar: React.FC = () => {
-  // 사이드바 상태 관리 (접기/펼치기)
   const [isOpen, setIsOpen] = useState(true);
 
-  // 사이드바 접기/펼치기 토글
+  const openIconUrl =
+    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000";
+  const closeIconUrl =
+    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000";
+
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
@@ -15,7 +18,6 @@ const Sidebar: React.FC = () => {
         isOpen ? "w-72" : "w-24"
       } bg-blue-100 text-black h-screen p-4 transition-all duration-300`}
     >
-      {/* 사이드바 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <img
@@ -28,7 +30,7 @@ const Sidebar: React.FC = () => {
           </h1>
         </div>
 
-        {/* 접기/펼치기 버튼 */}
+        {/* ?���?/?��치기 버튼 */}
         <button
           onClick={toggleSidebar}
           className="flex items-center w-12 justify-center h-12 rounded-full hover:bg-blue-300 transition duration-300"
@@ -41,7 +43,7 @@ const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* 네비게이션 메뉴 */}
+      {/* ?��비게?��?�� 메뉴 */}
       <nav className="mt-6 space-y-4">
         <NavLink
           to="/"

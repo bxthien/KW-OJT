@@ -10,7 +10,6 @@ import {
   Pagination,
 } from "antd";
 import type { TabsProps } from "antd";
-import ChatBot from "./ChatBot";
 import {
   userData as initialUserData,
   studentData as initialStudentData,
@@ -432,9 +431,7 @@ const UserPage: React.FC = () => {
         />
       </Drawer>
 
-      <div className="absolute bottom-5 right-5">
-        <ChatBot />
-      </div>
+      <div className="absolute bottom-5 right-5">{/* <ChatBot /> */}</div>
     </div>
   );
 };

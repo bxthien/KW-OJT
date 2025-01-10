@@ -353,7 +353,7 @@ const ChatBot: React.FC = () => {
               onClick={handleSendMessage}
               disabled={isLoading}
             >
-              {isLoading ? "Loading..." : "Send"}
+              {isLoading ? "Sending..." : "Send"}
             </button>
           </div>
         </div>

@@ -1,17 +1,18 @@
 import React, { useState } from "react";
-import signInImage from "../assets/studentimg.png"; // 이미지 경로 추가
-import RegisterModal from "./RegisterPage"; // RegisterModal 추가
-import ForgotPasswordModal from "./ForgotPasswordModal"; // ForgotPasswordModal 추가
+import { loginUser } from "../supabase/authService";
+import { useNavigate } from "react-router-dom";
+import signInImage from "../assets/studentimg.png";
+import RegisterModal from "./Register";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 const LoginPage: React.FC = () => {
-  // Active Modal State
   const [activeModal, setActiveModal] = useState<"register" | "forgot" | null>(
     null
   );
-
-  // Login State
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Modal Handlers
   const openModal = (modalType: "register" | "forgot") =>
@@ -19,9 +20,21 @@ const LoginPage: React.FC = () => {
   const closeModal = () => setActiveModal(null);
 
   // Form Submission Handler
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert(`Email: ${email}, Password: ${password}`);
+    setError(null);
+
+    try {
+      const { user } = await loginUser(email, password);
+      if (user) {
+        navigate("/", { state: { notification: "Login Successful!" } });
+      } else {
+        setError("Login failed. Please check your email and password.");
+      }
+    } catch (err: any) {
+      setError("Login failed. Please check your email and password.");
+      console.error("Login error:", err);
+    }
   };
 
   return (
@@ -31,7 +44,7 @@ const LoginPage: React.FC = () => {
         <h1 className="text-5xl font-extrabold text-black mb-2">Sign in to</h1>
         <h2 className="text-3xl font-extrabold text-black mb-2">HOTDOG LMS!</h2>
         <p className="mt-4 text-gray-600">
-          If you don’t have an account register <br />
+          If you don't have an account register <br />
           You can{" "}
           <button
             onClick={() => openModal("register")}
@@ -45,7 +58,7 @@ const LoginPage: React.FC = () => {
 
       {/* Right Side */}
       <div className="flex flex-1 flex-col justify-center items-center bg-gray-50 text-black p-12">
-        {/* LOGIN with Icon */}
+        {/* LOGIN */}
         <div className="flex items-start mb-4">
           <img
             src="https://img.icons8.com/?size=100&id=GEeJqVN0aRrU&format=png&color=000000"
@@ -59,6 +72,7 @@ const LoginPage: React.FC = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="w-full max-w-md">
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Email
