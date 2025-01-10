@@ -81,7 +81,7 @@ const HomePage: React.FC = () => {
         {/* Courses Section */}
         <section className="mb-6">
           <h3 className="text-2xl font-semibold mb-4 text-black">Courses</h3>
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
+          <div className="flex gap-4 overflow-x-auto p-2 scrollbar-hide">
             {courses.map((course: Course, index: number) => (
               <CourseCard
                 key={index}
