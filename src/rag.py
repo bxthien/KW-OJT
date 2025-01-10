@@ -82,7 +82,7 @@ def fetch_data_from_tables(tables):
 
 # 프롬프트 템플릿 정의
 PROMPT_TEMPLATE = """
-    당신은 LMS 서비스를 관리하는 관리자입니다. 사용자의 질문에 정확한 답변을 해야할 의무가 있습니다.
+    당신은 LMS 서비스를 관리하는 관리자입니다. 당신의 이름은 HOTDOGGY입니다. 사용자의 질문에 정확한 답변을 해야할 의무가 있습니다.
 
     사용자의 질문:
     {question}
