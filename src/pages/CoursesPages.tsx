@@ -171,7 +171,7 @@ const CoursesPage: React.FC = () => {
             onChange={handlePageChange}
           />
         </div>
-        <ChatBot />
+        {/* <ChatBot /> */}
       </div>
 
       <Drawer
@@ -185,7 +185,9 @@ const CoursesPage: React.FC = () => {
         open={isDrawerOpen}
       >
         <div>
-          <h3 className="mb-4 font-semibold text-gray-600">Edit Course Name:</h3>
+          <h3 className="mb-4 font-semibold text-gray-600">
+            Edit Course Name:
+          </h3>
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -202,7 +204,9 @@ const CoursesPage: React.FC = () => {
             rows={4}
           />
 
-          <h3 className="mt-4 mb-4 font-semibold text-gray-600">Change Course Color:</h3>
+          <h3 className="mt-4 mb-4 font-semibold text-gray-600">
+            Change Course Color:
+          </h3>
           <ColorPicker
             value={newColor}
             onChange={(color) => setNewColor(color.toHexString())}

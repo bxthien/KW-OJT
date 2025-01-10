@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import ProfileCard from "../features/HomePage/ui/ProfileCard";
+import ProfileCard from "./ProfileCard";
 
 const UserProfileDropdown: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -67,7 +67,8 @@ const UserProfileDropdown: React.FC = () => {
               </li>
             </ul>
           ) : (
-            <ProfileCard />
+            <></>
+            // <ProfileCard />
           )}
         </div>
       )}

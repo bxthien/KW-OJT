@@ -26,7 +26,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ username }) => {
       </div>
 
       {/* 프로필 정보 */}
-<<<<<<< HEAD
       <h2 className="text-2xl font-bold mb-2 text-center text-black">
         {username || "Username"} {/* 전달된 유저 이름 표시, 없으면 기본값 */}
       </h2>
@@ -35,18 +34,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ username }) => {
         <p className="text-gray-600">
           Nice to meet you everyone! Let's have exciting time with us.
         </p>
-=======
-      <div className="text-center mt-4 px-4 pb-4">
-        <h2 className="text-xl font-bold text-black">Username</h2>
-
-        {/* 회색 블록 안에 텍스트 */}
-        <div className="bg-gray-100 rounded-lg p-4 mt-3 shadow-inner">
-          <p className="text-gray-600 text-sm">KNU Course Manager</p>
-          <p className="text-gray-500 text-xs mt-1">
-            Nice to meet you! Let's have an exciting time with us.
-          </p>
-        </div>
->>>>>>> c4f31b7473989e7c9db4986242caf013ab221693
       </div>
     </div>
   );
