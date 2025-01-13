@@ -337,7 +337,7 @@ const UserPage: React.FC = () => {
                   { required: true, message: "Please enter the contact" },
                 ]}
               >
-                <Input placeholder="Enter contact" />
+                <Input disabled placeholder="Enter contact" />
               </Form.Item>
             </>
           )}

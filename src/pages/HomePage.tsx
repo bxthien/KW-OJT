@@ -186,11 +186,13 @@ const HomePage: React.FC = () => {
         <section className="mb-6">
           <h3 className="text-2xl font-semibold mb-4 text-black">Courses</h3>
           <div className="flex gap-4 overflow-x-auto p-2 scrollbar-hide">
-            {courses.map((course: Course, index: number) => (
+            {courses.map((course, index) => (
               <CourseCard
                 key={index}
                 course={course}
-                onClick={handleCourseClick}
+                onClick={function (course: Course): void {
+                  throw new Error("Function not implemented.");
+                }}
               />
             ))}
           </div>
