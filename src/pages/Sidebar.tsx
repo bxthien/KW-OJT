@@ -25,7 +25,6 @@ const Sidebar: React.FC = () => {
           </h1>
         </div>
 
-        {/* ?���?/?��치기 버튼 */}
         <button
           onClick={toggleSidebar}
           className="flex items-center w-12 justify-center h-12 rounded-full hover:bg-blue-300 transition duration-300"
@@ -37,8 +36,6 @@ const Sidebar: React.FC = () => {
           )}
         </button>
       </div>
-
-      {/* ?��비게?��?�� 메뉴 */}
       <nav className="mt-6 space-y-4">
         <NavLink
           to="/"

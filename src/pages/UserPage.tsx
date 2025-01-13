@@ -433,7 +433,7 @@ const UserPage: React.FC = () => {
         />
       </Drawer>
 
-      <div className="absolute bottom-5 right-5">{/* <ChatBot /> */}</div>
+      <div className="absolute bottom-5 right-5"></div>
     </div>
   );
 };

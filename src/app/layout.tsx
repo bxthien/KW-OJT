@@ -6,6 +6,7 @@ const Layout = () => {
   return (
     <div className="flex flex-row">
       <Sidebar />
+
       <div className="w-full overflow-auto">
         <ChatBot />
 
