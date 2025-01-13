@@ -67,7 +67,7 @@ const UserProfileDropdown: React.FC = () => {
               </li>
             </ul>
           ) : (
-            <ProfileCard />
+            <ProfileCard username={""} />
           )}
         </div>
       )}

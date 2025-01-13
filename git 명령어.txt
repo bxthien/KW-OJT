@@ -1,0 +1,18 @@
+branch 이동: git checkout 이름
+수정된 사항 업로드: git add .
+                       git commit -m "수정 사항"
+                       git push
+
+
+
+
+main 업뎃
+git checkout main
+git pull
+
+
+
+
+branch github에 있는 main으로 업뎃
+git checkout courseDB
+git pull origin main

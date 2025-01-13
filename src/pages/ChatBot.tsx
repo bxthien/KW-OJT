@@ -1,17 +1,32 @@
 import React, { useState, useRef, useEffect } from "react";
 
+// 이미지 URL 변수 정의
+const idleImage =
+  "https://img.icons8.com/?size=100&id=KZyhUKGJ27my&format=png&color=000000";
+const runningImage =
+  "https://img.icons8.com/?size=100&id=Jl3TTGXuPWVx&format=png&color=000000";
+// 로딩 이미지 URL 정의
+const loadingImage1 =
+  "https://img.icons8.com/?size=100&id=Mgul1VWKiLPN&format=png&color=000000";
+const loadingImage2 =
+  "https://img.icons8.com/?size=100&id=OzaDjT66VCbV&format=png&color=000000";
+
 const ChatBot: React.FC = () => {
+  // 이미지 상태 관리
+  const [currentImage, setCurrentImage] = useState(idleImage);
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
     []
   );
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentLoadingImage, setCurrentLoadingImage] = useState(loadingImage1);
 
+  // 챗봇 프로필 정보
   const botProfile = {
     name: "HotDoggy",
-    image:
-      "https://img.icons8.com/?size=100&id=Jl3TTGXuPWVx&format=png&color=000000",
+    image: runningImage,
   };
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -21,6 +36,18 @@ const ChatBot: React.FC = () => {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  // 로딩 애니메이션
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setCurrentLoadingImage((prevImage) =>
+          prevImage === loadingImage1 ? loadingImage2 : loadingImage1
+        );
+      }, 500); // 500ms 간격으로 이미지 변경
+
+      return () => clearInterval(interval); // 컴포넌트가 언마운트되거나 로딩이 끝나면 인터벌 정리
+    }
+  }, [isLoading]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -77,17 +104,17 @@ const ChatBot: React.FC = () => {
 
   return (
     <>
+      {/* 챗봇 아이콘 */}
       <button
         className="fixed bottom-4 right-8 bg-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center border border-gray-300 focus:outline-none z-[1000] transition-transform transform hover:scale-110"
         onClick={() => setIsOpen(!isOpen)}
+        onMouseEnter={() => setCurrentImage(runningImage)}
+        onMouseLeave={() => setCurrentImage(idleImage)}
       >
-        <img
-          src="https://img.icons8.com/?size=100&id=KZyhUKGJ27my&format=png&color=000000"
-          alt="Chatbot Icon"
-          className="w-12 h-12"
-        />
+        <img src={currentImage} alt="Chatbot Icon" className="w-12 h-12" />
       </button>
 
+      {/* 챗봇 대화창 */}
       {isOpen && (
         <div className="absolute bottom-24 right-8 w-[500px] h-[600px] bg-white p-6 shadow-2xl rounded-md flex flex-col z-[1100]">
           <h3 className="text-lg font-semibold mb-4 text-center text-blue-600">
@@ -113,6 +140,9 @@ const ChatBot: React.FC = () => {
                           className="w-10 h-10 rounded-full mr-2"
                         />
                         <div className="max-w-xs p-3 rounded-lg shadow bg-gray-200 text-gray-800">
+                          <p className="font-bold mb-1 text-blue-600">
+                            {botProfile.name}
+                          </p>
                           {msg.text}
                         </div>
                       </div>
@@ -128,21 +158,36 @@ const ChatBot: React.FC = () => {
               </ul>
             )}
           </div>
+          {/* 로딩 이미지 */}
+          {isLoading && (
+            <div className="flex justify-start mt-2">
+              <div className="flex items-center">
+                <img
+                  src={currentLoadingImage}
+                  alt="Loading..."
+                  className="w-8 h-8"
+                />
+                <p className="ml-2 text-sm text-gray-500">
+                  HotDoggy is typing...
+                </p>
+              </div>
+            </div>
+          )}
           <div className="mt-4 flex items-center">
             <input
               type="text"
-              className="flex-1 p-3 bg-white text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1 h-12 p-3 bg-white text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               placeholder="Type a message..."
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
             />
             <button
-              className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              className="ml-2 h-12 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
               onClick={handleSendMessage}
               disabled={isLoading}
             >
-              {isLoading ? "Loading..." : "Send"}
+              {isLoading ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
