@@ -8,7 +8,7 @@ const CourseCard: React.FC<{
   <div
     className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg"
     onClick={() => onClick(course)}
-    style={{ width: "280px", height: "350px", minWidth: "280px" }} // 고정 너비 및 높이 설정
+    style={{ width: "280px", height: "350px", minWidth: "280px" }}
   >
     <div
       className="w-full h-32 rounded-md mb-4"
