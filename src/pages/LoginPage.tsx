@@ -109,6 +109,7 @@ const LoginPage: React.FC = () => {
             Login
           </button>
         </form>
+
         <p className="text-sm text-gray-500 mb-6 text-l">
           Don't have an account?{" "}
           <button
