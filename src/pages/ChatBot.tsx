@@ -116,13 +116,15 @@ const ChatBot: React.FC = () => {
 
       {/* 챗봇 대화창 */}
       {isOpen && (
-        <div className="absolute bottom-24 right-8 w-[500px] h-[600px] bg-white p-6 shadow-2xl rounded-md flex flex-col z-[1100]">
+        <div className="absolute bottom-24 right-8 w-[60%] h-[75%] bg-blue-50 p-6 shadow-2xl rounded-md flex flex-col z-[1100]">
           <h3 className="text-lg font-semibold mb-4 text-center text-blue-600">
             HOTDOG LMS Chatbot
           </h3>
           <div className="flex-1 overflow-y-auto border border-gray-300 rounded-md p-4 bg-gray-50 text-sm">
             {messages.length === 0 ? (
-              <p className="text-gray-400">Start a conversation...</p>
+              <p className="text-gray-400">
+                Doggy is waiting for admin's orders!
+              </p>
             ) : (
               <ul>
                 {messages.map((msg, index) => (
@@ -139,16 +141,14 @@ const ChatBot: React.FC = () => {
                           alt="Bot Profile"
                           className="w-10 h-10 rounded-full mr-2"
                         />
-                        <div className="max-w-xs p-3 rounded-lg shadow bg-gray-200 text-gray-800">
-                          <p className="font-bold mb-1 text-blue-600">
-                            {botProfile.name}
-                          </p>
-                          {msg.text}
-                        </div>
+                        <div
+                          className="max-w-md p-3 rounded-lg shadow bg-gray-200 text-gray-800"
+                          dangerouslySetInnerHTML={{ __html: msg.text }} // HTML 렌더링
+                        />
                       </div>
                     )}
                     {msg.sender === "user" && (
-                      <div className="max-w-xs p-3 rounded-lg shadow bg-blue-500 text-white">
+                      <div className="max-w-md p-3 rounded-lg shadow bg-blue-500 text-white">
                         {msg.text}
                       </div>
                     )}
@@ -168,7 +168,7 @@ const ChatBot: React.FC = () => {
                   className="w-8 h-8"
                 />
                 <p className="ml-2 text-sm text-gray-500">
-                  HotDoggy is typing...
+                  Hotdoggy is running with an answer...
                 </p>
               </div>
             </div>
@@ -187,7 +187,7 @@ const ChatBot: React.FC = () => {
               onClick={handleSendMessage}
               disabled={isLoading}
             >
-              {isLoading ? "Sending..." : "Send"}
+              {isLoading ? "Loading..." : "Send"}
             </button>
           </div>
         </div>

@@ -12,7 +12,6 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
-// import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
 
 interface User {

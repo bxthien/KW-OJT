@@ -12,12 +12,12 @@ import {
 import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
-import UserProfileDropdown from "../features/HomePage/ui/UserProfileDropdown";
+import UserProfileDropdown from "../pages/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 import { Session } from "@supabase/supabase-js";
 
-// Supabase User 타입 정의
+// Supabase User Ÿ�� ����
 type SupabaseUser = Session["user"];
 
 const HomePage: React.FC = () => {
@@ -32,8 +32,6 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [api, contextHolder] = notification.useNotification();
-
-  console.log("object", userName);
 
   useEffect(() => {
     if (location.state?.notification && !notificationDisplayed) {
@@ -92,7 +90,7 @@ const HomePage: React.FC = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
         getUserName(session.user.id).then((fetchedUserName) => {

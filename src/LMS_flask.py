@@ -8,15 +8,12 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 @app.route("/api/chat", methods=["POST"])
 def chat():
     try:
-        # JSON 데이터 확인
         data = request.get_json()
         if not data or "question" not in data:
             return jsonify({"error": "Invalid request format. 'question' key is required."}), 400
 
-        # 사용자 질문 가져오기
         user_question = data["question"]
 
-        # 질문 처리
         answer = generate_response_with_gemini(user_question)
         return jsonify({"answer": answer})
     except Exception as e:

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "../supabase/supabaseClient"; // Ensure this path is correct
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -29,16 +30,38 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSuccess(true);
-
-    setTimeout(() => {
-      setIsSuccess(false); // 성공 메시지 숨김
-      onClose();
-      setEmail(""); // 이메일 입력 초기화
-    }, 3000);
+  
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/change-password`, // 커스텀 리셋 링크
+      });
+  
+      if (error) {
+        if (error.message.includes("rate limit exceeded")) {
+          alert("Too many requests. Please try again later.");
+        } else {
+          alert("Failed to send password reset email. Please try again.");
+        }
+        console.error("Error:", error.message);
+        return;
+      }
+  
+      setIsSuccess(true);
+  
+      setTimeout(() => {
+        setIsSuccess(false); // 성공 메시지 숨기기
+        onClose();
+        setEmail(""); // 이메일 필드 초기화
+      }, 3000);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      alert("An unexpected error occurred. Please try again.");
+    }
   };
+  
+  
 
   return (
     <div
@@ -54,7 +77,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       >
         {!isSuccess ? (
           <>
-            {/* Header Section */}
             <div className="flex items-center mb-4">
               <img
                 src="https://img.icons8.com/?size=100&id=eBEo6FOQZ3v4&format=png&color=000000"
@@ -70,7 +92,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               Enter your email below to receive a password reset link.
             </p>
 
-            {/* Form Section */}
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label
@@ -91,7 +112,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700"
@@ -100,7 +120,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </button>
             </form>
 
-            {/* Close Button */}
             <button
               onClick={onClose}
               className="mt-4 w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
@@ -109,10 +128,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             </button>
           </>
         ) : (
-          <div
-            className="text-center animate-fade-out"
-            style={{ animationDelay: "2.5s" }}
-          >
+          <div className="text-center animate-fade-out" style={{ animationDelay: "2.5s" }}>
             <h1 className="text-2xl font-bold text-green-600 mb-4">
               SUCCESS TO SEND EMAIL!
             </h1>

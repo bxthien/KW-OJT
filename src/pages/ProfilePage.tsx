@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { notification } from "antd";
+import { supabase } from "../supabase/supabaseClient";
+import { getCurrentUser } from "../supabase/authService";
+import ChatBot from "./ChatBot";
 
 const ProfilePage: React.FC = () => {
   const [name, setName] = useState<string>("");
@@ -14,6 +17,9 @@ const ProfilePage: React.FC = () => {
   const [api, contextHolder] = notification.useNotification();
   const birthdayInputRef = useRef<HTMLInputElement>(null);
 
+  // 현재 로그인한 유저 ID 저장
+  const [userId, setUserId] = useState<string | null>(null);
+
   // 점 애니메이션 효과 설정
   useEffect(() => {
     if (isLoading) {
@@ -25,6 +31,39 @@ const ProfilePage: React.FC = () => {
       setDots("");
     }
   }, [isLoading]);
+
+  // 유저 데이터 가져오기
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user) throw new Error("No user is logged in.");
+
+        setUserId(user.id);
+
+        const { data, error } = await supabase
+          .from("users")
+          .select("user_name, email, contact, date_of_birth, age")
+          .eq("user_id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user data:", error.message);
+          return;
+        }
+
+        setName(data.user_name || "");
+        setEmail(data.email || "");
+        setContact(data.contact || "");
+        setBirthday(data.date_of_birth || "");
+        setAge(data.age || null);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // 전화번호 입력 시 자동 하이픈 추가
   const handleContactChange = (value: string) => {
@@ -55,7 +94,6 @@ const ProfilePage: React.FC = () => {
       let calculatedAge = today.getFullYear() - birthDate.getFullYear();
       const monthDifference = today.getMonth() - birthDate.getMonth();
 
-      // Adjust if the birthday hasn't occurred yet this year
       if (
         monthDifference < 0 ||
         (monthDifference === 0 && today.getDate() < birthDate.getDate())
@@ -63,39 +101,45 @@ const ProfilePage: React.FC = () => {
         calculatedAge--;
       }
 
-      // Age should be at least 0
       setAge(calculatedAge >= 0 ? calculatedAge : null);
     } else {
       setAge(null);
     }
   };
 
-  const handleSaveChanges = () => {
+  // 프로필 수정 저장
+  const handleSaveChanges = async () => {
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsEditing(false);
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          user_name: name,
+          contact,
+          date_of_birth: birthday,
+          age,
+        })
+        .eq("user_id", userId);
 
-      api.open({
+      if (error) {
+        console.error("Error updating user data:", error.message);
+        alert("Failed to save changes.");
+        return;
+      }
+
+      setIsEditing(false);
+      api.success({
         message: "Profile Changes Saved",
         description: "Your profile has been successfully saved!",
-        icon: (
-          <img
-            src="https://img.icons8.com/?size=100&id=Km6p04jJQ76d&format=png&color=000000"
-            alt="Smile Icon"
-            style={{
-              width: 40,
-              height: 50,
-              marginRight: "50px",
-            }}
-          />
-        ),
         placement: "topRight",
-        duration: 3,
-        className: "custom-notification",
       });
-    }, 2000);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      alert("An error occurred while saving your profile.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 생년월일 필드 클릭 시 달력 표시
@@ -116,7 +160,6 @@ const ProfilePage: React.FC = () => {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
           Profile Page
         </h2>
-
         {/* Profile Image */}
         <div className="flex flex-col items-center mb-10">
           <img
@@ -142,7 +185,6 @@ const ProfilePage: React.FC = () => {
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                 isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
               }`}
-              placeholder="Enter your name"
             />
           </div>
 
@@ -154,12 +196,8 @@ const ProfilePage: React.FC = () => {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={!isEditing || isLoading}
-              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
-              }`}
-              placeholder="Enter your email"
+              disabled
+              className="w-full p-4 bg-gray-200 text-gray-800 border border-gray-300 rounded-lg cursor-not-allowed"
             />
           </div>
 
@@ -177,7 +215,6 @@ const ProfilePage: React.FC = () => {
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                 isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
               }`}
-              placeholder="Enter your contact number"
             />
           </div>
 
@@ -198,7 +235,7 @@ const ProfilePage: React.FC = () => {
             />
           </div>
 
-          {/* Age - Disabled Field */}
+          {/* Age */}
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-600 mb-2">
               Age
@@ -208,12 +245,11 @@ const ProfilePage: React.FC = () => {
               value={age || ""}
               disabled
               className="w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg"
-              placeholder="Age is calculated automatically"
             />
           </div>
         </div>
 
-        {/* Edit and Save Buttons */}
+        {/* Buttons */}
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
@@ -232,6 +268,7 @@ const ProfilePage: React.FC = () => {
           </button>
         )}
       </div>
+      <ChatBot />
     </div>
   );
 };
