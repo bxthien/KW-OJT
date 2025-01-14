@@ -7,17 +7,11 @@ import {
   Input,
   Checkbox,
   List,
+  Select,
 } from "antd";
 import ChatBot from "./ChatBot";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
-
-interface Course {
-  id: string;
-  title: string;
-  color: string;
-  description: string;
-}
 
 interface Course {
   id: string;
@@ -33,9 +27,14 @@ const CourseCard: React.FC<{
   isDeleteMode: boolean;
 }> = ({ course, onClick, isSelected, isDeleteMode }) => (
   <div
-    className={`bg-white pb-4 rounded-lg shadow-md border ${
+    className={`bg-white pb-4 rounded-lg shadow-lg border ${
       isSelected ? "border-blue-500" : "border-gray-200"
-    } relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg`}
+    } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
+    style={{
+      maxWidth: "20rem", // 카드가 와이드하지 않도록 최대 너비 설정
+      width: "100%", // 부모 요소에 맞게 너비를 설정
+      boxSizing: "border-box", // 패딩과 보더를 포함한 너비 계산
+    }}
     onClick={() => onClick(course.id)}
   >
     {isDeleteMode && (
@@ -69,7 +68,6 @@ const CoursesPage: React.FC = () => {
     { id: string; chapter_name: string }[]
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [newChapterTitle, setNewChapterTitle] = useState("");
 
   const coursesPerPage = 9;
 
@@ -313,7 +311,7 @@ const CoursesPage: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-6">
           {currentCourses.map((course) => (
             <CourseCard
               key={course.id}
@@ -324,14 +322,15 @@ const CoursesPage: React.FC = () => {
             />
           ))}
         </div>
-        <div className="flex justify-center mt-4">
+
+        {/* <div className="flex justify-center mt-4">
           <Pagination
             current={currentPage}
             total={courses.length}
-            pageSize={coursesPerPage}
+            pageSize={8}
             onChange={handlePageChange}
           />
-        </div>
+        </div> */}
         <ChatBot />
       </div>
 
@@ -369,76 +368,88 @@ const CoursesPage: React.FC = () => {
             onChange={(color) => setNewColor(color.toHexString())}
           />
 
-          <h3 className="mt-4 mb-4 font-semibold text-gray-600">Chapters:</h3>
-          <div
-            style={{
-              maxHeight: "200px", // 원하는 최대 높이 지정
-              overflowY: "auto", // 내부 스크롤 활성화
-              border: "1px solid #ddd", // 스크롤 영역 시각화 (선택사항)
-              padding: "8px", // 내용 여백 추가
-              borderRadius: "4px", // 스타일 개선
-            }}
-          >
-            <List
-              dataSource={chapters}
-              renderItem={(item, index) => (
-                <List.Item
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <span style={{ marginRight: "8px", fontWeight: "bold" }}>
-                      {index + 1}.
-                    </span>
-                    {item.chapter_name}
-                  </div>
-                  <MinusCircleOutlined
-                    style={{
-                      fontSize: "20px",
-                      color: "red",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      setChapters((prevChapters) =>
-                        prevChapters.filter((_, i) => i !== index)
-                      );
-                    }}
-                  />
-                </List.Item>
-              )}
-            />
-          </div>
+          <div>
+            <h3 className="font-semibold text-gray-600">Add Chapters:</h3>
+            <Select
+              mode="multiple"
+              placeholder="Select chapters to add"
+              style={{ width: "100%", marginBottom: "16px" }}
+              onChange={(selectedChapters) => {
+                // 새로운 챕터 생성 및 중복 방지
+                const newChapters = selectedChapters
+                  .map((chapterName: string) => ({
+                    id: String(Date.now() + Math.random()), // 고유 ID 생성
+                    chapter_name: chapterName,
+                  }))
+                  .filter(
+                    (newChapter: { chapter_name: string }) =>
+                      !chapters.some(
+                        (existingChapter) =>
+                          existingChapter.chapter_name ===
+                          newChapter.chapter_name
+                      )
+                  );
 
-          <div className="mt-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Enter Chapter Title"
-                value={newChapterTitle}
-                onChange={(e) => setNewChapterTitle(e.target.value)}
+                // 리스트에 새로운 챕터 추가
+                setChapters((prevChapters) => [
+                  ...prevChapters,
+                  ...newChapters,
+                ]);
+              }}
+              options={[
+                { label: "Introduction", value: "Introduction" },
+                {
+                  label: "Intermediate Concepts",
+                  value: "Intermediate Concepts",
+                },
+                { label: "Advanced Techniques", value: "Advanced Techniques" },
+                { label: "I want to go home", value: "I want to go home" },
+                { label: "It's real", value: "It's real" },
+              ]}
+            />
+
+            <h3 className="font-semibold text-gray-600">Chapters:</h3>
+            <div
+              style={{
+                maxHeight: "200px",
+                overflowY: "auto",
+                border: "1px solid #ddd",
+                padding: "8px",
+                borderRadius: "4px",
+              }}
+            >
+              <List
+                dataSource={chapters}
+                renderItem={(item, index) => (
+                  <List.Item
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <span style={{ marginRight: "8px", fontWeight: "bold" }}>
+                        {index + 1}.
+                      </span>
+                      {item.chapter_name}
+                    </div>
+                    <MinusCircleOutlined
+                      style={{
+                        fontSize: "20px",
+                        color: "red",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        // 리스트에서 해당 챕터 제거
+                        setChapters((prevChapters) =>
+                          prevChapters.filter((_, i) => i !== index)
+                        );
+                      }}
+                    />
+                  </List.Item>
+                )}
               />
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (newChapterTitle.trim()) {
-                    const newChapter = {
-                      id: String(Date.now()),
-                      chapter_name: newChapterTitle,
-                    };
-                    setChapters((prevChapters) => [
-                      ...prevChapters,
-                      newChapter,
-                    ]);
-                    setNewChapterTitle(""); // Add 후 필드를 공백으로 초기화
-                  } else {
-                    alert("Chapter title cannot be empty.");
-                  }
-                }}
-              >
-                Add Chapter
-              </Button>
             </div>
           </div>
 
