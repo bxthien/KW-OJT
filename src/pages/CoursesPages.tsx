@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Drawer,
-  // Pagination,
+  Pagination,
   ColorPicker,
   Input,
   Checkbox,
   List,
   Select,
 } from "antd";
-import ChatBot from "./ChatBot";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
 
@@ -37,9 +36,9 @@ const CourseCard: React.FC<{
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
     style={{
-      maxWidth: "20rem", // 카드가 와이드하지 않도록 최대 너비 설정
-      width: "100%", // 부모 요소에 맞게 너비를 설정
-      boxSizing: "border-box", // 패딩과 보더를 포함한 너비 계산
+      maxWidth: "20rem", // 카드�? ????��?��?���? ?��?���? 최�?? ?���? ?��?��
+      width: "100%", // �?�? ?��?��?�� 맞게 ?��비�?? ?��?��
+      boxSizing: "border-box", // ?��?���? 보더�? ?��?��?�� ?���? 계산
     }}
     onClick={() => onClick(course.id)}
   >
@@ -74,9 +73,9 @@ const CoursesPage: React.FC = () => {
   const [isAddingNewCourse, setIsAddingNewCourse] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  // const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // const coursesPerPage = 9;
+  const coursesPerPage = 9;
 
   const fetchCourses = async () => {
     try {
@@ -230,8 +229,7 @@ const CoursesPage: React.FC = () => {
             color: newColor,
           },
         ])
-        .select("*")
-        .single();
+        .select();
 
       if (error || !data) {
         console.error("Error adding new course:", error?.message);
@@ -240,13 +238,36 @@ const CoursesPage: React.FC = () => {
       }
 
       const newCourse = {
-        id: data.course_id,
+        id: data[0].course_id,
         title: newTitle,
         color: newColor,
         description: newDescription,
       };
 
-      setCourses([...courses, newCourse]);
+      const { error: chapterError } = await supabase
+        .from("course_chapter")
+        .upsert(
+          selectedChapters.map((chapter) => ({
+            course_id: newCourse.id,
+            chapter_id: chapter.chapter_id,
+          })),
+          { onConflict: "course_id,chapter_id" }
+        );
+
+      if (chapterError) {
+        console.error("Error saving course chapters:", chapterError.message);
+        alert("Failed to save course chapters.");
+        return;
+      }
+
+      setSelectedChapters([]);
+      setNewTitle("");
+      setNewDescription("");
+      setNewColor("#1677ff");
+
+      fetchCourses();
+
+      // setCourses([...courses, newCourse]);
       setIsDrawerOpen(false);
     } catch (err) {
       console.error("Error saving new course:", err);
@@ -337,14 +358,14 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // const handlePageChange = (page: number) => {
-  //   setCurrentPage(page);
-  // };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-  // const indexOfLastCourse = currentPage * coursesPerPage;
-  // const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
-  // const currentCourses = courses.slice(indexOfFirstCourse, indexOfLastCourse);
-  const currentCourses = courses;
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = courses.slice(indexOfFirstCourse, indexOfLastCourse);
+  // const currentCourses = courses;
 
   return (
     <div>
@@ -391,15 +412,14 @@ const CoursesPage: React.FC = () => {
           ))}
         </div>
 
-        {/* <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-4">
           <Pagination
             current={currentPage}
             total={courses.length}
             pageSize={8}
             onChange={handlePageChange}
           />
-        </div> */}
-        <ChatBot />
+        </div>
       </div>
 
       <Drawer
@@ -410,7 +430,13 @@ const CoursesPage: React.FC = () => {
             : `Edit Course - ${selectedCourse?.title}`
         }
         placement="right"
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedChapters([]);
+          setNewTitle("");
+          setNewDescription("");
+          setNewColor("#1677ff");
+        }}
         open={isDrawerOpen}
       >
         <div>
@@ -514,7 +540,17 @@ const CoursesPage: React.FC = () => {
           </div>
 
           <div className="mt-4 flex justify-end gap-4">
-            <Button onClick={() => setIsDrawerOpen(false)}>Close</Button>
+            <Button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                setSelectedChapters([]);
+                setNewTitle("");
+                setNewDescription("");
+                setNewColor("#1677ff");
+              }}
+            >
+              Close
+            </Button>
             <Button
               type="primary"
               onClick={

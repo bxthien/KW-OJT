@@ -9,7 +9,7 @@ import {
   getCourseDescriptions,
   getCourseColors,
 } from "../supabase/dataService";
-import ChatBot from "./ChatBot";
+// import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
 import UserProfileDropdown from "../pages/UserProfileDropdown";
@@ -132,8 +132,7 @@ const HomePage: React.FC = () => {
       <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
-          <h2 className="text-2xl font-semibold">Dashboard</h2>
-
+          <h2 className="text-2xl font-bold text-black">Dashboard</h2>
           {/* User Profile Dropdown */}
           <UserProfileDropdown />
         </header>
@@ -198,8 +197,6 @@ const HomePage: React.FC = () => {
           </section>
         )}
       </main>
-
-      <ChatBot />
 
       {selectedCourse && (
         <div

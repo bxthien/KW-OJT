@@ -6,28 +6,17 @@ const CourseCard: React.FC<{
   onClick: (course: Course) => void;
 }> = ({ course, onClick }) => (
   <div
-    className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg"
+    className="bg-white pb-4 rounded-lg shadow-lg border"
     onClick={() => onClick(course)}
-    style={{ width: "280px", height: "250px", minWidth: "280px" }}
+    style={{ width: "100%", height: "220px", minWidth: "15rem" }}
   >
     <div
       className="w-full h-32 rounded-md mb-4"
       style={{ backgroundColor: course.color }}
     ></div>
-    <div className="mb-2 text-sm font-bold text-gray-500 uppercase truncate">
-      {course.tag}
-    </div>
-    <h2 className="text-lg font-bold mb-2 text-gray-800 break-words">
+    <h2 className="text-lg font-bold mb-2 text-gray-800 px-4">
       {course.title}
     </h2>
-    <div className="flex space-x-4 text-xs text-gray-600">
-      <p>
-        <span className="font-bold">Chapters:</span> {course.chapters}
-      </p>
-      <p>
-        <span className="font-bold">Orders:</span> {course.orders}
-      </p>
-    </div>
   </div>
 );
 
