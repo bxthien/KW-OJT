@@ -6,6 +6,8 @@ import NotFoundPage from "../pages/NotFoundPage";
 import Layout from "./layout";
 import UserPage from "../pages/UserPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
+import ProfilePage from "../pages/ProfilePage";
+
 
 const router = createBrowserRouter([
   {
@@ -32,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/users",
         element: <UserPage />,
+      },
+      {
+        path: "/profile",
+        element: <ProfilePage />,
       },
     ],
   },

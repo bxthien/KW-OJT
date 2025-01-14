@@ -1,138 +1,231 @@
-import React, { useState } from "react";
-import { Button, Drawer, Pagination, ColorPicker } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Drawer, Pagination, ColorPicker, Input, Checkbox } from "antd";
 import ChatBot from "./ChatBot";
-import { Course, courses as initialCourses } from "../shared/constant/course";
+import { supabase } from "../supabase/supabaseClient";
+
+interface Course {
+  id: string;
+  title: string;
+  color: string;
+  description: string;
+  date_of_update: string;
+}
 
 const CourseCard: React.FC<{
-  course: Course & { color: string };
-  onClick: (course: Course) => void;
-}> = ({ course, onClick }) => (
+  course: Course;
+  onClick: (courseId: string) => void;
+  isSelected: boolean;
+  isDeleteMode: boolean;
+}> = ({ course, onClick, isSelected, isDeleteMode }) => (
   <div
-    className="bg-white p-4 rounded-lg shadow-md border border-gray-200 relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg"
-    onClick={() => onClick(course)}
+    className={`bg-white p-4 rounded-lg shadow-md border ${
+      isSelected ? "border-blue-500" : "border-gray-200"
+    } relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg`}
+    onClick={() => onClick(course.id)}
   >
+    {isDeleteMode && (
+      <Checkbox
+        style={{ position: "absolute", top: 8, right: 8 }}
+        checked={isSelected}
+        onChange={() => onClick(course.id)}
+      />
+    )}
     <div
       className="w-full h-32 rounded-md mb-4"
       style={{ backgroundColor: course.color }}
     ></div>
-    <div className="mb-2 text-sm font-bold text-gray-500 uppercase">
-      {course.tag}
-    </div>
     <h2 className="text-lg font-bold mb-2 text-gray-800">{course.title}</h2>
-    <div className="flex space-x-4 text-xs text-gray-600">
-      <p>
-        <span className="font-bold">Chapters:</span> {course.chapters}
-      </p>
-      <p>
-        <span className="font-bold">Orders:</span> {course.orders}
-      </p>
-    </div>
   </div>
 );
 
 const CoursesPage: React.FC = () => {
-  const [courses, setCourses] = useState(
-    initialCourses.map((course) => ({
-      ...course,
-      color: "#1677ff", // Default color
-    }))
-  );
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newColor, setNewColor] = useState<string>("#1677ff");
+  const [isAddingNewCourse, setIsAddingNewCourse] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
   const coursesPerPage = 9;
-  const [newCourse, setNewCourse] = useState({
-    title: "",
-    description: "",
-    chapters: "",
-    orders: "",
-    tag: "",
-    color: "#1677ff", // Default color
-  });
 
-  const handleCourseClick = (course: Course) => {
-    setSelectedCourse(course);
-    setNewCourse({
-      title: course.title || "",
-      description: course.description || "",
-      chapters: course.chapters.toString() || "",
-      orders: course.orders.toString() || "",
-      tag: course.tag || "",
-      color: course.color || "#1677ff",
-    });
-    setIsDrawerOpen(true);
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("course_id, course_name, course_description, color, date_of_update")
+          .order("date_of_update", { ascending: false });
+  
+        if (error) {
+          console.error("Error fetching courses:", error.message);
+          return;
+        }
+  
+        const formattedCourses = data.map((course) => ({
+          id: course.course_id,
+          title: course.course_name,
+          description: course.course_description || "No description available",
+          color: course.color || "#1677ff",
+          date_of_update: course.date_of_update,
+        }));
+  
+        setCourses(formattedCourses);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      }
+    };
+  
+    fetchCourses();
+  }, []);
+  
+  
+  
+
+  const handleCourseClick = (courseId: string) => {
+    if (isDeleteMode) {
+      setSelectedCourses((prevSelected) =>
+        prevSelected.includes(courseId)
+          ? prevSelected.filter((id) => id !== courseId)
+          : [...prevSelected, courseId]
+      );
+    } else {
+      const course = courses.find((c) => c.id === courseId);
+      if (course) {
+        setSelectedCourse(course);
+        setNewTitle(course.title);
+        setNewDescription(course.description);
+        setNewColor(course.color);
+        setIsAddingNewCourse(false);
+        setIsDrawerOpen(true);
+      }
+    }
   };
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false); // Close the drawer first
-    setTimeout(() => {
-      // Reset states after the drawer has closed
-      setSelectedCourse(null);
-      setNewCourse({
-        title: "",
-        description: "",
-        chapters: "",
-        orders: "",
-        tag: "",
-        color: "#1677ff",
-      });
-    }, 300); // Add a delay matching the drawer's animation duration
-  };
-
-  const handleSaveCourse = () => {
-    if (!newCourse.title || !newCourse.description) {
-      alert("Please fill in all required fields.");
+  const handleDeleteSelectedCourses = async () => {
+    if (selectedCourses.length === 0) {
+      alert("No courses selected for deletion.");
       return;
     }
 
-    const newCourseData = {
-      id: (courses.length + 1).toString(),
-      title: newCourse.title,
-      tag: newCourse.tag || "New",
-      chapters: Number(newCourse.chapters) || 0,
-      orders: Number(newCourse.orders) || 0,
-      certificates: 0,
-      reviews: 0,
-      addedToShelf: 0,
-      description: newCourse.description,
-      color: newCourse.color,
-    };
+    try {
+      const { error } = await supabase
+        .from("courses")
+        .delete()
+        .in("course_id", selectedCourses);
 
-    setCourses([...courses, newCourseData]);
-    closeDrawer();
-  };
+      if (error) {
+        console.error("Error deleting courses:", error.message);
+        alert("Failed to delete courses. Please try again.");
+        return;
+      }
 
-  const handleEditCourse = () => {
-    if (selectedCourse) {
-      setCourses(
-        courses.map((course) =>
-          course.id === selectedCourse.id
-            ? {
-                ...course,
-                title: newCourse.title || course.title,
-                description: newCourse.description || course.description,
-                chapters: newCourse.chapters
-                  ? Number(newCourse.chapters)
-                  : course.chapters,
-                orders: newCourse.orders
-                  ? Number(newCourse.orders)
-                  : course.orders,
-                tag: newCourse.tag || course.tag,
-                color: newCourse.color || course.color,
-              }
-            : course
-        )
+      setCourses((prevCourses) =>
+        prevCourses.filter((course) => !selectedCourses.includes(course.id))
       );
-      closeDrawer();
+      setSelectedCourses([]);
+      setIsDeleteMode(false);
+      alert("Selected courses have been deleted.");
+    } catch (err) {
+      console.error("Error deleting selected courses:", err);
+      alert("An error occurred. Please try again.");
     }
   };
 
-  const handleDeleteCourse = () => {
-    if (selectedCourse) {
-      setCourses(courses.filter((course) => course.id !== selectedCourse.id));
-      closeDrawer();
+  const handleAddNewCourse = () => {
+    setSelectedCourse(null);
+    setNewTitle("");
+    setNewDescription("");
+    setNewColor("#1677ff");
+    setIsAddingNewCourse(true);
+    setIsDrawerOpen(true);
+  };
+
+  const handleSaveNewCourse = async () => {
+    if (!newTitle || !newDescription) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+  
+    try {
+      const { data, error } = await supabase
+        .from("courses")
+        .insert([{ course_name: newTitle, course_description: newDescription, color: newColor }])
+        .select("*")
+        .single();
+  
+      if (error || !data) {
+        console.error("Error adding new course:", error?.message);
+        alert("Failed to add course.");
+        return;
+      }
+  
+      const newCourse = {
+        id: data.course_id,
+        title: newTitle,
+        color: newColor,
+        description: newDescription,
+        date_of_update: new Date().toISOString(), // UI용으로 임시 추가
+      };
+  
+      // UI 상에서만 배열의 맨 앞에 새 course 추가
+      setCourses([newCourse, ...courses]);
+      setIsDrawerOpen(false);
+    } catch (err) {
+      console.error("Error saving new course:", err);
+      alert("An error occurred while adding the course.");
     }
   };
+  
+  
+  
+  
+
+  const handleSaveExistingCourse = async () => {
+    if (!selectedCourse) return;
+  
+    try {
+      const { error } = await supabase
+        .from("courses")
+        .update({
+          course_name: newTitle,
+          course_description: newDescription,
+          color: newColor,
+          date_of_update: new Date().toISOString(), // 업데이트 시간 반영
+        })
+        .eq("course_id", selectedCourse.id);
+  
+      if (error) {
+        console.error("Error updating course:", error.message);
+        alert("Failed to update course.");
+        return;
+      }
+  
+      const updatedCourse = {
+        ...selectedCourse,
+        title: newTitle,
+        description: newDescription,
+        color: newColor,
+        date_of_update: new Date().toISOString(), // UI용으로 임시 업데이트
+      };
+  
+      // UI 상에서만 수정된 course를 맨 앞으로 이동
+      setCourses((prevCourses) =>
+        [updatedCourse, ...prevCourses.filter((course) => course.id !== selectedCourse.id)]
+      );
+  
+      setIsDrawerOpen(false);
+    } catch (err) {
+      console.error("Error saving course updates:", err);
+      alert("An error occurred while updating the course.");
+    }
+  };
+  
+  
+  
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -147,16 +240,34 @@ const CoursesPage: React.FC = () => {
       <div className="p-8 h-screen overflow-auto bg-gray-100">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-black">Courses</h1>
-          <Button type="primary" onClick={() => setIsDrawerOpen(true)}>
-            Add Course
-          </Button>
+          {isDeleteMode ? (
+            <div className="flex gap-2">
+              <Button type="default" onClick={() => setIsDeleteMode(false)}>
+                Cancel
+              </Button>
+              <Button type="primary" danger onClick={handleDeleteSelectedCourses}>
+                Confirm Delete
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button type="primary" onClick={handleAddNewCourse}>
+                Add Course
+              </Button>
+              <Button type="primary" danger onClick={() => setIsDeleteMode(true)}>
+                Delete Courses
+              </Button>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-3 gap-6">
-          {currentCourses.map((course, index) => (
+          {currentCourses.map((course) => (
             <CourseCard
-              key={index}
+              key={course.id}
               course={course}
               onClick={handleCourseClick}
+              isSelected={selectedCourses.includes(course.id)}
+              isDeleteMode={isDeleteMode}
             />
           ))}
         </div>
@@ -172,128 +283,35 @@ const CoursesPage: React.FC = () => {
       </div>
 
       <Drawer
-        title={
-          selectedCourse
-            ? `Edit Course - ${selectedCourse.title}`
-            : "Add Course"
-        }
+        title={isAddingNewCourse ? "Add New Course" : `Edit Course - ${selectedCourse?.title}`}
         placement="right"
-        onClose={closeDrawer}
+        onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
       >
-        <div className="space-y-4">
-          {/* Course Title Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Course Title
-            </label>
+        <div>
+          <h3 className="mb-4 font-semibold text-gray-600">Course Name:</h3>
+          <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
 
-            <input
-              type="text"
-              placeholder="Course Title"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={newCourse.title}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, title: e.target.value })
-              }
-            />
-          </div>
+          <h3 className="mt-4 mb-4 font-semibold text-gray-600">Course Description:</h3>
+          <Input.TextArea
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            rows={4}
+          />
 
-          {/* Course Description Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Course Description
-            </label>
-            <textarea
-              placeholder="Course Description"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              rows={4}
-              value={newCourse.description}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, description: e.target.value })
-              }
-            />
-          </div>
+          <h3 className="mt-4 mb-4 font-semibold text-gray-600">Course Color:</h3>
+          <ColorPicker
+            value={newColor}
+            onChange={(color) => setNewColor(color.toHexString())}
+          />
 
-          {/* Number of Chapters Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Number of Chapters
-            </label>
-            <input
-              type="number"
-              placeholder="Number of Chapters"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={newCourse.chapters}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, chapters: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Number of Orders Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Number of Orders
-            </label>
-            <input
-              type="number"
-              placeholder="Number of Orders"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={newCourse.orders}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, orders: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Course Tag Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Tag
-            </label>
-            <input
-              type="text"
-              placeholder="Tag (e.g., Beginner for KNU)"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={newCourse.tag}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, tag: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Color Picker Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Select Color
-            </label>
-            <ColorPicker
-              value={newCourse.color}
-              onChange={(color) =>
-                setNewCourse({ ...newCourse, color: color.toHexString() })
-              }
-            />
-          </div>
-
-          {/* Buttons for Save and Delete */}
-          <div className="flex justify-between space-x-4">
-            {selectedCourse && (
-              <Button
-                type="default"
-                danger
-                onClick={handleDeleteCourse}
-                className="w-full"
-              >
-                Delete
-              </Button>
-            )}
+          <div className="mt-4 flex justify-end gap-4">
+            <Button onClick={() => setIsDrawerOpen(false)}>Close</Button>
             <Button
               type="primary"
-              onClick={selectedCourse ? handleEditCourse : handleSaveCourse}
-              className="w-full"
+              onClick={isAddingNewCourse ? handleSaveNewCourse : handleSaveExistingCourse}
             >
-              {selectedCourse ? "Save" : "Add"}
+              Save
             </Button>
           </div>
         </div>

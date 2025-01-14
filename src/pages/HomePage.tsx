@@ -1,62 +1,192 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { notification } from "antd";
+import { getCurrentUser} from "../supabase/authService";
+import { supabase} from "../supabase/supabaseClient";
+import { getUserName, getCourseNames, getCourseDescriptions, getCourseColors } from "../supabase/dataService";
 import ChatBot from "./ChatBot";
-import ProfileCard from "../features/HomePage/ui/ProfileCard";
 import CourseCard from "../features/HomePage/ui/CourseCard";
-import { Course, courses } from "../shared/constant/course";
+import { Course } from "../shared/constant/course";
+import UserProfileDropdown from "../pages/UserProfileDropdown";
+import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
+import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
+import { Session } from '@supabase/supabase-js';
+
+// Supabase User Ÿ�� ����
+type SupabaseUser = Session['user'];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [notificationDisplayed, setNotificationDisplayed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [api, contextHolder] = notification.useNotification();
 
-  const handleCourseClick = (course: Course) => {
+  useEffect(() => {
+    if (location.state?.notification && !notificationDisplayed) {
+      api.success({
+        message: location.state.notification,
+        description: "Welcome to HOTDOG LMS!",
+        placement: "topRight",
+      });
+      setNotificationDisplayed(true);
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          const fetchedUserName = await getUserName(currentUser.id);
+          setUserName(fetchedUserName || "Username");
+        } else {
+          navigate("/login");
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        navigate("/login");
+      }
+    };
+
+    const fetchCourses = async () => {
+      try {
+        const courseNames = await getCourseNames();
+        const courseDescriptions = await getCourseDescriptions();
+        const courseColors= await getCourseColors();
+        const formattedCourses: Course[] = courseNames.map((courseName, index) => ({
+          id: (index + 1).toString(),
+          title: courseName,
+          description: courseDescriptions[index] || "No description available",
+          tag: "General",
+          chapters: Math.floor(Math.random() * 10) + 1,
+          orders: Math.floor(Math.random() * 50) + 1,
+          color: courseColors[index],
+          certificates: 0,
+          reviews: 0,
+          addedToShelf: 0,
+        }));
+        setCourses(formattedCourses);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      }
+    };
+
+    fetchUserData();
+    fetchCourses();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        getUserName(session.user.id).then((fetchedUserName) => {
+          setUserName(fetchedUserName || "Username");
+        });
+      } else {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [location.state, api, navigate, notificationDisplayed]);
+
+  const handleCourseClick = async (course: Course) => {
     setSelectedCourse(course);
+
+    try {
+      const descriptions = await getCourseDescriptions();
+      const description = descriptions[parseInt(course.id) - 1]; // Assuming course IDs are sequential
+      setSelectedDescription(description || "No description available");
+    } catch (err) {
+      console.error("Error fetching course description:", err);
+      setSelectedDescription("Error fetching description");
+    }
   };
 
   const closeModal = () => {
     setSelectedCourse(null);
+    setSelectedDescription(null);
   };
+
+  
 
   return (
     <div className="bg-gray-100 min-h-screen">
+      {contextHolder}
       <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
+
+          {/* User Profile Dropdown */}
+          <UserProfileDropdown />
         </header>
 
-        {/* Profile Section */}
-        <div className="flex items-center mb-6 bg-white p-6 rounded-lg shadow-md">
-          {/* Profile Card */}
-          <ProfileCard />
-
-          {/* 오른쪽 텍스트 섹션 */}
-          <div className="ml-12 flex flex-col">
-            <h1 className="text-4xl font-bold text-black mb-4">
-              Hello, Username 👋
-            </h1>
-            <p className="text-2xl text-gray-600">Welcome to HOTDOG LMS!!</p>
+        {/* Carousel + Calendar Section */}
+        <section className="grid grid-cols-4 gap-6 mb-6">
+          <div className="bg-white p-6 rounded-lg shadow-md col-span-3 flex flex-col h-full">
+            <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
+            <CarouselComponent items={[{
+                  key: 1,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1724224259580-04c544bd1fad?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG90ZG9nfGVufDB8fDB8fHww",
+                  text: "Welcome to HOTDOG LMS!",
+                  textColor: "text-yellow-300",
+                },
+                {
+                  key: 2,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1720534517470-8815da9e3998?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3R1ZHl8ZW58MHx8MHx8fDA%3D",
+                  text: "Add your courses",
+                  textColor: "text-red-400",
+                },
+                {
+                  key: 3,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1733900623866-fc9102b17450?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGpvaW58ZW58MHx8MHx8fDA%3D",
+                  text: "Join our LMS",
+                  textColor: "text-black-500",
+                },
+                {
+                  key: 4,
+                  imageUrl:
+                    "https://plus.unsplash.com/premium_vector-1731582099083-969d4dfe2580?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8JUVCJUFBJUE5JUVEJTkxJTlDfGVufDB8fDB8fHww",
+                  text: "Achieve your goals!",
+                  textColor: "text-white",
+                },]} />
           </div>
-        </div>
 
-        {/* Courses Section */}
-        <section className="mb-6">
-          <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
-          {/* 가로 스크롤 가능한 섹션 */}
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
-            {courses.map((course: Course, index: number) => (
-              <CourseCard
-                key={index}
-                course={course}
-                onClick={handleCourseClick}
-              />
-            ))}
+          <div className="bg-white p-6 rounded-lg shadow-md col-span-1 h-full">
+            <h3 className="text-3xl font-bold mb-2 text-black">Calendar</h3>
+            <CalendarComponent />
           </div>
         </section>
+
+        {/* Courses Section */}
+        {user && (
+          <section className="mb-6">
+            <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
+              {courses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  onClick={handleCourseClick}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
-      {/* ChatBot Icon */}
       <ChatBot />
 
-      {/* Modal */}
       {selectedCourse && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
@@ -67,14 +197,14 @@ const HomePage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4">{selectedCourse.title}</h2>
-            <p className="text-gray-600">Quiz Count: {selectedCourse.orders}</p>
+            <p className="text-gray-600">Description: {selectedDescription}</p>
             <textarea
               className="w-full mt-4 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Add a description..."
               rows={4}
             />
             <button
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
               onClick={closeModal}
             >
               Close

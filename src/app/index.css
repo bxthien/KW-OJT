@@ -23,6 +23,8 @@
   display: none; /* Chrome, Safari, and Opera */
 }
 
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

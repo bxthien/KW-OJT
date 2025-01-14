@@ -1,17 +1,10 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { DoubleRightOutlined, DoubleLeftOutlined } from "@ant-design/icons"; // Ant Design 아이콘 가져오기
 
 const Sidebar: React.FC = () => {
-  // 사이드바 상태 관리 (접기/펼치기)
   const [isOpen, setIsOpen] = useState(true);
 
-  // PNG 이미지 링크 설정
-  const openIconUrl =
-    "https://img.icons8.com/?size=100&id=100002&format=png&color=000000"; // 사이드바 펼치기 아이콘
-  const closeIconUrl =
-    "https://img.icons8.com/?size=100&id=15828&format=png&color=000000"; // 사이드바 접기 아이콘
-
-  // 사이드바 접기/펼치기 토글
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
@@ -20,7 +13,6 @@ const Sidebar: React.FC = () => {
         isOpen ? "w-72" : "w-24"
       } bg-blue-100 text-black h-screen p-4 transition-all duration-300`}
     >
-      {/* 사이드바 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <img
@@ -33,20 +25,17 @@ const Sidebar: React.FC = () => {
           </h1>
         </div>
 
-        {/* 접기/펼치기 버튼 */}
         <button
           onClick={toggleSidebar}
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-blue-300 transition duration-300"
+          className="flex items-center w-12 justify-center h-12 rounded-full hover:bg-blue-300 transition duration-300"
         >
-          <img
-            src={isOpen ? closeIconUrl : openIconUrl}
-            alt="Toggle Icon"
-            className="w-6 h-6"
-          />
+          {isOpen ? (
+            <DoubleLeftOutlined className="text-xl" />
+          ) : (
+            <DoubleRightOutlined className="text-xl" />
+          )}
         </button>
       </div>
-
-      {/* 네비게이션 메뉴 */}
       <nav className="mt-6 space-y-4">
         <NavLink
           to="/"
@@ -97,7 +86,7 @@ const Sidebar: React.FC = () => {
         </NavLink>
 
         <NavLink
-          to="/communication"
+          to="/profile"
           className={({ isActive }) =>
             `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
@@ -105,13 +94,11 @@ const Sidebar: React.FC = () => {
           }
         >
           <img
-            src="https://img.icons8.com/?size=100&id=a8cZMQaCOiz0&format=png&color=000000"
+            src="https://img.icons8.com/?size=100&id=tiTDCgtmOFZL&format=png&color=000000"
             alt="Communication Icon"
             className="w-6 h-6 mr-2"
           />
-          <span className={`${isOpen ? "block" : "hidden"}`}>
-            Communication
-          </span>
+          <span className={`${isOpen ? "block" : "hidden"}`}>Profile</span>
         </NavLink>
 
         <NavLink
