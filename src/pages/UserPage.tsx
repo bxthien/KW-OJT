@@ -12,6 +12,7 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
+// import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
 
 interface User {
@@ -291,6 +292,7 @@ const UserPage: React.FC = () => {
             pageSize={pageSize}
             total={userData.length}
             onChange={handlePaginationChange}
+            className="flex justify-center mt-4"
           />
         </div>
       ),
@@ -316,6 +318,7 @@ const UserPage: React.FC = () => {
             pageSize={pageSize}
             total={studentData.length}
             onChange={handlePaginationChange}
+            className="flex justify-center mt-4" // 중앙 정렬
           />
         </div>
       ),

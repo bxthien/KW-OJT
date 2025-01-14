@@ -3,14 +3,13 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Drawer,
-  // Pagination,
+  Pagination,
   ColorPicker,
   Input,
   Checkbox,
   List,
   Select,
 } from "antd";
-import ChatBot from "./ChatBot";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
 
@@ -77,7 +76,7 @@ const CoursesPage: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const coursesPerPage = 9;
+  const coursesPerPage = 12;
 
   const fetchCourses = async () => {
     try {
@@ -338,9 +337,9 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // const handlePageChange = (page: number) => {
-  //   setCurrentPage(page);
-  // };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
@@ -391,15 +390,14 @@ const CoursesPage: React.FC = () => {
           ))}
         </div>
 
-        {/* <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-4">
           <Pagination
             current={currentPage}
             total={courses.length}
             pageSize={8}
             onChange={handlePageChange}
           />
-        </div> */}
-        <ChatBot />
+        </div>
       </div>
 
       <Drawer
