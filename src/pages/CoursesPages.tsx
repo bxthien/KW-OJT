@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Drawer,
-  Pagination,
+  // Pagination,
   ColorPicker,
   Input,
   Checkbox,
@@ -18,6 +18,12 @@ interface Course {
   title: string;
   color: string;
   description: string;
+  course_chapter?: { chapter_id: string }[];
+}
+
+interface Chapter {
+  id: string;
+  chapter_name: string;
 }
 
 const CourseCard: React.FC<{
@@ -57,6 +63,9 @@ const CourseCard: React.FC<{
 const CoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [selectedChapters, setSelectedChapters] = useState<
+    { chapter_id?: string }[]
+  >([]);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -64,68 +73,60 @@ const CoursesPage: React.FC = () => {
   const [newColor, setNewColor] = useState<string>("#1677ff");
   const [isAddingNewCourse, setIsAddingNewCourse] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [chapters, setChapters] = useState<
-    { id: string; chapter_name: string }[]
-  >([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const coursesPerPage = 9;
 
-  useEffect(() => {
-    setChapters([
-      { id: "1", chapter_name: "Introduction" },
-      { id: "2", chapter_name: "Intermediate Concepts" },
-      { id: "3", chapter_name: "Advanced Techniques" },
-      { id: "4", chapter_name: "I want to go home" },
-      { id: "5", chapter_name: "It's real" },
-    ]);
-    const fetchCourses = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("courses")
-          .select("course_id, course_name, course_description, color");
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase.from("courses").select(`
+            course_id, 
+            course_name, 
+            course_description, 
+            color,
+            course_chapter (
+              chapter_id
+            )
+          `);
 
-        if (error) {
-          console.error("Error fetching courses:", error.message);
-          return;
-        }
-
-        const formattedCourses = data.map((course) => ({
-          id: course.course_id,
-          title: course.course_name,
-          description: course.course_description || "No description available",
-          color: course.color || "#1677ff",
-        }));
-
-        setCourses(formattedCourses);
-      } catch (err) {
-        console.error("Error fetching courses:", err);
+      if (error) {
+        console.error("Error fetching courses:", error.message);
+        return;
       }
-    };
 
+      const formattedCourses = data.map((course) => ({
+        id: course.course_id,
+        title: course.course_name,
+        description: course.course_description || "No description available",
+        color: course.color || "#1677ff",
+        course_chapter: course.course_chapter,
+      }));
+
+      setCourses(formattedCourses);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchCourses();
   }, []);
 
   const fetchChapters = async (courseId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("course_chapter")
-        .select(
-          `
-          chapter:chapter_id (
-            id,
-            chapter_name
-          )
-        `
-        )
-        .eq("course_id", courseId);
+      const { data, error } = await supabase.from("chapter").select("*");
+      // .eq("course_id", courseId);
 
       if (error) {
         console.error("Error fetching chapters:", error.message);
         return;
       }
 
-      const formattedChapters = data.map((item: any) => item.chapter);
+      const formattedChapters = data.map((item) => ({
+        id: item.chapter_id,
+        chapter_name: item.chapter_name,
+      }));
       setChapters(formattedChapters);
     } catch (err) {
       console.error("Error fetching chapters:", err);
@@ -142,6 +143,7 @@ const CoursesPage: React.FC = () => {
     } else {
       const course = courses.find((c) => c.id === courseId);
       if (course) {
+        setSelectedChapters(course.course_chapter || []);
         setSelectedCourse(course);
         setNewTitle(course.title);
         setNewDescription(course.description);
@@ -244,24 +246,27 @@ const CoursesPage: React.FC = () => {
           })
           .eq("course_id", selectedCourse.id);
 
-        if (error) {
-          console.error("Error saving course updates:", error.message);
+        const { error: chapterError } = await supabase
+          .from("course_chapter")
+          .upsert(
+            selectedChapters.map((chapter) => ({
+              course_id: selectedCourse.id,
+              chapter_id: chapter.chapter_id,
+            })),
+            { onConflict: ["course_id", "chapter_id"] }
+          );
+
+        if (error || chapterError) {
+          console.error(
+            "Error saving course updates:",
+            error?.message || chapterError?.message
+          );
           alert("Failed to update course.");
           return;
         }
 
-        setCourses((prevCourses) =>
-          prevCourses.map((course) =>
-            course.id === selectedCourse.id
-              ? {
-                  ...course,
-                  title: newTitle,
-                  description: newDescription,
-                  color: newColor,
-                }
-              : course
-          )
-        );
+        fetchCourses();
+
         setIsDrawerOpen(false);
       } catch (err) {
         console.error("Error saving course updates:", err);
@@ -270,9 +275,9 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  // const handlePageChange = (page: number) => {
+  //   setCurrentPage(page);
+  // };
 
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
@@ -335,6 +340,7 @@ const CoursesPage: React.FC = () => {
       </div>
 
       <Drawer
+        width={500}
         title={
           isAddingNewCourse
             ? "Add New Course"
@@ -360,13 +366,14 @@ const CoursesPage: React.FC = () => {
             rows={4}
           />
 
-          <h3 className="mt-4 mb-4 font-semibold text-gray-600">
-            Course Color:
-          </h3>
-          <ColorPicker
-            value={newColor}
-            onChange={(color) => setNewColor(color.toHexString())}
-          />
+          <div className="flex flex-row items-center my-4">
+            <h3 className="font-semibold text-gray-600">Course Color:</h3>
+            <ColorPicker
+              className="ml-4"
+              value={newColor}
+              onChange={(color) => setNewColor(color.toHexString())}
+            />
+          </div>
 
           <div>
             <h3 className="font-semibold text-gray-600">Add Chapters:</h3>
@@ -374,44 +381,29 @@ const CoursesPage: React.FC = () => {
               mode="multiple"
               placeholder="Select chapters to add"
               style={{ width: "100%", marginBottom: "16px" }}
-              onChange={(selectedChapters) => {
-                // 새로운 챕터 생성 및 중복 방지
-                const newChapters = selectedChapters
-                  .map((chapterName: string) => ({
-                    id: String(Date.now() + Math.random()), // 고유 ID 생성
-                    chapter_name: chapterName,
-                  }))
-                  .filter(
-                    (newChapter: { chapter_name: string }) =>
-                      !chapters.some(
-                        (existingChapter) =>
-                          existingChapter.chapter_name ===
-                          newChapter.chapter_name
-                      )
-                  );
+              value={selectedChapters.map((ch) => ch.chapter_id)}
+              onChange={(selectedChapterIds) => {
+                const newSelectedChapters = selectedChapterIds
+                  .map((chapterId: string) => {
+                    const chapter = chapters.find((ch) => ch.id === chapterId);
+                    return chapter ? { chapter_id: chapter.id } : null;
+                  })
+                  .filter((chapter) => chapter !== null);
 
-                // 리스트에 새로운 챕터 추가
-                setChapters((prevChapters) => [
-                  ...prevChapters,
-                  ...newChapters,
-                ]);
+                setSelectedChapters(
+                  newSelectedChapters as { chapter_id: string }[]
+                );
               }}
-              options={[
-                { label: "Introduction", value: "Introduction" },
-                {
-                  label: "Intermediate Concepts",
-                  value: "Intermediate Concepts",
-                },
-                { label: "Advanced Techniques", value: "Advanced Techniques" },
-                { label: "I want to go home", value: "I want to go home" },
-                { label: "It's real", value: "It's real" },
-              ]}
+              options={chapters.map((chapter) => ({
+                label: chapter.chapter_name,
+                value: chapter.id,
+              }))}
             />
 
             <h3 className="font-semibold text-gray-600">Chapters:</h3>
             <div
               style={{
-                maxHeight: "200px",
+                maxHeight: "300px",
                 overflowY: "auto",
                 border: "1px solid #ddd",
                 padding: "8px",
@@ -419,7 +411,7 @@ const CoursesPage: React.FC = () => {
               }}
             >
               <List
-                dataSource={chapters}
+                dataSource={selectedChapters}
                 renderItem={(item, index) => (
                   <List.Item
                     style={{
@@ -432,7 +424,10 @@ const CoursesPage: React.FC = () => {
                       <span style={{ marginRight: "8px", fontWeight: "bold" }}>
                         {index + 1}.
                       </span>
-                      {item.chapter_name}
+                      {
+                        chapters.find((ch) => ch.id === item.chapter_id)
+                          ?.chapter_name
+                      }
                     </div>
                     <MinusCircleOutlined
                       style={{
@@ -441,8 +436,7 @@ const CoursesPage: React.FC = () => {
                         cursor: "pointer",
                       }}
                       onClick={() => {
-                        // 리스트에서 해당 챕터 제거
-                        setChapters((prevChapters) =>
+                        setSelectedChapters((prevChapters) =>
                           prevChapters.filter((_, i) => i !== index)
                         );
                       }}
