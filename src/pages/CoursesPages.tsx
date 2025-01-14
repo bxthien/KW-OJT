@@ -39,9 +39,9 @@ const CourseCard: React.FC<{
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
     style={{
-      maxWidth: "20rem", // ì¹´ë“œê°€ ì™€ì´ë“œí•˜ì§€ ì•Šë„ë¡ ìµœëŒ€ ë„ˆë¹„ ì„¤ì •
-      width: "100%", // ë¶€ëª¨ ìš”ì†Œì— ë§žê²Œ ë„ˆë¹„ë¥¼ ì„¤ì •
-      boxSizing: "border-box", // íŒ¨ë”©ê³¼ ë³´ë”ë¥¼ í¬í•¨í•œ ë„ˆë¹„ ê³„ì‚°
+      maxWidth: "20rem", // ì¹´ë“œê°? ????´?“œ?•˜ì§? ?•Š?„ë¡? ìµœë?? ?„ˆë¹? ?„¤? •
+      width: "100%", // ë¶?ëª? ?š”?†Œ?— ë§žê²Œ ?„ˆë¹„ë?? ?„¤? •
+      boxSizing: "border-box", // ?Œ¨?”©ê³? ë³´ë”ë¥? ?¬?•¨?•œ ?„ˆë¹? ê³„ì‚°
     }}
     onClick={() => onClick(course.id)}
   >
