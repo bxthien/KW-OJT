@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Button, Drawer, Pagination, ColorPicker, Input, Checkbox } from "antd";
+import {
+  Button,
+  Drawer,
+  Pagination,
+  ColorPicker,
+  Input,
+  Checkbox,
+  List,
+} from "antd";
 import ChatBot from "./ChatBot";
 import { supabase } from "../supabase/supabaseClient";
+import { MinusCircleOutlined } from "@ant-design/icons";
+
+interface Course {
+  id: string;
+  title: string;
+  color: string;
+  description: string;
+}
 
 interface Course {
   id: string;
@@ -17,7 +33,7 @@ const CourseCard: React.FC<{
   isDeleteMode: boolean;
 }> = ({ course, onClick, isSelected, isDeleteMode }) => (
   <div
-    className={`bg-white p-4 rounded-lg shadow-md border ${
+    className={`bg-white pb-4 rounded-lg shadow-md border ${
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-lg`}
     onClick={() => onClick(course.id)}
@@ -33,7 +49,9 @@ const CourseCard: React.FC<{
       className="w-full h-32 rounded-md mb-4"
       style={{ backgroundColor: course.color }}
     ></div>
-    <h2 className="text-lg font-bold mb-2 text-gray-800">{course.title}</h2>
+    <h2 className="text-lg font-bold mb-2 text-gray-800 px-4">
+      {course.title}
+    </h2>
   </div>
 );
 
@@ -47,11 +65,22 @@ const CoursesPage: React.FC = () => {
   const [newColor, setNewColor] = useState<string>("#1677ff");
   const [isAddingNewCourse, setIsAddingNewCourse] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [chapters, setChapters] = useState<
+    { id: string; chapter_name: string }[]
+  >([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [newChapterTitle, setNewChapterTitle] = useState("");
 
   const coursesPerPage = 9;
 
   useEffect(() => {
+    setChapters([
+      { id: "1", chapter_name: "Introduction" },
+      { id: "2", chapter_name: "Intermediate Concepts" },
+      { id: "3", chapter_name: "Advanced Techniques" },
+      { id: "4", chapter_name: "I want to go home" },
+      { id: "5", chapter_name: "It's real" },
+    ]);
     const fetchCourses = async () => {
       try {
         const { data, error } = await supabase
@@ -79,6 +108,32 @@ const CoursesPage: React.FC = () => {
     fetchCourses();
   }, []);
 
+  const fetchChapters = async (courseId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("course_chapter")
+        .select(
+          `
+          chapter:chapter_id (
+            id,
+            chapter_name
+          )
+        `
+        )
+        .eq("course_id", courseId);
+
+      if (error) {
+        console.error("Error fetching chapters:", error.message);
+        return;
+      }
+
+      const formattedChapters = data.map((item: any) => item.chapter);
+      setChapters(formattedChapters);
+    } catch (err) {
+      console.error("Error fetching chapters:", err);
+    }
+  };
+
   const handleCourseClick = (courseId: string) => {
     if (isDeleteMode) {
       setSelectedCourses((prevSelected) =>
@@ -94,6 +149,7 @@ const CoursesPage: React.FC = () => {
         setNewDescription(course.description);
         setNewColor(course.color);
         setIsAddingNewCourse(false);
+        fetchChapters(courseId);
         setIsDrawerOpen(true);
       }
     }
@@ -312,6 +368,79 @@ const CoursesPage: React.FC = () => {
             value={newColor}
             onChange={(color) => setNewColor(color.toHexString())}
           />
+
+          <h3 className="mt-4 mb-4 font-semibold text-gray-600">Chapters:</h3>
+          <div
+            style={{
+              maxHeight: "200px", // 원하는 최대 높이 지정
+              overflowY: "auto", // 내부 스크롤 활성화
+              border: "1px solid #ddd", // 스크롤 영역 시각화 (선택사항)
+              padding: "8px", // 내용 여백 추가
+              borderRadius: "4px", // 스타일 개선
+            }}
+          >
+            <List
+              dataSource={chapters}
+              renderItem={(item, index) => (
+                <List.Item
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <span style={{ marginRight: "8px", fontWeight: "bold" }}>
+                      {index + 1}.
+                    </span>
+                    {item.chapter_name}
+                  </div>
+                  <MinusCircleOutlined
+                    style={{
+                      fontSize: "20px",
+                      color: "red",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setChapters((prevChapters) =>
+                        prevChapters.filter((_, i) => i !== index)
+                      );
+                    }}
+                  />
+                </List.Item>
+              )}
+            />
+          </div>
+
+          <div className="mt-4 mb-4">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Enter Chapter Title"
+                value={newChapterTitle}
+                onChange={(e) => setNewChapterTitle(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (newChapterTitle.trim()) {
+                    const newChapter = {
+                      id: String(Date.now()),
+                      chapter_name: newChapterTitle,
+                    };
+                    setChapters((prevChapters) => [
+                      ...prevChapters,
+                      newChapter,
+                    ]);
+                    setNewChapterTitle(""); // Add 후 필드를 공백으로 초기화
+                  } else {
+                    alert("Chapter title cannot be empty.");
+                  }
+                }}
+              >
+                Add Chapter
+              </Button>
+            </div>
+          </div>
 
           <div className="mt-4 flex justify-end gap-4">
             <Button onClick={() => setIsDrawerOpen(false)}>Close</Button>

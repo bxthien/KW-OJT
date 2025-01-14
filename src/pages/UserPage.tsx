@@ -351,28 +351,60 @@ const UserPage: React.FC = () => {
           >
             <Input placeholder="Enter name" />
           </Form.Item>
-
-          {/* 이메일 - 읽기 전용 */}
-          <div className="mb-4">
-            <label className="block font-medium text-gray-700">Email</label>
-            <p className="text-gray-500">{selectedUser?.email || "Unknown"}</p>
-          </div>
-
-          {/* 생년월일 - 읽기 전용 */}
-          <div className="mb-4">
-            <label className="block font-medium text-gray-700">
-              Date of Birth
-            </label>
-            <p className="text-gray-500">{selectedUser?.birth || "Unknown"}</p>
-          </div>
-
-          {/* 나이 - 읽기 전용 */}
-          <div className="mb-4">
-            <label className="block font-medium text-gray-700">Age</label>
-            <p className="text-gray-500">
-              {selectedUser?.age?.toString() || "Unknown"}
-            </p>
-          </div>
+          <Form.Item
+            label="Type"
+            name="type"
+            rules={[{ required: true, message: "Please enter the type" }]}
+          >
+            <Input placeholder="Enter type" />
+          </Form.Item>
+          {currentTab === "1" && (
+            <>
+              <Form.Item
+                label="Date"
+                name="date"
+                rules={[{ required: true, message: "Please enter the date" }]}
+              >
+                <Input placeholder="Enter date" />
+              </Form.Item>
+              <Form.Item
+                label="Contact"
+                name="contact"
+                rules={[
+                  { required: true, message: "Please enter the contact" },
+                ]}
+              >
+                <Input disabled placeholder="Enter contact" />
+              </Form.Item>
+            </>
+          )}
+          {currentTab === "2" && (
+            <>
+              <Form.Item
+                label="Status"
+                name="status"
+                rules={[{ required: true, message: "Please enter the status" }]}
+              >
+                <Input placeholder="Enter status" />
+              </Form.Item>
+              <Form.Item
+                label="Joined"
+                name="joined"
+                rules={[
+                  { required: true, message: "Please enter the joined date" },
+                ]}
+              >
+                <Input placeholder="Enter joined date" />
+              </Form.Item>
+              <Form.Item
+                label="Course"
+                name="course"
+                rules={[{ required: true, message: "Please enter the course" }]}
+              >
+                <Input placeholder="Enter course" />
+              </Form.Item>
+            </>
+          )}
         </Form>
 
         {/* 하단 버튼 */}
