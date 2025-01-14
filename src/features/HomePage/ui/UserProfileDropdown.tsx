@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import ProfileCard from "./ProfileCard";
+import { useNavigate } from "react-router-dom";
 
 const UserProfileDropdown: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [showProfileCard, setShowProfileCard] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // 바깥 클릭 이벤트 처리
   useEffect(() => {
@@ -14,7 +14,6 @@ const UserProfileDropdown: React.FC = () => {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
-        setShowProfileCard(false); // 드롭다운 닫힐 때 ProfileCard도 닫기
       }
     };
 
@@ -26,11 +25,11 @@ const UserProfileDropdown: React.FC = () => {
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
-    setShowProfileCard(false);
   };
 
-  const showProfile = () => {
-    setShowProfileCard(true);
+  // Profile 페이지로 이동하는 함수
+  const goToProfilePage = () => {
+    navigate("/profile");
   };
 
   return (
@@ -51,24 +50,20 @@ const UserProfileDropdown: React.FC = () => {
       {/* 드롭다운 메뉴 */}
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 p-4 border border-gray-200">
-          {!showProfileCard ? (
-            <ul className="space-y-2">
-              <li
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded-lg"
-                onClick={showProfile}
-              >
-                Profile
-              </li>
-              <li
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded-lg"
-                onClick={() => console.log("Logout")}
-              >
-                Logout
-              </li>
-            </ul>
-          ) : (
-            <ProfileCard username={""} />
-          )}
+          <ul className="space-y-2">
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded-lg"
+              onClick={goToProfilePage}
+            >
+              Profile
+            </li>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded-lg"
+              onClick={() => console.log("Logout")}
+            >
+              Logout
+            </li>
+          </ul>
         </div>
       )}
     </div>

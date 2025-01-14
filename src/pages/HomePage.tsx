@@ -1,31 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { notification } from "antd";
-import { getCurrentUser, logoutUser } from "../supabase/authService";
+import { getCurrentUser } from "../supabase/authService";
 import { supabase } from "../supabase/supabaseClient";
 import {
   getUserName,
   getCourseNames,
   getCourseDescriptions,
+  getCourseColors,
 } from "../supabase/dataService";
+import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
+import UserProfileDropdown from "../features/HomePage/ui/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
-import UserProfileDropdown from "../features/HomePage/ui/UserProfileDropdown";
+import { Session } from "@supabase/supabase-js";
+
+// Supabase User 타입 정의
+type SupabaseUser = Session["user"];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedDescription, setSelectedDescription] = useState<string | null>(
     null
   );
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [notificationDisplayed, setNotificationDisplayed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [api, contextHolder] = notification.useNotification();
+
+  console.log("object", userName);
 
   useEffect(() => {
     if (location.state?.notification && !notificationDisplayed) {
@@ -57,18 +65,22 @@ const HomePage: React.FC = () => {
       try {
         const courseNames = await getCourseNames();
         const courseDescriptions = await getCourseDescriptions();
-        const formattedCourses = courseNames.map((courseName, index) => ({
-          id: (index + 1).toString(),
-          title: courseName,
-          description: courseDescriptions[index] || "No description available",
-          tag: "General",
-          chapters: Math.floor(Math.random() * 10) + 1,
-          orders: Math.floor(Math.random() * 50) + 1,
-          color: "#1677ff",
-          certificates: 0,
-          reviews: 0,
-          addedToShelf: 0,
-        }));
+        const courseColors = await getCourseColors();
+        const formattedCourses: Course[] = courseNames.map(
+          (courseName, index) => ({
+            id: (index + 1).toString(),
+            title: courseName,
+            description:
+              courseDescriptions[index] || "No description available",
+            tag: "General",
+            chapters: Math.floor(Math.random() * 10) + 1,
+            orders: Math.floor(Math.random() * 50) + 1,
+            color: courseColors[index],
+            certificates: 0,
+            reviews: 0,
+            addedToShelf: 0,
+          })
+        );
         setCourses(formattedCourses);
       } catch (err) {
         console.error("Error fetching courses:", err);
@@ -80,7 +92,7 @@ const HomePage: React.FC = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
         getUserName(session.user.id).then((fetchedUserName) => {
@@ -114,32 +126,22 @@ const HomePage: React.FC = () => {
     setSelectedDescription(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
-
   return (
     <div className="bg-gray-100 min-h-screen">
+      {contextHolder}
       <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-6 text-black">
           <h2 className="text-2xl font-semibold">Dashboard</h2>
 
+          {/* User Profile Dropdown */}
           <UserProfileDropdown />
         </header>
 
-        {/* Carousel + 캘린더 섹션 */}
+        {/* Carousel + Calendar Section */}
         <section className="grid grid-cols-4 gap-6 mb-6">
-          {/* Carousel 섹션 */}
           <div className="bg-white p-6 rounded-lg shadow-md col-span-3 flex flex-col h-full">
-            <h3 className="text-3xl font-bold mb-2 text-black flex items-center">
-              Welcome! <span className="ml-2">👋</span>
-            </h3>
+            <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
             <CarouselComponent
               items={[
                 {
@@ -174,29 +176,30 @@ const HomePage: React.FC = () => {
             />
           </div>
 
-          {/* 캘린더 섹션 */}
           <div className="bg-white p-6 rounded-lg shadow-md col-span-1 h-full">
-            <h3 className="text-3xl font-bold mb-2 text-black flex items-center">
-              Calendar <span className="ml-2">📅</span>
-            </h3>
+            <h3 className="text-3xl font-bold mb-2 text-black">Calendar</h3>
             <CalendarComponent />
           </div>
         </section>
 
-        <section className="mb-6">
-          <h3 className="text-2xl font-semibold mb-4 text-black">Courses</h3>
-          <div className="flex gap-4 overflow-x-auto p-2 scrollbar-hide">
-            {courses.map((course: Course, index: number) => (
-              <CourseCard
-                key={index}
-                course={course}
-                onClick={handleCourseClick}
-              />
-            ))}
-          </div>
-        </section>
+        {/* Courses Section */}
+        {user && (
+          <section className="mb-6">
+            <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
+              {courses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  onClick={handleCourseClick}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
-      {/* <ChatBot />s */}
+
+      <ChatBot />
 
       {selectedCourse && (
         <div
