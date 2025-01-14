@@ -183,7 +183,7 @@ const ProfilePage: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               disabled={!isEditing || isLoading}
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
+                isEditing && !isLoading ? "" : "bg-gray-200"
               }`}
             />
           </div>
@@ -196,8 +196,12 @@ const ProfilePage: React.FC = () => {
             <input
               type="email"
               value={email}
-              disabled
-              className="w-full p-4 bg-gray-200 text-gray-800 border border-gray-300 rounded-lg cursor-not-allowed"
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={!isEditing || isLoading}
+              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                isEditing && !isLoading ? "" : "bg-gray-200"
+              }`}
+              placeholder="Enter your email"
             />
           </div>
 
@@ -213,7 +217,7 @@ const ProfilePage: React.FC = () => {
               disabled={!isEditing || isLoading}
               maxLength={13}
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
+                isEditing && !isLoading ? "" : "bg-gray-200"
               }`}
             />
           </div>
@@ -230,7 +234,7 @@ const ProfilePage: React.FC = () => {
               onChange={(e) => handleBirthdayChange(e.target.value)}
               disabled={!isEditing || isLoading}
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isEditing && !isLoading ? "" : "bg-gray-200 cursor-not-allowed"
+                isEditing && !isLoading ? "" : "bg-gray-200"
               }`}
             />
           </div>
