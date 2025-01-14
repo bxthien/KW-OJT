@@ -1,42 +1,54 @@
 import { supabase } from "./supabaseClient";
 
 /**
- * µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ À¯Àú ÀÌ¸§ °¡Á®¿À±â
- * @param userId À¯Àú ID (Supabase AuthÀÇ user ID)
- * @returns À¯Àú ÀÌ¸§
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param userId ï¿½ï¿½ï¿½ï¿½ ID (Supabase Authï¿½ï¿½ user ID)
+ * @returns ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½
  */
 export const getUserName = async (userId: string): Promise<string | null> => {
   const { data, error } = await supabase
-    .from("users") // Supabase µ¥ÀÌÅÍº£ÀÌ½ºÀÇ "users" Å×ÀÌºí
-    .select("user_name") // °¡Á®¿Ã ÄÃ·³ ÁöÁ¤
-    .eq("user_id", userId) // Á¶°Ç: user_id¿Í ÀÏÄ¡
-    .single(); // ´ÜÀÏ °á°ú¸¸ ¹ÝÈ¯
+    .from("users") // Supabase ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ "users" ï¿½ï¿½ï¿½Ìºï¿½
+    .select("user_name") // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½
+    .eq("user_id", userId) // ï¿½ï¿½ï¿½ï¿½: user_idï¿½ï¿½ ï¿½ï¿½Ä¡
+    .single(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 
   if (error) {
     console.error("Error fetching user name:", error.message);
     return null;
-  } 
+  }
 
   return data?.user_name || null;
 };
 
 /**
- * µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ ¸ðµç user_name, email, created_at, is_admin °¡Á®¿À±â
- * @returns user_name, email, created_at, is_admin ¹è¿­
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ user_name, email, created_at, is_admin ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @returns user_name, email, created_at, is_admin ï¿½è¿­
  */
 export const getUsersData = async (): Promise<
-  { user_id:string; user_name: string; is_admin: boolean; created_at: string; email: string; contact: string; birth: string; age: number; status:boolean}[]
+  {
+    user_id: string;
+    user_name: string;
+    is_admin: boolean;
+    created_at: string;
+    email: string;
+    contact: string;
+    birth: string;
+    age: number;
+    status: boolean;
+  }[]
 > => {
   const { data, error } = await supabase
-    .from("users") // Supabase µ¥ÀÌÅÍº£ÀÌ½ºÀÇ "users" Å×ÀÌºí
-    .select("user_id, user_name, email, created_at, is_admin, contact, date_of_birth, age, status"); // °¡Á®¿Ã ÄÃ·³ ÁöÁ¤
+    .from("users") // Supabase ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ "users" ï¿½ï¿½ï¿½Ìºï¿½
+    .select(
+      "user_id, user_name, email, created_at, is_admin, contact, date_of_birth, age, status"
+    ); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½
 
   if (error) {
     console.error("Error fetching users data:", error.message);
     return [];
   }
 
-  // user_name, email, created_at, is_admin µ¥ÀÌÅÍ¸¦ ¹è¿­·Î ¹ÝÈ¯
+  // user_name, email, created_at, is_admin ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¯
   return data.map((user) => ({
     user_id: user.user_id || "Unknown",
     user_name: user.user_name || "Unknown",
@@ -45,88 +57,98 @@ export const getUsersData = async (): Promise<
     email: user.email || "Unknown",
     contact: user.contact || "Unknown",
     birth: user.date_of_birth || "Unknown",
-    age: user.age || 0, // age°¡ ¾øÀ¸¸é 0À¸·Î ±âº»°ª ¼³Á¤\
+    age: user.age || 0, // ageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½âº»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½\
     status: !!user.status,
   }));
 };
 
-
 /**
- * µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ ¸ðµç course_name °¡Á®¿À±â
- * @returns course_name ¹è¿­
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ course_name ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @returns course_name ï¿½è¿­
  */
 export const getCourseNames = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase µ¥ÀÌÅÍº£ÀÌ½ºÀÇ "courses" Å×ÀÌºí
-    .select("course_name"); // °¡Á®¿Ã ÄÃ·³ ÁöÁ¤
+    .from("courses") // Supabase ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ "courses" ï¿½ï¿½ï¿½Ìºï¿½
+    .select("course_name"); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½
 
   if (error) {
     console.error("Error fetching course names:", error.message);
     return [];
   }
 
-  // course_name¸¸ ÃßÃâÇÏ¿© ¹è¿­·Î ¹ÝÈ¯
+  // course_nameï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¯
   return data.map((course) => course.course_name);
 };
 
-
-
 export const getCourseColors = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase µ¥ÀÌÅÍº£ÀÌ½ºÀÇ "courses" Å×ÀÌºí
-    .select("color"); // °¡Á®¿Ã ÄÃ·³À» "color"·Î Á¦ÇÑ
+    .from("courses") // Supabase ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ "courses" ï¿½ï¿½ï¿½Ìºï¿½
+    .select("color"); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ "color"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
   if (error) {
     console.error("Error fetching course colors:", error.message);
     return [];
   }
 
-  // color¸¸ ÃßÃâÇÏ¿© ¹è¿­·Î ¹ÝÈ¯
-  return data.map((course) => course.color || "#1677ff"); // ±âº» »ö»óÀ» ¼³Á¤
+  // colorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¯
+  return data.map((course) => course.color || "#1677ff"); // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 
-
-
 /**
- * µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ ¸ðµç course_description °¡Á®¿À±â
- * @returns course_description ¹è¿­
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ course_description ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @returns course_description ï¿½è¿­
  */
 export const getCourseDescriptions = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase µ¥ÀÌÅÍº£ÀÌ½ºÀÇ "courses" Å×ÀÌºí
-    .select("course_description"); // °¡Á®¿Ã ÄÃ·³ ÁöÁ¤
+    .from("courses") // Supabase ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ï¿½ï¿½ "courses" ï¿½ï¿½ï¿½Ìºï¿½
+    .select("course_description"); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½
 
   if (error) {
     console.error("Error fetching course descriptions:", error.message);
     return [];
   }
 
-  // course_description¸¸ ÃßÃâÇÏ¿© ¹è¿­·Î ¹ÝÈ¯
+  // course_descriptionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¯
   return data.map((course) => course.course_description);
 };
 
-export const addUserData = async (user: { name: string; type: string; date: string; contact: string }) => {
+export const addUserData = async (user: {
+  name: string;
+  type: string;
+  date: string;
+  contact: string;
+}) => {
   const { error } = await supabase
     .from("users")
-    .insert([{ user_name: user.name, is_admin: user.type === "Admin", created_at: user.date, email: user.contact }]);
+    .insert([
+      {
+        user_name: user.name,
+        is_admin: user.type === "Admin",
+        created_at: user.date,
+        email: user.contact,
+      },
+    ]);
 
   if (error) {
     throw new Error(error.message);
   }
 };
 
-export const updateUserData = async (id: number, updates: { name: string; type: string; date: string; contact: string }) => {
+export const updateUserData = async (
+  id: number,
+  updates: { name: string; type: string; date: string; contact: string }
+) => {
   const { error } = await supabase
     .from("users")
-    .update({ user_name: updates.name, is_admin: updates.type === "Admin", created_at: updates.date, email: updates.contact })
+    .update({
+      user_name: updates.name,
+      is_admin: updates.type === "Admin",
+      created_at: updates.date,
+      email: updates.contact,
+    })
     .eq("id", id);
 
   if (error) {
     throw new Error(error.message);
   }
 };
-
-
-
-
-

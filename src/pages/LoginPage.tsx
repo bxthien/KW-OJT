@@ -3,8 +3,8 @@ import { loginUser } from "../supabase/authService";
 import { supabase } from "../supabase/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import signInImage from "../assets/studentimg.png";
-import RegisterModal from "./RegisterPage";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import RegisterPage from "./Register";
 
 const LoginPage: React.FC = () => {
   const [activeModal, setActiveModal] = useState<"register" | "forgot" | null>(
@@ -22,41 +22,41 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-  
+
     try {
       const { user } = await loginUser(email, password);
-  
+
       if (!user) {
         setError("Login failed. Please check your email and password.");
         return;
       }
-  
-      // users Å×ÀÌºí¿¡¼­ status¿Í is_admin °ª È®ÀÎ
+
+      // users ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ï¿½ï¿½ statusï¿½ï¿½ is_admin ï¿½ï¿½ È®ï¿½ï¿½
       const { data, error: profileError } = await supabase
         .from("users")
         .select("status, is_admin")
         .eq("email", email)
         .single();
-  
+
       if (profileError || !data) {
         setError("Access denied.");
         return;
       }
-  
-      // status ¶Ç´Â is_adminÀÌ falseÀÎ °æ¿ì Á¢±Ù Â÷´Ü
+
+      // status ï¿½Ç´ï¿½ is_adminï¿½ï¿½ falseï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
       if (!data.status || !data.is_admin) {
         setError("Access denied. You do not have sufficient permissions.");
         return;
       }
-  
+
       navigate("/", { state: { notification: "Login Successful!" } });
     } catch (err: any) {
-      setError(err.message || "Login failed. Please check your email and password.");
+      setError(
+        err.message || "Login failed. Please check your email and password."
+      );
       console.error("Login error:", err);
     }
   };
-  
-  
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -78,12 +78,9 @@ const LoginPage: React.FC = () => {
 
       <div className="flex flex-1 flex-col justify-center items-center bg-gray-50 text-black p-12">
         <div className="flex items-start mb-4">
-          <img
-            src="https://img.icons8.com/?size=100&id=GEeJqVN0aRrU&format=png&color=000000"
-            alt="Login Icon"
-            className="w-8 h-8 ml-3 self-start"
-          />
-          <h1 className="text-3xl font-bold text-gray-800">Login</h1>
+          <h2 className="text-3xl font-extrabold text-black mb-2">
+            Login to HOTDOG LMS!
+          </h2>
         </div>
         <p className="text-sm text-gray-500 mb-6 text-l">
           Login to access your HOTDOG LMS account!
@@ -135,10 +132,20 @@ const LoginPage: React.FC = () => {
             Login
           </button>
         </form>
+
+        <p className="text-sm text-gray-500 mb-6 text-l">
+          Don't have an account?{" "}
+          <button
+            onClick={() => openModal("register")}
+            className="text-indigo-600 font-semibold"
+          >
+            Register here!
+          </button>
+        </p>
       </div>
 
       {activeModal === "register" && (
-        <RegisterModal isOpen={true} onClose={closeModal} />
+        <RegisterPage isOpen={true} onClose={closeModal} />
       )}
       {activeModal === "forgot" && (
         <ForgotPasswordModal isOpen={true} onClose={closeModal} />

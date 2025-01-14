@@ -108,7 +108,7 @@ const ProfilePage: React.FC = () => {
   };
 
   // 프로필 수정 저장
-  const handleSaveChanges = async () => { 
+  const handleSaveChanges = async () => {
     setIsLoading(true);
 
     try {
@@ -160,8 +160,8 @@ const ProfilePage: React.FC = () => {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
           Profile Page
         </h2>
-         {/* Profile Image */}
-         <div className="flex flex-col items-center mb-10">
+        {/* Profile Image */}
+        <div className="flex flex-col items-center mb-10">
           <img
             src="https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"
             alt="Profile"

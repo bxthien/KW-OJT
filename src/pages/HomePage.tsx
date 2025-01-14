@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { notification } from "antd";
-import { getCurrentUser} from "../supabase/authService";
-import { supabase} from "../supabase/supabaseClient";
-import { getUserName, getCourseNames, getCourseDescriptions, getCourseColors } from "../supabase/dataService";
+import { getCurrentUser } from "../supabase/authService";
+import { supabase } from "../supabase/supabaseClient";
+import {
+  getUserName,
+  getCourseNames,
+  getCourseDescriptions,
+  getCourseColors,
+} from "../supabase/dataService";
 import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
 import UserProfileDropdown from "../pages/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
-import { Session } from '@supabase/supabase-js';
+import { Session } from "@supabase/supabase-js";
 
-// Supabase User Å¸ÀÔ Á¤ÀÇ
-type SupabaseUser = Session['user'];
+// Supabase User Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+type SupabaseUser = Session["user"];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(
+    null
+  );
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -56,19 +63,22 @@ const HomePage: React.FC = () => {
       try {
         const courseNames = await getCourseNames();
         const courseDescriptions = await getCourseDescriptions();
-        const courseColors= await getCourseColors();
-        const formattedCourses: Course[] = courseNames.map((courseName, index) => ({
-          id: (index + 1).toString(),
-          title: courseName,
-          description: courseDescriptions[index] || "No description available",
-          tag: "General",
-          chapters: Math.floor(Math.random() * 10) + 1,
-          orders: Math.floor(Math.random() * 50) + 1,
-          color: courseColors[index],
-          certificates: 0,
-          reviews: 0,
-          addedToShelf: 0,
-        }));
+        const courseColors = await getCourseColors();
+        const formattedCourses: Course[] = courseNames.map(
+          (courseName, index) => ({
+            id: (index + 1).toString(),
+            title: courseName,
+            description:
+              courseDescriptions[index] || "No description available",
+            tag: "General",
+            chapters: Math.floor(Math.random() * 10) + 1,
+            orders: Math.floor(Math.random() * 50) + 1,
+            color: courseColors[index],
+            certificates: 0,
+            reviews: 0,
+            addedToShelf: 0,
+          })
+        );
         setCourses(formattedCourses);
       } catch (err) {
         console.error("Error fetching courses:", err);
@@ -114,8 +124,6 @@ const HomePage: React.FC = () => {
     setSelectedDescription(null);
   };
 
-  
-
   return (
     <div className="bg-gray-100 min-h-screen">
       {contextHolder}
@@ -132,7 +140,9 @@ const HomePage: React.FC = () => {
         <section className="grid grid-cols-4 gap-6 mb-6">
           <div className="bg-white p-6 rounded-lg shadow-md col-span-3 flex flex-col h-full">
             <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
-            <CarouselComponent items={[{
+            <CarouselComponent
+              items={[
+                {
                   key: 1,
                   imageUrl:
                     "https://plus.unsplash.com/premium_vector-1724224259580-04c544bd1fad?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG90ZG9nfGVufDB8fDB8fHww",
@@ -159,7 +169,9 @@ const HomePage: React.FC = () => {
                     "https://plus.unsplash.com/premium_vector-1731582099083-969d4dfe2580?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8JUVCJUFBJUE5JUVEJTkxJTlDfGVufDB8fDB8fHww",
                   text: "Achieve your goals!",
                   textColor: "text-white",
-                },]} />
+                },
+              ]}
+            />
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md col-span-1 h-full">

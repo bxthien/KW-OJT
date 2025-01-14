@@ -10,7 +10,6 @@ export interface Course {
   reviews: number;
   addedToShelf: number;
 }
-
 export const courses: Course[] = [
   {
     tag: "FOR KNU",

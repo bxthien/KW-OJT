@@ -8,7 +8,6 @@ import UserPage from "../pages/UserPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ProfilePage from "../pages/ProfilePage";
 
-
 const router = createBrowserRouter([
   {
     path: "/login",
