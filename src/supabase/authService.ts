@@ -1,13 +1,11 @@
 import { supabase } from "./supabaseClient";
 
-/**
- * »ç¿ëÀÚ È¸¿ø°¡ÀÔ ÇÔ¼ö
- * @param email »ç¿ëÀÚ ÀÌ¸ŞÀÏ
- * @param password »ç¿ëÀÚ ºñ¹Ğ¹øÈ£
- * @returns µî·ÏµÈ »ç¿ëÀÚ Á¤º¸
- */
-export const registerUser = async (email: string, password: string, additionalData?: { username: string }) => {
-  // »ç¿ëÀÚ µî·Ï
+export const registerUser = async (
+  email: string,
+  password: string,
+  additionalData?: { username: string }
+) => {
+  // ì‚¬ìš©ì ë“±ë¡
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -21,13 +19,13 @@ export const registerUser = async (email: string, password: string, additionalDa
     throw new Error("Registration failed: User object is null.");
   }
 
-  // Ãß°¡ µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é µ¥ÀÌÅÍº£ÀÌ½º¿¡ ÀúÀå
+  // ì¶”ê°€ ë°ì´í„°ê°€ ìˆìœ¼ë©´ ë°ì´í„°ë² ì´ìŠ¤ì— ì €ì¥
   if (additionalData) {
     const { error: dbError } = await supabase.from("users").insert({
-      user_id: data.user.id, // Supabase auth¿¡¼­ Á¦°øÇÏ´Â »ç¿ëÀÚ ID
+      user_id: data.user.id, // Supabase authì—ì„œ ì œê³µí•˜ëŠ” ì‚¬ìš©ì ID
       email: data.user.email,
-      user_name: additionalData.username, // Ãß°¡ µ¥ÀÌÅÍ ÀúÀå
-      created_at: new Date(), // »ı¼ºÀÏ
+      user_name: additionalData.username, // ì¶”ê°€ ë°ì´í„° ì €ì¥
+      created_at: new Date(), // ìƒì„±ì¼
       is_admin: false,
     });
 
@@ -39,13 +37,6 @@ export const registerUser = async (email: string, password: string, additionalDa
   return data.user;
 };
 
-
-/**
- * »ç¿ëÀÚ ·Î±×ÀÎ ÇÔ¼ö
- * @param email »ç¿ëÀÚ ÀÌ¸ŞÀÏ
- * @param password »ç¿ëÀÚ ºñ¹Ğ¹øÈ£
- * @returns ·Î±×ÀÎµÈ »ç¿ëÀÚ Á¤º¸ ¹× ¼¼¼Ç
- */
 export const loginUser = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -65,10 +56,6 @@ export const loginUser = async (email: string, password: string) => {
   return { user: data.user, session: data.session };
 };
 
-
-/**
- * »ç¿ëÀÚ ·Î±×¾Æ¿ô ÇÔ¼ö
- */
 export const logoutUser = async () => {
   const { error } = await supabase.auth.signOut();
 
@@ -79,10 +66,6 @@ export const logoutUser = async () => {
   return true;
 };
 
-/**
- * ÇöÀç ·Î±×ÀÎµÈ »ç¿ëÀÚ Á¤º¸ °¡Á®¿À±â
- * @returns ÇöÀç »ç¿ëÀÚ Á¤º¸ ¶Ç´Â null
- */
 export const getCurrentUser = async () => {
   const { data, error } = await supabase.auth.getUser();
 
