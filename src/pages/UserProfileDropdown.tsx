@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../supabase/authService";
 import { getCurrentUser } from "../supabase/authService";
 import { getUserName } from "../supabase/dataService";
-import ProfileCard from "../features/HomePage/ui/ProfileCard";
+// import ProfileCard from "../features/HomePage/ui/ProfileCard";
 
 const UserProfileDropdown: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

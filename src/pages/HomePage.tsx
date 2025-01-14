@@ -59,6 +59,8 @@ const HomePage: React.FC = () => {
       }
     };
 
+    console.log(userName);
+
     const fetchCourses = async () => {
       try {
         const courseNames = await getCourseNames();
@@ -90,7 +92,7 @@ const HomePage: React.FC = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((_, session) => {
       if (session?.user) {
         setUser(session.user);
         getUserName(session.user.id).then((fetchedUserName) => {
