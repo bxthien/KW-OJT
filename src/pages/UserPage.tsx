@@ -13,6 +13,7 @@ import {
 import type { TabsProps } from "antd";
 import ChatBot from "./ChatBot";
 import { getUsersData } from "../supabase/dataService";
+// import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
 
 interface User {
@@ -314,6 +315,7 @@ const userColumns = [
             pageSize={pageSize}
             total={userData.length}
             onChange={handlePaginationChange}
+            className="flex justify-center mt-4"
           />
         </div>
       ),
@@ -339,6 +341,7 @@ const userColumns = [
             pageSize={pageSize}
             total={studentData.length}
             onChange={handlePaginationChange}
+            className="flex justify-center mt-4" // 중앙 정렬
           />
         </div>
       ),
