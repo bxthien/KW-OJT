@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -80,15 +81,20 @@ const CoursesPage: React.FC = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data, error } = await supabase.from("courses").select(`
-            course_id, 
-            course_name, 
-            course_description, 
-            color,
-            course_chapter (
-              chapter_id
-            )
-          `);
+      const { data, error } = await supabase
+        .from("courses")
+        .select(
+          `
+        course_id, 
+        course_name, 
+        course_description, 
+        color,
+        course_chapter (
+          chapter_id
+        )
+          `
+        )
+        .order("date_of_update", { ascending: false });
 
       if (error) {
         console.error("Error fetching courses:", error.message);
@@ -113,7 +119,7 @@ const CoursesPage: React.FC = () => {
     fetchCourses();
   }, []);
 
-  const fetchChapters = async (courseId: string) => {
+  const fetchChapters = async () => {
     try {
       const { data, error } = await supabase.from("chapter").select("*");
       // .eq("course_id", courseId);
@@ -149,7 +155,7 @@ const CoursesPage: React.FC = () => {
         setNewDescription(course.description);
         setNewColor(course.color);
         setIsAddingNewCourse(false);
-        fetchChapters(courseId);
+        fetchChapters();
         setIsDrawerOpen(true);
       }
     }
@@ -166,6 +172,21 @@ const CoursesPage: React.FC = () => {
         .from("courses")
         .delete()
         .in("course_id", selectedCourses);
+
+      if (!selectedCourse) {
+        console.error("No course selected.");
+        return;
+      }
+
+      const { error: chapterError } = await supabase
+        .from("course_chapter")
+        .upsert(
+          selectedChapters.map((chapter) => ({
+            course_id: selectedCourse.id,
+            chapter_id: chapter.chapter_id,
+          })),
+          { onConflict: "course_id,chapter_id" }
+        );
 
       if (error) {
         console.error("Error deleting courses:", error.message);
@@ -246,6 +267,48 @@ const CoursesPage: React.FC = () => {
           })
           .eq("course_id", selectedCourse.id);
 
+        // Fetch existing chapters for the selected course
+        const { data: existingChapters, error: fetchError } = await supabase
+          .from("course_chapter")
+          .select("chapter_id")
+          .eq("course_id", selectedCourse.id);
+
+        if (fetchError) {
+          console.error(
+            "Error fetching existing chapters:",
+            fetchError.message
+          );
+          alert("Failed to fetch existing chapters.");
+          return;
+        }
+
+        // Find chapters to delete
+        const chaptersToDelete = existingChapters
+          .filter(
+            (existingChapter) =>
+              !selectedChapters.some(
+                (selectedChapter) =>
+                  selectedChapter.chapter_id === existingChapter.chapter_id
+              )
+          )
+          .map((chapter) => chapter.chapter_id);
+
+        // Delete chapters that are not in selectedChapters
+        if (chaptersToDelete.length > 0) {
+          const { error: deleteError } = await supabase
+            .from("course_chapter")
+            .delete()
+            .in("chapter_id", chaptersToDelete)
+            .eq("course_id", selectedCourse.id);
+
+          if (deleteError) {
+            console.error("Error deleting chapters:", deleteError.message);
+            alert("Failed to delete chapters.");
+            return;
+          }
+        }
+
+        // Upsert selected chapters
         const { error: chapterError } = await supabase
           .from("course_chapter")
           .upsert(
@@ -253,7 +316,7 @@ const CoursesPage: React.FC = () => {
               course_id: selectedCourse.id,
               chapter_id: chapter.chapter_id,
             })),
-            { onConflict: ["course_id", "chapter_id"] }
+            { onConflict: "course_id,chapter_id" }
           );
 
         if (error || chapterError) {
@@ -384,7 +447,10 @@ const CoursesPage: React.FC = () => {
               value={selectedChapters.map((ch) => ch.chapter_id)}
               onChange={(selectedChapterIds) => {
                 const newSelectedChapters = selectedChapterIds
-                  .map((chapterId: string) => {
+                  .filter(
+                    (chapterId): chapterId is string => chapterId !== undefined
+                  )
+                  .map((chapterId) => {
                     const chapter = chapters.find((ch) => ch.id === chapterId);
                     return chapter ? { chapter_id: chapter.id } : null;
                   })
