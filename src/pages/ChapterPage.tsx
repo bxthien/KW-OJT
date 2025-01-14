@@ -1,76 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
   Drawer,
   Form,
   Input,
-  Select,
-  Tag,
   Pagination,
   message,
   Popconfirm,
 } from "antd";
-import { EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons"; // DeleteOutlined
-import type { SelectProps } from "antd";
+import { EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { supabase } from "../supabase/supabaseClient";
 
 interface Chapter {
-  key: string;
-  id: number;
-  name: string;
-  quiz: number;
-  dateCreated: string;
-  lectures: Lecture[];
+  chapter_id: string;
+  chapter_name: string;
+  quiz_cnt: number;
+  date_of_update: string;
 }
-
-interface Lecture {
-  name: string;
-}
-
-// Lecture(fake data can erase)
-const options: SelectProps["options"] = [
-  { value: "Introduction to Git" },
-  { value: "Understanding GitHub" },
-  { value: "Git Commands" },
-  { value: "What is Prompt Engineering?" },
-  { value: "Writing Effective Prompts" },
-];
-
-const tagRender: SelectProps["tagRender"] = (props) => {
-  const { label, closable, onClose } = props;
-  const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  return (
-    <Tag
-      color="blue"
-      onMouseDown={onPreventMouseDown}
-      closable={closable}
-      onClose={onClose}
-      style={{ marginInlineEnd: 4 }}
-    >
-      {label}
-    </Tag>
-  );
-};
 
 const ChapterPage: React.FC = () => {
-  const [chapterData, setChapterData] = useState<Chapter[]>([
-    {
-      key: "1",
-      id: 1,
-      name: "Git & Github",
-      quiz: 30,
-      dateCreated: "15 May 2020 8:00 am",
-      lectures: [
-        { name: "Introduction to Git" },
-        { name: "Understanding GitHub" },
-        { name: "Git Commands" },
-      ],
-    },
-  ]);
-
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -78,96 +28,119 @@ const ChapterPage: React.FC = () => {
   const pageSize = 7;
   const [form] = Form.useForm();
 
-  const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Chapter Name", dataIndex: "name", key: "name" },
-    { title: "Quiz", dataIndex: "quiz", key: "quiz" },
-    { title: "Date Created", dataIndex: "dateCreated", key: "dateCreated" },
-    {
-      title: "Action",
-      key: "action",
-      render: (_: unknown, record: Chapter) => (
-        <Button
-          type="link"
-          onClick={() => handleDetailsClick(record)}
-          icon={<EditOutlined />}
-          style={{ fontSize: "18px" }}
-        />
-      ),
-    },
-  ];
+  // ✅ Supabase에서 Chapter 데이터 조회
+  const fetchChapters = async () => {
+    try {
+      const { data, error } = await supabase.from("chapter").select("*");
 
-  const handleDetailsClick = (record: Chapter) => {
-    setIsAdding(false);
-    setSelectedChapter(record);
-    form.setFieldsValue({
-      name: record.name,
-      quiz: record.quiz,
-      lectures: record.lectures.map((lecture) => lecture.name),
-    });
-    setIsDrawerOpen(true);
-  };
+      if (error) {
+        console.error("Error fetching chapters:", error);
+        message.error("Failed to fetch chapters.");
+        return;
+      }
 
-  const handleAddChapter = () => {
-    setIsAdding(true);
-    setSelectedChapter(null);
-    form.resetFields();
-    setIsDrawerOpen(true);
-  };
-
-  const handleSave = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        if (isAdding) {
-          const newChapter: Chapter = {
-            key: `${chapterData.length + 1}`,
-            id: chapterData.length + 1,
-            name: values.name,
-            quiz: values.quiz,
-            dateCreated: new Date().toLocaleString(),
-            lectures: values.lectures.map((lectureName: string) => ({
-              name: lectureName,
-            })),
-          };
-          setChapterData([...chapterData, newChapter]);
-          message.success("Chapter added successfully!");
-        } else if (selectedChapter) {
-          const updatedData = chapterData.map((chapter) =>
-            chapter.id === selectedChapter.id
-              ? {
-                  ...chapter,
-                  name: values.name,
-                  quiz: values.quiz,
-                  lectures: values.lectures.map((lectureName: string) => ({
-                    name: lectureName,
-                  })),
-                }
-              : chapter
-          );
-          setChapterData(updatedData);
-          message.success("Chapter updated successfully!");
-        }
-        setIsDrawerOpen(false);
-        form.resetFields();
-      })
-      .catch(() => {
-        message.error("Please fill in all fields correctly.");
-      });
-  };
-
-  const handleDelete = () => {
-    if (selectedChapter) {
-      const updatedData = chapterData.filter(
-        (chapter) => chapter.id !== selectedChapter.id
-      );
-      setChapterData(updatedData);
-      message.success("Chapter deleted successfully!");
-      setIsDrawerOpen(false);
+      setChapters(data || []);
+    } catch (err) {
+      console.error("Error:", err);
+      message.error("An unexpected error occurred.");
     }
   };
 
-  // page change
+  // ✅ 페이지 로드 시 Chapter 데이터 가져오기
+  useEffect(() => {
+    fetchChapters();
+  }, []);
+
+  // ✅ Chapter 추가 및 수정
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      const currentDate = new Date().toISOString(); // 현재 날짜 및 시간 설정
+
+      if (isAdding) {
+        // 새로운 Chapter 추가
+        const { error } = await supabase.from("chapter").insert([
+          {
+            chapter_name: values.name,
+            quiz_cnt: values.quiz,
+            date_of_update: currentDate,
+          },
+        ]);
+
+        if (error) {
+          console.error("Error adding chapter:", error);
+          message.error("Failed to add chapter.");
+          return;
+        }
+
+        message.success("Chapter added successfully!");
+      } else if (selectedChapter) {
+        // 기존 Chapter 수정
+        const { error } = await supabase
+          .from("chapter")
+          .update({
+            chapter_name: values.name,
+            quiz_cnt: values.quiz,
+            date_of_update: currentDate, // 수정 시 날짜 업데이트
+          })
+          .eq("chapter_id", selectedChapter.chapter_id);
+
+        if (error) {
+          console.error("Error updating chapter:", error);
+          message.error("Failed to update chapter.");
+          return;
+        }
+
+        message.success("Chapter updated successfully!");
+      }
+
+      fetchChapters();
+      setIsDrawerOpen(false);
+      form.resetFields();
+    } catch (err) {
+      // ✅ TypeScript에서 오류를 명확하게 처리
+      if (err instanceof Error) {
+        console.error("Unexpected error:", err.message);
+        message.error(`An error occurred: ${err.message}`);
+      } else {
+        console.error("Unexpected error:", err);
+        message.error("An unexpected error occurred.");
+      }
+    }
+  };
+
+  // ✅ Chapter 삭제
+  const handleDelete = async () => {
+    if (!selectedChapter) return;
+
+    try {
+      const { error } = await supabase
+        .from("chapter")
+        .delete()
+        .eq("chapter_id", selectedChapter.chapter_id);
+
+      if (error) {
+        console.error("Error deleting chapter:", error);
+        message.error("Failed to delete chapter.");
+        return;
+      }
+
+      message.success("Chapter deleted successfully!");
+      fetchChapters();
+      setIsDrawerOpen(false);
+    } catch (err) {
+      // ✅ TypeScript에서 오류를 명확하게 처리
+      if (err instanceof Error) {
+        console.error("Unexpected error:", err.message);
+        message.error(`An error occurred: ${err.message}`);
+      } else {
+        console.error("Unexpected error:", err);
+        message.error("An unexpected error occurred.");
+      }
+    }
+  };
+
+  // 페이지네이션 변경 핸들러
   const handlePaginationChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -179,7 +152,12 @@ const ChapterPage: React.FC = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={handleAddChapter}
+          onClick={() => {
+            setIsAdding(true);
+            setSelectedChapter(null);
+            form.resetFields();
+            setIsDrawerOpen(true);
+          }}
         >
           Add Chapter
         </Button>
@@ -194,24 +172,37 @@ const ChapterPage: React.FC = () => {
         }}
       >
         <Table
-          columns={columns}
-          dataSource={chapterData.slice(
+          columns={[
+            { title: "ID", dataIndex: "chapter_id", key: "id" },
+            { title: "Chapter Name", dataIndex: "chapter_name", key: "name" },
+            { title: "Quiz Count", dataIndex: "quiz_cnt", key: "quiz" },
+            { title: "Last Updated", dataIndex: "date_of_update", key: "date" },
+            {
+              title: "Action",
+              key: "action",
+              render: (_: unknown, record: Chapter) => (
+                <Button
+                  type="link"
+                  onClick={() => {
+                    setIsAdding(false);
+                    setSelectedChapter(record);
+                    form.setFieldsValue({
+                      name: record.chapter_name,
+                      quiz: record.quiz_cnt,
+                    });
+                    setIsDrawerOpen(true);
+                  }}
+                  icon={<EditOutlined />}
+                  style={{ fontSize: "18px" }}
+                />
+              ),
+            },
+          ]}
+          dataSource={chapters.slice(
             (currentPage - 1) * pageSize,
             currentPage * pageSize
           )}
           pagination={false}
-          bordered={false}
-          style={{
-            borderCollapse: "collapse",
-            width: "100%",
-          }}
-          rowClassName={() => "custom-row"}
-          onRow={() => ({
-            style: {
-              borderBottom: "1px solid #e8e8e8",
-              padding: "12px 0",
-            },
-          })}
         />
         <div
           style={{
@@ -223,18 +214,16 @@ const ChapterPage: React.FC = () => {
           <Pagination
             current={currentPage}
             pageSize={pageSize}
-            total={chapterData.length}
+            total={chapters.length}
             onChange={handlePaginationChange}
-            style={{
-              display: "inline-block",
-            }}
           />
         </div>
       </div>
 
-      {/* Drawer */}
       <Drawer
-        title={isAdding ? "Add Chapter" : `Edit ${selectedChapter?.name}`}
+        title={
+          isAdding ? "Add Chapter" : `Edit ${selectedChapter?.chapter_name}`
+        }
         placement="right"
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
@@ -252,34 +241,27 @@ const ChapterPage: React.FC = () => {
             <Input placeholder="Enter chapter name" />
           </Form.Item>
           <Form.Item
-            label="Quiz"
+            label="Quiz Count"
             name="quiz"
             rules={[{ required: true, message: "Please enter the quiz count" }]}
           >
             <Input type="number" placeholder="Enter quiz count" />
           </Form.Item>
-          <Form.Item label="Lectures" name="lectures">
-            <Select
-              mode="multiple"
-              tagRender={tagRender}
-              options={options}
-              placeholder="Add lectures"
-            />
-          </Form.Item>
         </Form>
 
-        {/* Delete & Save Buttons */}
         <div className="flex justify-end mt-4 gap-2">
-          <Popconfirm
-            title="Are you sure to delete this chapter?"
-            onConfirm={handleDelete}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />}>
-              Delete
-            </Button>
-          </Popconfirm>
+          {!isAdding && (
+            <Popconfirm
+              title="Are you sure to delete this chapter?"
+              onConfirm={handleDelete}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" disabled danger icon={<DeleteOutlined />}>
+                Delete
+              </Button>
+            </Popconfirm>
+          )}
           <Button type="primary" onClick={handleSave}>
             Save
           </Button>
