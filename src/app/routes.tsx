@@ -7,6 +7,7 @@ import Layout from "./layout";
 import UserPage from "../pages/UserPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ProfilePage from "../pages/ProfilePage";
+import ChapterPage from "../pages/ChapterPage";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: "/courses",
         element: <CoursesPage />,
+      },
+      {
+        path: "/chapter",
+        element: <ChapterPage />,
       },
       {
         path: "/users",
