@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Tabs,
   Table,
@@ -9,108 +8,226 @@ import {
   Input,
   message,
   Pagination,
+  Switch,
 } from "antd";
 import type { TabsProps } from "antd";
-import {
-  userData as initialUserData,
-  studentData as initialStudentData,
-} from "../shared/constant/user";
-import type { Course } from "../shared/constant/course";
-import { courses } from "../shared/constant/course";
+import { getUsersData } from "../supabase/dataService";
+// import { courses } from "../shared/constant/course";
+import { supabase } from "../supabase/supabaseClient";
+
+interface User {
+  key: string;
+  index: number;
+  name: string;
+  type: string; // "Admin" 또는 "User"
+  date: string;
+  email: string;
+  is_admin: boolean; // 관리자 여부
+  contact?: string; // 연락처 (옵션)
+  birth?: string; // 생년월일 (옵션)
+  age?: number; // 나이 (옵션)
+}
+
+interface Student {
+  key: string;
+  index: number;
+  name: string;
+  type: string; // 항상 "User"
+  status: string; // 예: "Active"
+  joined: string;
+  course: string;
+  contact?: string; // 연락처 (옵션)
+  birth?: string; // 생년월일 (옵션)
+  age?: number; // 나이 (옵션)
+}
 
 const UserPage: React.FC = () => {
-  const [userData, setUserData] = useState(
-    initialUserData.map((item, index) => ({
-      ...item,
-      index: index + 1, // 번호 추가
-    }))
-  );
-  const [studentData, setStudentData] = useState(
-    initialStudentData.map((item, index) => ({
-      ...item,
-      index: index + 1, // 번호 추가
-    }))
-  );
+  const [userData, setUserData] = useState<User[]>([]); // User 배열
+  const [studentData, setStudentData] = useState<Student[]>([]); // Student 배열
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
-
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  // const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null); // 선택된 User
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null); // 선택된 Student
+  // const [selectedCourse, setSelectedCourse] = useState();
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // 한 페이지에 표시할 데이터 수
+  const [pageSize, setPageSize] = useState(10);
   const [form] = Form.useForm();
+  console.log(selectedStudent);
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (currentTab === "1") {
+        if (selectedUser) {
+          // Update Existing User
+          const { error } = await supabase
+            .from("users")
+            .update({ user_name: values.name, email: values.email })
+            .eq("user_name", selectedUser.key); // Match the correct ID for updating
+
+          if (error) {
+            message.error("Failed to update user.");
+            console.error("Update error:", error);
+            return;
+          }
+
+          const updatedData = userData.map((user) =>
+            user.key === selectedUser.key
+              ? { ...user, name: values.name, email: values.email }
+              : user
+          );
+          setUserData(updatedData);
+          message.success("User updated successfully.");
+        } else {
+          // Add New User with is_admin: true
+          const { data, error } = await supabase
+            .from("users")
+            .insert([
+              {
+                user_name: values.name,
+                email: values.email,
+                is_admin: true, // Always set is_admin to true
+              },
+            ])
+            .select()
+            .single();
+
+          if (error || !data) {
+            message.error("Failed to add user.");
+            console.error("Insert error:", error);
+            return;
+          }
+
+          const newUser = {
+            key: data.id,
+            index: userData.length + 1,
+            name: data.user_name,
+            type: "Admin", // Set type as Admin
+            date: new Date().toISOString(),
+            email: data.email,
+            is_admin: true, // is_admin 필수 속성 추가
+          };
+
+          setUserData([...userData, newUser]);
+          message.success("User added successfully.");
+        }
+      }
+
+      setIsDrawerOpen(false);
+      form.resetFields();
+    } catch (error) {
+      message.error("Validation failed.");
+      console.error("Validation error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const users = await getUsersData();
+
+        // Admin 사용자만 필터링하여 Users 데이터로 설정
+        const formattedUsers = users
+          .filter((user) => user.is_admin) // is_admin이 true인 경우
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "Admin", // Admin으로 설정
+            date: user.created_at,
+            email: user.email,
+            is_admin: user.is_admin,
+            contact: user.contact,
+            status: user.status,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setUserData(formattedUsers);
+
+        // Admin이 아닌 사용자만 Students 데이터로 설정
+        const formattedStudents = users
+          .filter((user) => !user.is_admin) // is_admin이 false인 경우
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "User",
+            date: user.created_at,
+            email: user.email,
+            status: "Active", // 예시로 Active 상태 추가
+            joined: user.created_at,
+            course: "No course assigned",
+            contact: user.contact,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setStudentData(formattedStudents);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleStatusChange = async (checked: boolean, record: User) => {
+    try {
+      // 데이터베이스 업데이트
+      const { error } = await supabase
+        .from("users")
+        .update({ status: checked }) // status를 true/false로 업데이트
+        .eq("user_id", record.key); // record.key가 user ID에 해당
+
+      if (error) {
+        message.error("Failed to update status.");
+        console.error("Update error:", error);
+        return;
+      }
+
+      // 로컬 상태 업데이트
+      const updatedData = userData.map((user) =>
+        user.key === record.key ? { ...user, status: checked } : user
+      );
+      setUserData(updatedData);
+
+      message.success("Status updated successfully.");
+    } catch (err) {
+      console.error("Error updating status:", err);
+      message.error("An error occurred while updating the status.");
+    }
+  };
 
   const userColumns = [
-    {
-      title: "No.",
-      dataIndex: "index",
-      key: "index",
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Date",
-      dataIndex: "date",
-      key: "date",
-    },
-    {
-      title: "Contact",
-      dataIndex: "contact",
-      key: "contact",
-    },
-  ];
-
-  const studentColumns = [
-    {
-      title: "No.",
-      dataIndex: "index",
-      key: "index",
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-    },
+    { title: "No.", dataIndex: "index", key: "index" },
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Contact", dataIndex: "contact", key: "contact" },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status: boolean, record: User) => (
+        <Switch
+          checked={status} // Reflects the current status
+          onClick={(_, event) => {
+            event.stopPropagation(); // Prevents row click
+          }}
+          onChange={(checked) => handleStatusChange(checked, record)} // 상태 변경 처리
+        />
+      ),
     },
-    {
-      title: "Joined",
-      dataIndex: "joined",
-      key: "joined",
-    },
-    {
-      title: "Course",
-      dataIndex: "course",
-      key: "course",
-      render: (text: string) => {
-        const courseExists = courses.some((course) => course.title === text);
-        return courseExists ? (
-          <Button type="link" onClick={() => handleStudentCourseClick(text)}>
-            {text}
-          </Button>
-        ) : (
-          <span>{text}</span> // 존재하지 않는 경우 클릭 불가
-        );
-      },
-    },
+  ];
+
+  const studentColumns = [
+    { title: "No.", dataIndex: "index", key: "index" },
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Date", dataIndex: "date", key: "date" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Contact", dataIndex: "contact", key: "contact" },
+    { title: "Birth", dataIndex: "birth", key: "birth" },
+    { title: "Age", dataIndex: "age", key: "age" },
+    { title: "Status", dataIndex: "status", key: "status" },
   ];
 
   const handlePaginationChange = (page: number, pageSize: number) => {
@@ -118,79 +235,25 @@ const UserPage: React.FC = () => {
     setPageSize(pageSize);
   };
 
-  const handleStudentCourseClick = (courseName: string) => {
-    const selected = courses.find((course) => course.title === courseName);
-    if (selected) {
-      setSelectedCourse(selected);
-      setIsChapterDrawerOpen(true);
-    } else {
-      message.error("Course details not found.");
-    }
-  };
+  // const handleStudentCourseClick = (courseName: string) => {
+  //   const selected = courses.find((course) => course.title === courseName);
+  //   if (selected) {
+  //     setSelectedCourse(selected);
+  //     setIsChapterDrawerOpen(true);
+  //   } else {
+  //     message.error("Course details not found.");
+  //   }
+  // };
 
-  const handleRowClick = (record: any, isStudent: boolean) => {
+  const handleRowClick = (record: User | Student, isStudent: boolean) => {
     if (isStudent) {
-      setSelectedStudent(record);
+      setSelectedStudent(record as Student); // Student 타입으로 처리
       form.setFieldsValue(record);
     } else {
-      setSelectedUser(record);
+      setSelectedUser(record as User); // User 타입으로 처리
       form.setFieldsValue(record);
     }
-    setIsDrawerOpen(true);
-  };
-
-  const handleSave = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        if (currentTab === "1") {
-          if (selectedUser) {
-            // Update existing user
-            const updatedData = userData.map((user: any) =>
-              user.key === selectedUser.key ? { ...user, ...values } : user
-            );
-            setUserData(updatedData);
-            message.success("User updated successfully.");
-          } else {
-            // Add new user
-            const newKey = (userData.length + 1).toString();
-            const newUser = {
-              key: newKey,
-              ...values,
-              index: userData.length + 1,
-            };
-            setUserData([...userData, newUser]);
-            message.success("User added successfully.");
-          }
-        } else {
-          if (selectedStudent) {
-            // Update existing student
-            const updatedData = studentData.map((student) =>
-              student.key === selectedStudent.key
-                ? { ...student, ...values }
-                : student
-            );
-            setStudentData(updatedData);
-            message.success("Student updated successfully.");
-          } else {
-            // Add new student
-            const newKey = (studentData.length + 1).toString();
-            const newStudent = {
-              key: newKey,
-              ...values,
-              index: studentData.length + 1,
-            };
-            setStudentData([...studentData, newStudent]);
-            message.success("Student added successfully.");
-          }
-        }
-        setIsDrawerOpen(false);
-        form.resetFields(); // Clear form fields
-      })
-      .catch((error) => {
-        message.error("Failed to save changes.");
-        console.error(error);
-      });
+    setIsDrawerOpen(true); // Drawer 열기
   };
 
   const items: TabsProps["items"] = [
@@ -199,7 +262,8 @@ const UserPage: React.FC = () => {
       label: "Users",
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between mb-4">
+            <h1 className="text-2xl font-bold">Users</h1>
             <Button
               type="primary"
               onClick={() => {
@@ -211,6 +275,7 @@ const UserPage: React.FC = () => {
               Add User
             </Button>
           </div>
+
           <Table
             columns={userColumns}
             dataSource={userData.slice(
@@ -218,15 +283,11 @@ const UserPage: React.FC = () => {
               currentPage * pageSize
             )}
             pagination={false}
-            className="antd-table"
-            rowClassName="hover-row"
             onRow={(record) => ({
               onClick: () => handleRowClick(record, false),
             })}
           />
           <Pagination
-            align="center"
-            className="mt-4"
             current={currentPage}
             pageSize={pageSize}
             total={userData.length}
@@ -240,18 +301,6 @@ const UserPage: React.FC = () => {
       label: "Students",
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
-          <div className="flex justify-end mb-4">
-            <Button
-              type="primary"
-              onClick={() => {
-                setSelectedStudent(null);
-                form.resetFields();
-                setIsDrawerOpen(true);
-              }}
-            >
-              Add Student
-            </Button>
-          </div>
           <Table
             columns={studentColumns}
             dataSource={studentData.slice(
@@ -259,15 +308,11 @@ const UserPage: React.FC = () => {
               currentPage * pageSize
             )}
             pagination={false}
-            className="antd-table"
-            rowClassName="hover-row"
             onRow={(record) => ({
               onClick: () => handleRowClick(record, true),
             })}
           />
           <Pagination
-            align="center"
-            className="mt-4"
             current={currentPage}
             pageSize={pageSize}
             total={studentData.length}
@@ -281,32 +326,24 @@ const UserPage: React.FC = () => {
   return (
     <div className="flex h-screen font-sans bg-gray-100 overflow-auto">
       <div className="scroll-container flex-grow bg-gray-50 p-5">
-        <h1 className="text-2xl font-bold mb-5 text-black">Users</h1>
         <Tabs
           defaultActiveKey="1"
           items={items}
           onChange={(key) => {
             setCurrentTab(key);
-            setCurrentPage(1); // 탭 변경 시 첫 페이지로 리셋
+            setCurrentPage(1);
           }}
         />
       </div>
       <Drawer
-        title={
-          currentTab === "1"
-            ? selectedUser
-              ? "Edit User"
-              : "Add User"
-            : selectedStudent
-            ? "Edit Student"
-            : "Add Student"
-        }
+        title={selectedUser ? "Edit User" : "Add User"}
         placement="right"
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         width={500}
       >
         <Form form={form} layout="vertical">
+          {/* 이름 필드 - 수정 가능 */}
           <Form.Item
             label="Name"
             name="name"
@@ -369,71 +406,21 @@ const UserPage: React.FC = () => {
             </>
           )}
         </Form>
-        <div className="flex justify-between mt-4">
-          {selectedUser || selectedStudent ? (
-            <Button
-              type="default"
-              danger
-              onClick={() => {
-                if (currentTab === "1") {
-                  const updatedData = userData.filter(
-                    (user) => user.key !== selectedUser.key
-                  );
-                  setUserData(updatedData);
-                  message.success("User deleted successfully.");
-                } else {
-                  const updatedData = studentData.filter(
-                    (student) => student.key !== selectedStudent.key
-                  );
-                  setStudentData(updatedData);
-                  message.success("Student deleted successfully.");
-                }
-                setIsDrawerOpen(false);
-              }}
-            >
-              Delete
-            </Button>
-          ) : null}
-          <Button type="primary" onClick={handleSave}>
+
+        {/* 하단 버튼 */}
+        <div className="flex justify-end mt-4">
+          <Button type="default" onClick={() => setIsDrawerOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="primary" onClick={handleSave} className="ml-2">
             Save
           </Button>
         </div>
       </Drawer>
 
-      <Drawer
-        title={`Course: ${selectedCourse?.title}`}
-        placement="right"
-        onClose={() => {
-          setIsChapterDrawerOpen(false); // Course Details Drawer 닫기
-          setSelectedStudent(null); // Edit Drawer 관련 상태 초기화
-          setSelectedUser(null);
-          setIsDrawerOpen(false); // Edit Drawer 강제 닫기
-        }}
-        open={isChapterDrawerOpen}
-        width={500}
-      >
-        <h2 className="text-lg font-bold mb-4">Course Details</h2>
-        <Table
-          columns={[
-            { title: "Chapter Name", dataIndex: "name", key: "name" },
-            {
-              title: "Quiz Count",
-              dataIndex: "quizCount",
-              key: "quizCount",
-            },
-            {
-              title: "Correct Answers",
-              dataIndex: "correctAnswers",
-              key: "correctAnswers",
-            },
-          ]}
-          dataSource={selectedCourse?.chapterDetails}
-          rowKey="name"
-          pagination={false}
-        />
-      </Drawer>
-
-      <div className="absolute bottom-5 right-5">{/* <ChatBot /> */}</div>
+      {/* <div className="absolute bottom-5 right-5">
+        <ChatBot />
+      </div> */}
     </div>
   );
 };

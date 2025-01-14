@@ -19,6 +19,13 @@ interface Course {
   description: string;
 }
 
+interface Course {
+  id: string;
+  title: string;
+  color: string;
+  description: string;
+}
+
 const CourseCard: React.FC<{
   course: Course;
   onClick: (courseId: string) => void;
