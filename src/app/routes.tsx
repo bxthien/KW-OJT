@@ -8,6 +8,7 @@ import UserPage from "../pages/UserPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ProfilePage from "../pages/ProfilePage";
 import ChapterPage from "../pages/ChapterPage";
+import LecturePage from "../pages/LecturePage";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/chapter",
         element: <ChapterPage />,
+      },
+      {
+        path: "/lectures",
+        element: <LecturePage />,
       },
       {
         path: "/users",

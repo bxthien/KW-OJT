@@ -12,15 +12,22 @@ import {
 import { EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { supabase } from "../supabase/supabaseClient";
 
+interface Lectute {
+  lecture_id: string;
+  lecture_name: string;
+}
+
 interface Chapter {
   chapter_id: string;
   chapter_name: string;
   quiz_cnt: number;
   date_of_update: string;
+  lecture: Lectute[];
 }
 
 const ChapterPage: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [lectures, setLectures] = useState<Lectute[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -31,7 +38,21 @@ const ChapterPage: React.FC = () => {
   // ✅ Supabase에서 Chapter 데이터 조회
   const fetchChapters = async () => {
     try {
-      const { data, error } = await supabase.from("chapter").select("*");
+      const { data, error } = await supabase
+        .from("chapter")
+        .select(
+          `
+        chapter_id,
+        chapter_name,
+        quiz_cnt,
+        date_of_update,
+        lecture (
+          lecture_id,
+          lecture_name
+        )
+        `
+        )
+        .order("date_of_update", { ascending: false });
 
       if (error) {
         console.error("Error fetching chapters:", error);
@@ -39,19 +60,17 @@ const ChapterPage: React.FC = () => {
         return;
       }
 
-      setChapters(data || []);
+      setChapters(data);
     } catch (err) {
       console.error("Error:", err);
       message.error("An unexpected error occurred.");
     }
   };
 
-  // ✅ 페이지 로드 시 Chapter 데이터 가져오기
   useEffect(() => {
     fetchChapters();
   }, []);
 
-  // ✅ Chapter 추가 및 수정
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
@@ -186,6 +205,7 @@ const ChapterPage: React.FC = () => {
                   onClick={() => {
                     setIsAdding(false);
                     setSelectedChapter(record);
+                    setLectures(record.lecture);
                     form.setFieldsValue({
                       name: record.chapter_name,
                       quiz: record.quiz_cnt,
@@ -247,6 +267,19 @@ const ChapterPage: React.FC = () => {
           >
             <Input type="number" placeholder="Enter quiz count" />
           </Form.Item>
+          <div className="flex flex-col">
+            <div>Lectures:</div>
+            <div className="flex gap-2 py-2">
+              {lectures.map((lecture) => (
+                <div
+                  className="bg-slate-300 rounded-md p-2"
+                  key={lecture.lecture_id}
+                >
+                  {lecture.lecture_name}
+                </div>
+              ))}
+            </div>
+          </div>
         </Form>
 
         <div className="flex justify-end mt-4 gap-2">
