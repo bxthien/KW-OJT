@@ -39,9 +39,9 @@ const CourseCard: React.FC<{
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
     style={{
-      maxWidth: "20rem", // ì¹´ë“œê°? ????´?“œ?•˜ì§? ?•Š?„ë¡? ìµœë?? ?„ˆë¹? ?„¤? •
-      width: "100%", // ë¶?ëª? ?š”?†Œ?— ë§žê²Œ ?„ˆë¹„ë?? ?„¤? •
-      boxSizing: "border-box", // ?Œ¨?”©ê³? ë³´ë”ë¥? ?¬?•¨?•œ ?„ˆë¹? ê³„ì‚°
+      maxWidth: "20rem", // ì¹´ë“œï¿½? ????ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ï¿½? ìµœï¿½?? ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½
+      width: "100%", // ï¿½?ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ë§žê²Œ ?ï¿½ï¿½ë¹„ï¿½?? ?ï¿½ï¿½?ï¿½ï¿½
+      boxSizing: "border-box", // ?ï¿½ï¿½?ï¿½ï¿½ï¿½? ë³´ë”ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½? ê³„ì‚°
     }}
     onClick={() => onClick(course.id)}
   >
@@ -232,8 +232,7 @@ const CoursesPage: React.FC = () => {
             color: newColor,
           },
         ])
-        .select("*")
-        .single();
+        .select();
 
       if (error || !data) {
         console.error("Error adding new course:", error?.message);
@@ -242,13 +241,36 @@ const CoursesPage: React.FC = () => {
       }
 
       const newCourse = {
-        id: data.course_id,
+        id: data[0].course_id,
         title: newTitle,
         color: newColor,
         description: newDescription,
       };
 
-      setCourses([...courses, newCourse]);
+      const { error: chapterError } = await supabase
+        .from("course_chapter")
+        .upsert(
+          selectedChapters.map((chapter) => ({
+            course_id: newCourse.id,
+            chapter_id: chapter.chapter_id,
+          })),
+          { onConflict: "course_id,chapter_id" }
+        );
+
+      if (chapterError) {
+        console.error("Error saving course chapters:", chapterError.message);
+        alert("Failed to save course chapters.");
+        return;
+      }
+
+      setSelectedChapters([]);
+      setNewTitle("");
+      setNewDescription("");
+      setNewColor("#1677ff");
+
+      fetchCourses();
+
+      // setCourses([...courses, newCourse]);
       setIsDrawerOpen(false);
     } catch (err) {
       console.error("Error saving new course:", err);
@@ -411,7 +433,13 @@ const CoursesPage: React.FC = () => {
             : `Edit Course - ${selectedCourse?.title}`
         }
         placement="right"
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedChapters([]);
+          setNewTitle("");
+          setNewDescription("");
+          setNewColor("#1677ff");
+        }}
         open={isDrawerOpen}
       >
         <div>
@@ -515,7 +543,17 @@ const CoursesPage: React.FC = () => {
           </div>
 
           <div className="mt-4 flex justify-end gap-4">
-            <Button onClick={() => setIsDrawerOpen(false)}>Close</Button>
+            <Button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                setSelectedChapters([]);
+                setNewTitle("");
+                setNewDescription("");
+                setNewColor("#1677ff");
+              }}
+            >
+              Close
+            </Button>
             <Button
               type="primary"
               onClick={
