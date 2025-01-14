@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
           }
         >
           <img
-            src="https://img.icons8.com/?size=100&id=16134&format=png&color=000000"
+            src="https://img.icons8.com/?size=100&id=TPXhNjRudwmY&format=png&color=000000"
             alt="Dashboard Icon"
             className="w-6 h-6 mr-2"
           />
@@ -67,6 +67,22 @@ const Sidebar: React.FC = () => {
             className="w-6 h-6 mr-2"
           />
           <span className={`${isOpen ? "block" : "hidden"}`}>Courses</span>
+        </NavLink>
+
+        <NavLink
+          to="/chapter"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 rounded-lg ${
+              isActive ? "bg-blue-300" : "bg-blue-100"
+            } hover:bg-blue-300 transition-colors`
+          }
+        >
+          <img
+            src="https://img.icons8.com/?size=100&id=85767&format=png&color=000000"
+            alt="Settings Icon"
+            className="w-6 h-6 mr-2"
+          />
+          <span className={`${isOpen ? "block" : "hidden"}`}>Chapters</span>
         </NavLink>
 
         <NavLink
@@ -99,22 +115,6 @@ const Sidebar: React.FC = () => {
             className="w-6 h-6 mr-2"
           />
           <span className={`${isOpen ? "block" : "hidden"}`}>Profile</span>
-        </NavLink>
-
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded-lg ${
-              isActive ? "bg-blue-300" : "bg-blue-100"
-            } hover:bg-blue-300 transition-colors`
-          }
-        >
-          <img
-            src="https://img.icons8.com/?size=100&id=82535&format=png&color=000000"
-            alt="Settings Icon"
-            className="w-6 h-6 mr-2"
-          />
-          <span className={`${isOpen ? "block" : "hidden"}`}>Settings</span>
         </NavLink>
       </nav>
     </aside>
