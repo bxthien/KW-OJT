@@ -167,7 +167,7 @@ const ChapterPage: React.FC = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl text-black font-bold">Chapter Page</h1>
+        <h1 className="text-2xl text-black font-bold"></h1>
         <Button
           type="primary"
           icon={<PlusOutlined />}

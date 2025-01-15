@@ -371,7 +371,7 @@ const CoursesPage: React.FC = () => {
     <div>
       <div className="p-8 h-screen overflow-auto bg-gray-100">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-black">Courses</h1>
+          <h1 className="text-2xl font-bold text-black"></h1>
           {isDeleteMode ? (
             <div className="flex gap-2">
               <Button type="default" onClick={() => setIsDeleteMode(false)}>

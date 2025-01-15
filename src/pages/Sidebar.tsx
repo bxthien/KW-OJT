@@ -70,7 +70,7 @@ const Sidebar: React.FC = () => {
         </NavLink>
 
         <NavLink
-          to="/chapter"
+          to="/chapters"
           className={({ isActive }) =>
             `flex items-center py-2 px-4 rounded-lg ${
               isActive ? "bg-blue-300" : "bg-blue-100"
