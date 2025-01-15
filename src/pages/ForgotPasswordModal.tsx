@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabase/supabaseClient"; // Ensure this path is correct
+import { supabase } from "../supabase/supabaseClient";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   const [email, setEmail] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -32,36 +33,33 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+    setIsLoading(true);
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/change-password`, // 커스텀 리셋 링크
+        redirectTo: "http://localhost:5173/change-password",
       });
-  
+
       if (error) {
-        if (error.message.includes("rate limit exceeded")) {
-          alert("Too many requests. Please try again later.");
-        } else {
-          alert("Failed to send password reset email. Please try again.");
-        }
-        console.error("Error:", error.message);
+        console.error("Error sending reset email:", error.message);
+        alert("Failed to send reset email. Please try again.");
         return;
       }
-  
+
       setIsSuccess(true);
-  
+
       setTimeout(() => {
-        setIsSuccess(false); // 성공 메시지 숨기기
+        setIsSuccess(false);
         onClose();
-        setEmail(""); // 이메일 필드 초기화
+        setEmail("");
       }, 3000);
     } catch (err) {
       console.error("Unexpected error:", err);
       alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  
 
   return (
     <div
@@ -115,8 +113,9 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700"
+                disabled={isLoading}
               >
-                Send Reset Link
+                {isLoading ? "Sending..." : "Send Reset Link"}
               </button>
             </form>
 

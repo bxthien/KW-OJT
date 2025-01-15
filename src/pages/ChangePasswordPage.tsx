@@ -1,24 +1,43 @@
 import React, { useState } from "react";
+import { supabase } from "../supabase/supabaseClient";
 
 const ChangePasswordPage: React.FC = () => {
-  const [password, setPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // 배경 이미지 URL 링크
   const backgroundImageUrl =
     "https://cdn.pixabay.com/photo/2022/11/06/04/57/cat-7573258_1280.png"; // 원하는 PNG 이미지 링크로 변경하세요.
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
+    if (newPassword !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
 
-    alert("Password successfully changed!");
-    setPassword("");
-    setConfirmPassword("");
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        console.error("Error updating password:", error.message);
+        alert("Failed to update password. Please try again.");
+        return;
+      }
+
+      alert("Password updated successfully. You can now log in with your new password.");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -38,7 +57,7 @@ const ChangePasswordPage: React.FC = () => {
           your account.
         </p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleChangePassword}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-black mb-1">
               Create Password
@@ -46,8 +65,8 @@ const ChangePasswordPage: React.FC = () => {
             <input
               type="password"
               placeholder="Enter your new password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               className="w-full p-4 bg-white bg-opacity-20 text-black border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               required
             />
@@ -70,8 +89,9 @@ const ChangePasswordPage: React.FC = () => {
           <button
             type="submit"
             className="w-full bg-indigo-500 text-white py-3 rounded-lg font-semibold hover:bg-indigo-600"
+            disabled={isLoading}
           >
-            Set password
+            {isLoading ? "Saving..." : "Set password"}
           </button>
         </form>
       </div>
