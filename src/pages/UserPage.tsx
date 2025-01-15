@@ -20,231 +20,218 @@ interface User {
   key: string;
   index: number;
   name: string;
-  type: string; // "Admin" ¶Ç´Â "User"
+  type: string; // "Admin" ï¿½Ç´ï¿½ "User"
   date: string;
   email: string;
-  is_admin: boolean; // °ü¸®ÀÚ ¿©ºÎ
-  contact?: string; // ¿¬¶ôÃ³ (¿É¼Ç)
-  birth?: string; // »ý³â¿ùÀÏ (¿É¼Ç)
-  age?: number; // ³ªÀÌ (¿É¼Ç)
+  is_admin: boolean; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+  contact?: string; // ï¿½ï¿½ï¿½ï¿½Ã³ (ï¿½É¼ï¿½)
+  birth?: string; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½É¼ï¿½)
+  age?: number; // ï¿½ï¿½ï¿½ï¿½ (ï¿½É¼ï¿½)
 }
 
 interface Student {
   key: string;
   index: number;
   name: string;
-  type: string; // Ç×»ó "User"
+  type: string; // ï¿½×»ï¿½ "User"
   email: string;
-  contact?: string; // ¿¬¶ôÃ³ (¿É¼Ç)
-  birth?: string; // »ý³â¿ùÀÏ (¿É¼Ç)
-  age?: number; // ³ªÀÌ (¿É¼Ç)
+  contact?: string; // ï¿½ï¿½ï¿½ï¿½Ã³ (ï¿½É¼ï¿½)
+  birth?: string; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½É¼ï¿½)
+  age?: number; // ï¿½ï¿½ï¿½ï¿½ (ï¿½É¼ï¿½)
 }
 
-
-
-
 const UserPage: React.FC = () => {
-  const [userData, setUserData] = useState<User[]>([]); // User ¹è¿­
-  const [studentData, setStudentData] = useState<Student[]>([]); // Student ¹è¿­
+  const [userData, setUserData] = useState<User[]>([]); // User ï¿½è¿­
+  const [studentData, setStudentData] = useState<Student[]>([]); // Student ï¿½è¿­
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); // ¼±ÅÃµÈ User
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null); // ¼±ÅÃµÈ Student
+  const [selectedUser, setSelectedUser] = useState<User | null>(null); // ï¿½ï¿½ï¿½Ãµï¿½ User
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null); // ï¿½ï¿½ï¿½Ãµï¿½ Student
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [form] = Form.useForm();
   const handleSave = async () => {
-  try {
-    const values = await form.validateFields();
+    try {
+      const values = await form.validateFields();
 
-    if (currentTab === "1") {
-      if (selectedUser) {
-        // Update Existing User
+      if (currentTab === "1") {
+        if (selectedUser) {
+          // Update Existing User
+          const { error } = await supabase
+            .from("users")
+            .update({ user_name: values.name })
+            .eq("user_id", selectedUser.key);
+
+          if (error) {
+            message.error("Failed to update user.");
+            console.error("Update error:", error);
+            return;
+          }
+
+          const updatedData = userData.map((user) =>
+            user.key === selectedUser.key
+              ? { ...user, name: values.name }
+              : user
+          );
+          setUserData(updatedData);
+          message.success("User updated successfully.");
+        } else {
+          // Add New User
+          const { data, error } = await supabase
+            .from("users")
+            .insert([
+              {
+                user_name: values.name,
+                email: values.email,
+                is_admin: true, // Default to Admin
+              },
+            ])
+            .select()
+            .single();
+
+          if (error || !data) {
+            message.error("Failed to add user.");
+            console.error("Insert error:", error);
+            return;
+          }
+
+          const newUser = {
+            key: data.id,
+            index: userData.length + 1,
+            name: data.user_name,
+            type: "Admin", // Set type as Admin
+            date: new Date().toISOString(),
+            email: data.email,
+            is_admin: true,
+          };
+
+          setUserData([...userData, newUser]);
+          message.success("User added successfully.");
+        }
+      } else if (currentTab === "2" && selectedStudent) {
+        // Update Existing Student
         const { error } = await supabase
           .from("users")
           .update({ user_name: values.name })
-          .eq("user_id", selectedUser.key);
+          .eq("user_id", selectedStudent.key);
 
         if (error) {
-          message.error("Failed to update user.");
+          message.error("Failed to update student.");
           console.error("Update error:", error);
           return;
         }
 
-        const updatedData = userData.map((user) =>
-          user.key === selectedUser.key ? { ...user, name: values.name } : user
+        const updatedData = studentData.map((student) =>
+          student.key === selectedStudent.key
+            ? { ...student, name: values.name }
+            : student
         );
-        setUserData(updatedData);
-        message.success("User updated successfully.");
-      } else {
-        // Add New User
-        const { data, error } = await supabase
-          .from("users")
-          .insert([
-            {
-              user_name: values.name,
-              email: values.email,
-              is_admin: true, // Default to Admin
-            },
-          ])
-          .select()
-          .single();
-
-        if (error || !data) {
-          message.error("Failed to add user.");
-          console.error("Insert error:", error);
-          return;
-        }
-
-        const newUser = {
-          key: data.id,
-          index: userData.length + 1,
-          name: data.user_name,
-          type: "Admin", // Set type as Admin
-          date: new Date().toISOString(),
-          email: data.email,
-          is_admin: true,
-        };
-
-        setUserData([...userData, newUser]);
-        message.success("User added successfully.");
+        setStudentData(updatedData);
+        message.success("Student updated successfully.");
       }
-    } else if (currentTab === "2" && selectedStudent) {
-      // Update Existing Student
+
+      setIsDrawerOpen(false);
+      form.resetFields();
+    } catch (error) {
+      message.error("Validation failed.");
+      console.error("Validation error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const users = await getUsersData();
+
+        // Admin ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½Ï¿ï¿½ Users ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ ï¿½ï¿½ï¿½ï¿½
+        const formattedUsers = users
+          .filter((user) => user.is_admin) // is_adminï¿½ï¿½ trueï¿½ï¿½ ï¿½ï¿½ï¿½
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "Admin", // Adminï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            date: user.created_at,
+            email: user.email,
+            is_admin: user.is_admin,
+            contact: user.contact,
+            status: user.status,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setUserData(formattedUsers);
+
+        // Adminï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ Students ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ ï¿½ï¿½ï¿½ï¿½
+        const formattedStudents = users
+          .filter((user) => !user.is_admin) // is_adminï¿½ï¿½ falseï¿½ï¿½ ï¿½ï¿½ï¿½
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "User",
+            date: user.created_at,
+            email: user.email,
+            contact: user.contact,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setStudentData(formattedStudents);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleStatusChange = async (checked: boolean, record: User) => {
+    try {
+      // ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
       const { error } = await supabase
         .from("users")
-        .update({ user_name: values.name })
-        .eq("user_id", selectedStudent.key);
+        .update({ status: checked }) // statusï¿½ï¿½ true/falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+        .eq("user_id", record.key); // record.keyï¿½ï¿½ user IDï¿½ï¿½ ï¿½Ø´ï¿½
 
       if (error) {
-        message.error("Failed to update student.");
+        message.error("Failed to update status.");
         console.error("Update error:", error);
         return;
       }
 
-      const updatedData = studentData.map((student) =>
-        student.key === selectedStudent.key
-          ? { ...student, name: values.name }
-          : student
+      // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+      const updatedData = userData.map((user) =>
+        user.key === record.key ? { ...user, status: checked } : user
       );
-      setStudentData(updatedData);
-      message.success("Student updated successfully.");
-    }
+      setUserData(updatedData);
 
-    setIsDrawerOpen(false);
-    form.resetFields();
-  } catch (error) {
-    message.error("Validation failed.");
-    console.error("Validation error:", error);
-  }
-};
-
-  
-  
-  
-  useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const users = await getUsersData();
-
-      // Admin »ç¿ëÀÚ¸¸ ÇÊÅÍ¸µÇÏ¿© Users µ¥ÀÌÅÍ·Î ¼³Á¤
-      const formattedUsers = users
-        .filter((user) => user.is_admin) // is_adminÀÌ trueÀÎ °æ¿ì
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "Admin", // AdminÀ¸·Î ¼³Á¤
-          date: user.created_at,
-          email: user.email,
-          is_admin: user.is_admin,
-          contact: user.contact,
-          status: user.status,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setUserData(formattedUsers);
-
-      // AdminÀÌ ¾Æ´Ñ »ç¿ëÀÚ¸¸ Students µ¥ÀÌÅÍ·Î ¼³Á¤
-      const formattedStudents = users
-        .filter((user) => !user.is_admin) // is_adminÀÌ falseÀÎ °æ¿ì
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "User",
-          date: user.created_at,
-          email: user.email,
-          contact: user.contact,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setStudentData(formattedStudents);
+      message.success("Status updated successfully.");
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error("Error updating status:", err);
+      message.error("An error occurred while updating the status.");
     }
   };
 
-  fetchData();
-}, []);
-
-
-const handleStatusChange = async (checked: boolean, record: User) => {
-  try {
-    // µ¥ÀÌÅÍº£ÀÌ½º ¾÷µ¥ÀÌÆ®
-    const { error } = await supabase
-      .from("users")
-      .update({ status: checked }) // status¸¦ true/false·Î ¾÷µ¥ÀÌÆ®
-      .eq("user_id", record.key); // record.key°¡ user ID¿¡ ÇØ´ç
-
-    if (error) {
-      message.error("Failed to update status.");
-      console.error("Update error:", error);
-      return;
-    }
-
-    // ·ÎÄÃ »óÅÂ ¾÷µ¥ÀÌÆ®
-    const updatedData = userData.map((user) =>
-      user.key === record.key ? { ...user, status: checked } : user
-    );
-    setUserData(updatedData);
-
-    message.success("Status updated successfully.");
-  } catch (err) {
-    console.error("Error updating status:", err);
-    message.error("An error occurred while updating the status.");
-  }
-};
-
-
-  
-  
-  
-
-const userColumns = [
-  { title: "No.", dataIndex: "index", key: "index" },
-  { title: "Name", dataIndex: "name", key: "name" },
-  { title: "Email", dataIndex: "email", key: "email" },
-  { title: "Contact", dataIndex: "contact", key: "contact" },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (status: boolean, record: User) => (
-      <Switch
-        checked={status} // Reflects the current status
-        onClick={(checked, event) => {
-          event.stopPropagation(); // Prevents row click
-        }}
-        onChange={(checked) => handleStatusChange(checked, record)} // »óÅÂ º¯°æ Ã³¸®
-
-      />
-    ),
-  },
-];
-
-
+  const userColumns = [
+    { title: "No.", dataIndex: "index", key: "index" },
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Contact", dataIndex: "contact", key: "contact" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: boolean, record: User) => (
+        <Switch
+          checked={status} // Reflects the current status
+          onClick={(checked, event) => {
+            event.stopPropagation(); // Prevents row click
+          }}
+          onChange={(checked) => handleStatusChange(checked, record)} // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+        />
+      ),
+    },
+  ];
 
   const studentColumns = [
     { title: "No.", dataIndex: "index", key: "index" },
@@ -261,21 +248,18 @@ const userColumns = [
     setPageSize(pageSize);
   };
 
-
   const handleRowClick = (record: User | Student, isStudent: boolean) => {
     if (isStudent) {
-      setSelectedStudent(record as Student); // Student Å¸ÀÔÀ¸·Î Ã³¸®
-      setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
+      setSelectedStudent(record as Student); // Student Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+      setSelectedUser(null); // Users ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
       form.setFieldsValue(record);
     } else {
-      setSelectedUser(record as User); // User Å¸ÀÔÀ¸·Î Ã³¸®
-      setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
+      setSelectedUser(record as User); // User Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+      setSelectedStudent(null); // Students ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
       form.setFieldsValue(record);
     }
-    setIsDrawerOpen(true); // Drawer ¿­±â
+    setIsDrawerOpen(true); // Drawer ï¿½ï¿½ï¿½ï¿½
   };
-  
-  
 
   const items: TabsProps["items"] = [
     {
@@ -284,20 +268,19 @@ const userColumns = [
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
           <div className="flex justify-between mb-4">
-  <h1 className="text-2xl font-bold">Users</h1>
-  <Button
-  type="primary"
-  onClick={() => {
-    setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
-    setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
-    form.resetFields();
-    setIsDrawerOpen(true);
-  }}
->
-  Add User
-</Button>
-
-</div>
+            <h1 className="text-2xl font-bold"></h1>
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedUser(null); // Users ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+                setSelectedStudent(null); // Students ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+                form.resetFields();
+                setIsDrawerOpen(true);
+              }}
+            >
+              Add User
+            </Button>
+          </div>
 
           <Table
             columns={userColumns}
@@ -361,86 +344,86 @@ const userColumns = [
         />
       </div>
       <Drawer
-  title={
-    selectedUser
-      ? "Edit User"
-      : selectedStudent
-      ? "Edit Student"
-      : "Add User"
-  }
-  placement="right"
-  onClose={() => {
-    setIsDrawerOpen(false);
-    setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
-    setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
-    form.resetFields(); // Æû ÃÊ±âÈ­
-  }}
-  open={isDrawerOpen}
-  width={500}
->
-  <Form form={form} layout="vertical">
-    {/* ÀÌ¸§ ÇÊµå - ¼öÁ¤ °¡´É */}
-    <Form.Item
-      label="Name"
-      name="name"
-      rules={[{ required: true, message: "Please enter the name" }]}
-    >
-      <Input placeholder="Enter name" />
-    </Form.Item>
-
-    {/* ÀÌ¸ÞÀÏ - ÀÐ±â Àü¿ë */}
-    {selectedUser || selectedStudent ? (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Email</label>
-        <p className="text-gray-500">
-          {selectedUser?.email || selectedStudent?.email || "Unknown"}
-        </p>
-      </div>
-    ) : (
-      <Form.Item
-        label="Email"
-        name="email"
-        rules={[{ required: true, message: "Please enter the email" }]}
+        title={
+          selectedUser
+            ? "Edit User"
+            : selectedStudent
+            ? "Edit Student"
+            : "Add User"
+        }
+        placement="right"
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedUser(null); // Users ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+          setSelectedStudent(null); // Students ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+          form.resetFields(); // ï¿½ï¿½ ï¿½Ê±ï¿½È­
+        }}
+        open={isDrawerOpen}
+        width={500}
       >
-        <Input placeholder="Enter email" />
-      </Form.Item>
-    )}
+        <Form form={form} layout="vertical">
+          {/* ï¿½Ì¸ï¿½ ï¿½Êµï¿½ - ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ */}
+          <Form.Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: "Please enter the name" }]}
+          >
+            <Input placeholder="Enter name" />
+          </Form.Item>
 
-    {/* »ý³â¿ùÀÏ - ÀÐ±â Àü¿ë */}
-    {(selectedUser || selectedStudent) && (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Date of Birth</label>
-        <p className="text-gray-500">
-          {selectedUser?.birth || selectedStudent?.birth || "Unknown"}
-        </p>
-      </div>
-    )}
+          {/* ï¿½Ì¸ï¿½ï¿½ï¿½ - ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ */}
+          {selectedUser || selectedStudent ? (
+            <div className="mb-4">
+              <label className="block font-medium text-gray-700">Email</label>
+              <p className="text-gray-500">
+                {selectedUser?.email || selectedStudent?.email || "Unknown"}
+              </p>
+            </div>
+          ) : (
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, message: "Please enter the email" }]}
+            >
+              <Input placeholder="Enter email" />
+            </Form.Item>
+          )}
 
-    {/* ³ªÀÌ - ÀÐ±â Àü¿ë */}
-    {(selectedUser || selectedStudent) && (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Age</label>
-        <p className="text-gray-500">
-          {selectedUser?.age?.toString() || selectedStudent?.age?.toString() || "Unknown"}
-        </p>
-      </div>
-    )}
-  </Form>
+          {/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ */}
+          {(selectedUser || selectedStudent) && (
+            <div className="mb-4">
+              <label className="block font-medium text-gray-700">
+                Date of Birth
+              </label>
+              <p className="text-gray-500">
+                {selectedUser?.birth || selectedStudent?.birth || "Unknown"}
+              </p>
+            </div>
+          )}
 
-  {/* ÇÏ´Ü ¹öÆ° */}
-  <div className="flex justify-end mt-4">
-    <Button type="default" onClick={() => setIsDrawerOpen(false)}>
-      Cancel
-    </Button>
-    <Button
-      type="primary"
-      onClick={handleSave}
-      className="ml-2"
-    >
-      {selectedUser || selectedStudent ? "Save" : "Add"}
-    </Button>
-  </div>
-</Drawer>
+          {/* ï¿½ï¿½ï¿½ï¿½ - ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ */}
+          {(selectedUser || selectedStudent) && (
+            <div className="mb-4">
+              <label className="block font-medium text-gray-700">Age</label>
+              <p className="text-gray-500">
+                {selectedUser?.age?.toString() ||
+                  selectedStudent?.age?.toString() ||
+                  "Unknown"}
+              </p>
+            </div>
+          )}
+        </Form>
+
+        {/* ï¿½Ï´ï¿½ ï¿½ï¿½Æ° */}
+        <div className="flex justify-end mt-4">
+          <Button type="default" onClick={() => setIsDrawerOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="primary" onClick={handleSave} className="ml-2">
+            {selectedUser || selectedStudent ? "Save" : "Add"}
+          </Button>
+        </div>
+      </Drawer>
 
       <div className="absolute bottom-5 right-5">
         <ChatBot />

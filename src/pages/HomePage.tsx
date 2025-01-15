@@ -12,7 +12,6 @@ import {
 // import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
-import UserProfileDropdown from "../pages/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 import { Session } from "@supabase/supabase-js";
@@ -140,19 +139,11 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-gray-100">
       {contextHolder}
-      <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-6 text-black">
-          <h2 className="text-2xl font-bold text-black">Dashboard</h2>
-          {/* User Profile Dropdown */}
-          <UserProfileDropdown />
-        </header>
-
-        {/* Carousel + Calendar Section */}
+      <main className="relative flex flex-col bg-gray-100 py-4">
         <section className="grid grid-cols-4 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow-md col-span-3 flex flex-col h-full">
+          <div className="bg-white p-4 rounded-lg shadow-md col-span-3 flex flex-col h-full">
             <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
             <CarouselComponent
               items={[
@@ -195,7 +186,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* Courses Section */}
-        {user && (
+        {/* {user && (
           <section className="mb-6">
             <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
             <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
@@ -208,7 +199,7 @@ const HomePage: React.FC = () => {
               ))}
             </div>
           </section>
-        )}
+        )} */}
       </main>
 
       {selectedCourse && (
