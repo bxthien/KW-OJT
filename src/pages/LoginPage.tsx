@@ -60,17 +60,13 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      navigate("/", { state: { notification: "Login Successful!" } });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(
-          err.message || "Login failed. Please check your email and password."
-        );
-        console.error("Login error:", err);
-      } else {
-        setError("An unexpected error occurred.");
-        console.error("Unknown error:", err);
-      }
+      navigate("/", {
+        state: { notification: "Login Successful!" },
+        replace: true,
+      });
+    } catch (err) {
+      setError("Login failed. Please check your email and password.");
+      console.error("Login error:", err);
     }
   };
 
