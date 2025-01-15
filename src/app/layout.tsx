@@ -26,18 +26,18 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex flex-row max-w-screen">
-      <div className="flex">
+    <div className="flex flex-row w-screen max-w-screen h-screen bg-gray-100 p-4 gap-4 overflow-hidden">
+      <div className="">
         <Sidebar />
       </div>
       <div className="relative flex flex-col w-full h-screen">
-        <div className="flex justify-between items-center text-black px-6 py-2 bg-slate-200">
+        <div className="flex justify-between items-center text-black px-6 py-2 bg-white rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-black">{getHeaderText()}</h2>
           <div className="flex items-center justify-center">
             <UserProfileDropdown />
           </div>
         </div>
-        <div>
+        <div className="flex-1 overflow-auto h-full">
           <Outlet />
         </div>
       </div>
