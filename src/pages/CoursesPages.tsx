@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
+import "../app/index.css";
 
 interface Course {
   id: string;
@@ -36,9 +37,9 @@ const CourseCard: React.FC<{
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
     style={{
-      maxWidth: "20rem", // 카드�? ????��?��?���? ?��?���? 최�?? ?���? ?��?��
-      width: "100%", // �?�? ?��?��?�� 맞게 ?��비�?? ?��?��
-      boxSizing: "border-box", // ?��?���? 보더�? ?��?��?�� ?���? 계산
+      maxWidth: "20rem",
+      width: "100%",
+      boxSizing: "border-box",
     }}
     onClick={() => onClick(course.id)}
   >
@@ -76,7 +77,7 @@ const CoursesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const coursesPerPage = 9;
+  const coursesPerPage = 12;
 
   const fetchCourses = async () => {
     try {
@@ -428,8 +429,8 @@ const CoursesPage: React.FC = () => {
         <div className="flex justify-center mt-4">
           <Pagination
             current={currentPage}
-            total={courses.length}
-            pageSize={8}
+            total={Math.ceil(courses.length / coursesPerPage) * coursesPerPage}
+            pageSize={coursesPerPage}
             onChange={handlePageChange}
           />
         </div>

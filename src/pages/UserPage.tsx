@@ -20,33 +20,33 @@ interface User {
   key: string;
   index: number;
   name: string;
-  type: string; // "Admin" �Ǵ� "User"
+  type: string;
   date: string;
   email: string;
-  is_admin: boolean; // ������ ����
-  contact?: string; // ����ó (�ɼ�)
-  birth?: string; // ������� (�ɼ�)
-  age?: number; // ���� (�ɼ�)
+  is_admin: boolean;
+  contact?: string;
+  birth?: string;
+  age?: number;
 }
 
 interface Student {
   key: string;
   index: number;
   name: string;
-  type: string; // �׻� "User"
+  type: string;
   email: string;
-  contact?: string; // ����ó (�ɼ�)
-  birth?: string; // ������� (�ɼ�)
-  age?: number; // ���� (�ɼ�)
+  contact?: string;
+  birth?: string;
+  age?: number;
 }
 
 const UserPage: React.FC = () => {
-  const [userData, setUserData] = useState<User[]>([]); // User �迭
-  const [studentData, setStudentData] = useState<Student[]>([]); // Student �迭
+  const [userData, setUserData] = useState<User[]>([]);
+  const [studentData, setStudentData] = useState<Student[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); // ���õ� User
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null); // ���õ� Student
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -56,86 +56,129 @@ const UserPage: React.FC = () => {
       const values = await form.validateFields();
 
       if (currentTab === "1") {
+        // Add or Edit User
         if (selectedUser) {
-          // Update Existing User
+          // Update existing user
           const { error } = await supabase
             .from("users")
-            .update({ user_name: values.name })
+            .update({
+              user_name: values.name,
+              email: values.email,
+            })
             .eq("user_id", selectedUser.key);
 
           if (error) {
-            message.error("Failed to update user.");
+            message.error("Failed to update user. Please try again.");
             console.error("Update error:", error);
             return;
           }
 
           const updatedData = userData.map((user) =>
             user.key === selectedUser.key
-              ? { ...user, name: values.name }
+              ? { ...user, name: values.name, email: values.email }
               : user
           );
           setUserData(updatedData);
           message.success("User updated successfully.");
         } else {
-          // Add New User
+          // Add new user
           const { data, error } = await supabase
             .from("users")
             .insert([
               {
                 user_name: values.name,
                 email: values.email,
-                is_admin: true, // Default to Admin
+                is_admin: true, // Users tab에서는 관리자 설정
               },
             ])
             .select()
             .single();
 
           if (error || !data) {
-            message.error("Failed to add user.");
+            message.error("Failed to add user. Please try again.");
             console.error("Insert error:", error);
             return;
           }
 
           const newUser = {
-            key: data.id,
+            key: data.user_id,
             index: userData.length + 1,
             name: data.user_name,
-            type: "Admin", // Set type as Admin
+            type: "Admin",
             date: new Date().toISOString(),
             email: data.email,
             is_admin: true,
           };
 
-          setUserData([...userData, newUser]);
+          setUserData((prevData) => [...prevData, newUser]);
           message.success("User added successfully.");
         }
-      } else if (currentTab === "2" && selectedStudent) {
-        // Update Existing Student
-        const { error } = await supabase
-          .from("users")
-          .update({ user_name: values.name })
-          .eq("user_id", selectedStudent.key);
+      } else if (currentTab === "2") {
+        // Add or Edit Student
+        if (selectedStudent) {
+          // Update existing student
+          const { error } = await supabase
+            .from("users")
+            .update({
+              user_name: values.name,
+              email: values.email,
+            })
+            .eq("user_id", selectedStudent.key);
 
-        if (error) {
-          message.error("Failed to update student.");
-          console.error("Update error:", error);
-          return;
+          if (error) {
+            message.error("Failed to update student. Please try again.");
+            console.error("Update error:", error);
+            return;
+          }
+
+          const updatedData = studentData.map((student) =>
+            student.key === selectedStudent.key
+              ? { ...student, name: values.name, email: values.email }
+              : student
+          );
+          setStudentData(updatedData);
+          message.success("Student updated successfully.");
+        } else {
+          // Add new student
+          const { data, error } = await supabase
+            .from("users")
+            .insert([
+              {
+                user_name: values.name,
+                email: values.email,
+                is_admin: false, // Students tab에서는 관리자가 아님
+              },
+            ])
+            .select()
+            .single();
+
+          if (error || !data) {
+            message.error("Failed to add student. Please try again.");
+            console.error("Insert error:", error);
+            return;
+          }
+
+          const newStudent = {
+            key: data.user_id,
+            index: studentData.length + 1,
+            name: data.user_name,
+            type: "Student",
+            date: new Date().toISOString(),
+            email: data.email,
+          };
+
+          setStudentData((prevData) => [...prevData, newStudent]);
+          message.success("Student added successfully.");
         }
-
-        const updatedData = studentData.map((student) =>
-          student.key === selectedStudent.key
-            ? { ...student, name: values.name }
-            : student
-        );
-        setStudentData(updatedData);
-        message.success("Student updated successfully.");
       }
 
-      setIsDrawerOpen(false);
-      form.resetFields();
+      setIsDrawerOpen(false); // Close the drawer
+      form.resetFields(); // Reset the form
     } catch (error) {
-      message.error("Validation failed.");
       console.error("Validation error:", error);
+      message.error(
+        "Validation failed. Please check the fields and try again."
+      );
     }
   };
 
@@ -144,14 +187,13 @@ const UserPage: React.FC = () => {
       try {
         const users = await getUsersData();
 
-        // Admin ����ڸ� ���͸��Ͽ� Users �����ͷ� ����
         const formattedUsers = users
-          .filter((user) => user.is_admin) // is_admin�� true�� ���
+          .filter((user) => user.is_admin)
           .map((user, index) => ({
             key: user.user_id,
             index: index + 1,
             name: user.user_name,
-            type: "Admin", // Admin���� ����
+            type: "Admin",
             date: user.created_at,
             email: user.email,
             is_admin: user.is_admin,
@@ -162,9 +204,8 @@ const UserPage: React.FC = () => {
           }));
         setUserData(formattedUsers);
 
-        // Admin�� �ƴ� ����ڸ� Students �����ͷ� ����
         const formattedStudents = users
-          .filter((user) => !user.is_admin) // is_admin�� false�� ���
+          .filter((user) => !user.is_admin)
           .map((user, index) => ({
             key: user.user_id,
             index: index + 1,
@@ -187,11 +228,10 @@ const UserPage: React.FC = () => {
 
   const handleStatusChange = async (checked: boolean, record: User) => {
     try {
-      // �����ͺ��̽� ������Ʈ
       const { error } = await supabase
         .from("users")
-        .update({ status: checked }) // status�� true/false�� ������Ʈ
-        .eq("user_id", record.key); // record.key�� user ID�� �ش�
+        .update({ status: checked })
+        .eq("user_id", record.key);
 
       if (error) {
         message.error("Failed to update status.");
@@ -199,7 +239,6 @@ const UserPage: React.FC = () => {
         return;
       }
 
-      // ���� ���� ������Ʈ
       const updatedData = userData.map((user) =>
         user.key === record.key ? { ...user, status: checked } : user
       );
@@ -227,7 +266,7 @@ const UserPage: React.FC = () => {
           onClick={(checked, event) => {
             event.stopPropagation(); // Prevents row click
           }}
-          onChange={(checked) => handleStatusChange(checked, record)} // ���� ���� ó��
+          onChange={(checked) => handleStatusChange(checked, record)}
         />
       ),
     },
@@ -250,15 +289,15 @@ const UserPage: React.FC = () => {
 
   const handleRowClick = (record: User | Student, isStudent: boolean) => {
     if (isStudent) {
-      setSelectedStudent(record as Student); // Student Ÿ������ ó��
-      setSelectedUser(null); // Users ���� �ʱ�ȭ
+      setSelectedStudent(record as Student);
+      setSelectedUser(null);
       form.setFieldsValue(record);
     } else {
-      setSelectedUser(record as User); // User Ÿ������ ó��
-      setSelectedStudent(null); // Students ���� �ʱ�ȭ
+      setSelectedUser(record as User);
+      setSelectedStudent(null);
       form.setFieldsValue(record);
     }
-    setIsDrawerOpen(true); // Drawer ����
+    setIsDrawerOpen(true);
   };
 
   const items: TabsProps["items"] = [
@@ -268,12 +307,12 @@ const UserPage: React.FC = () => {
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
           <div className="flex justify-between mb-4">
-            <h1 className="text-2xl font-bold"></h1>
+            <h1 className="text-2xl font-bold">Users</h1>
             <Button
               type="primary"
               onClick={() => {
-                setSelectedUser(null); // Users ���� �ʱ�ȭ
-                setSelectedStudent(null); // Students ���� �ʱ�ȭ
+                setSelectedUser(null);
+                setSelectedStudent(null);
                 form.resetFields();
                 setIsDrawerOpen(true);
               }}
@@ -308,6 +347,20 @@ const UserPage: React.FC = () => {
       label: "Students",
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
+          <div className="flex justify-between mb-4">
+            <h1 className="text-2xl font-bold">Students</h1>
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedUser(null); // 기존 선택된 User 해제
+                setSelectedStudent(null); // 기존 선택된 Student 해제
+                form.resetFields(); // 폼 초기화
+                setIsDrawerOpen(true); // Drawer 열기
+              }}
+            >
+              Add Student
+            </Button>
+          </div>
           <Table
             columns={studentColumns}
             dataSource={studentData.slice(
@@ -343,26 +396,28 @@ const UserPage: React.FC = () => {
           }}
         />
       </div>
+
       <Drawer
         title={
           selectedUser
             ? "Edit User"
             : selectedStudent
             ? "Edit Student"
-            : "Add User"
+            : currentTab === "1"
+            ? "Add User"
+            : "Add Student"
         }
         placement="right"
         onClose={() => {
           setIsDrawerOpen(false);
-          setSelectedUser(null); // Users ���� �ʱ�ȭ
-          setSelectedStudent(null); // Students ���� �ʱ�ȭ
-          form.resetFields(); // �� �ʱ�ȭ
+          setSelectedUser(null);
+          setSelectedStudent(null);
+          form.resetFields();
         }}
         open={isDrawerOpen}
         width={500}
       >
         <Form form={form} layout="vertical">
-          {/* �̸� �ʵ� - ���� ���� */}
           <Form.Item
             label="Name"
             name="name"
@@ -371,50 +426,21 @@ const UserPage: React.FC = () => {
             <Input placeholder="Enter name" />
           </Form.Item>
 
-          {/* �̸��� - �б� ���� */}
-          {selectedUser || selectedStudent ? (
-            <div className="mb-4">
-              <label className="block font-medium text-gray-700">Email</label>
-              <p className="text-gray-500">
-                {selectedUser?.email || selectedStudent?.email || "Unknown"}
-              </p>
-            </div>
-          ) : (
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{ required: true, message: "Please enter the email" }]}
-            >
-              <Input placeholder="Enter email" />
-            </Form.Item>
-          )}
-
-          {/* ������� - �б� ���� */}
-          {(selectedUser || selectedStudent) && (
-            <div className="mb-4">
-              <label className="block font-medium text-gray-700">
-                Date of Birth
-              </label>
-              <p className="text-gray-500">
-                {selectedUser?.birth || selectedStudent?.birth || "Unknown"}
-              </p>
-            </div>
-          )}
-
-          {/* ���� - �б� ���� */}
-          {(selectedUser || selectedStudent) && (
-            <div className="mb-4">
-              <label className="block font-medium text-gray-700">Age</label>
-              <p className="text-gray-500">
-                {selectedUser?.age?.toString() ||
-                  selectedStudent?.age?.toString() ||
-                  "Unknown"}
-              </p>
-            </div>
-          )}
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              {
+                required: true,
+                type: "email",
+                message: "Please enter a valid email",
+              },
+            ]}
+          >
+            <Input placeholder="Enter email" />
+          </Form.Item>
         </Form>
 
-        {/* �ϴ� ��ư */}
         <div className="flex justify-end mt-4">
           <Button type="default" onClick={() => setIsDrawerOpen(false)}>
             Cancel

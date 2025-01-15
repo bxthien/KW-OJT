@@ -15,6 +15,7 @@ import { Course } from "../shared/constant/course";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 import { Session } from "@supabase/supabase-js";
+import "../app/index.css";
 
 // Supabase User Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 type SupabaseUser = Session["user"];
@@ -35,11 +36,10 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
-        setNotificationDisplayed(false); // ·Î±×¾Æ¿ô ½Ã ¾Ë¸² »óÅÂ ÃÊ±âÈ­
+        setNotificationDisplayed(false); // ï¿½Î±×¾Æ¿ï¿½ ï¿½ï¿½ ï¿½Ë¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
       }
     });
   }, []);
-  
 
   useEffect(() => {
     console.log("Notification Effect Triggered");
@@ -51,8 +51,7 @@ const HomePage: React.FC = () => {
         key: "login-success",
       });
       setNotificationDisplayed(true);
-      navigate(location.pathname, { replace: true }); // »óÅÂ Á¦°Å
-
+      navigate(location.pathname, { replace: true }); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
     const fetchUserData = async () => {

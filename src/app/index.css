@@ -23,7 +23,13 @@
   display: none; /* Chrome, Safari, and Opera */
 }
 
-
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #000;
+}
 
 @tailwind base;
 @tailwind components;
