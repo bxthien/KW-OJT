@@ -43,13 +43,15 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      // status �Ǵ� is_admin�� false�� ��� ���� ����
+      // status �Ǵ� is_admin�� false�� ���? ���� ����
       if (!data.status || !data.is_admin) {
         setError("Access denied. You do not have sufficient permissions.");
         return;
       }
 
-      navigate("/", { state: { notification: "Login Successful!" } });
+      navigate("/", { state: { notification: "Login Successful!" }, replace: true });
+
+
     } catch (err: any) {
       setError(
         err.message || "Login failed. Please check your email and password."

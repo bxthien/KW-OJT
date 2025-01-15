@@ -34,13 +34,26 @@ const HomePage: React.FC = () => {
   const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        setNotificationDisplayed(false); // 로그아웃 시 알림 상태 초기화
+      }
+    });
+  }, []);
+  
+
+  useEffect(() => {
+    console.log("Notification Effect Triggered");
     if (location.state?.notification && !notificationDisplayed) {
       api.success({
         message: location.state.notification,
         description: "Welcome to HOTDOG LMS!",
         placement: "topRight",
+        key: "login-success",
       });
       setNotificationDisplayed(true);
+      navigate(location.pathname, { replace: true }); // 상태 제거
+
     }
 
     const fetchUserData = async () => {
@@ -106,7 +119,7 @@ const HomePage: React.FC = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [location.state, api, navigate, notificationDisplayed]);
+  }, [location.state, api, navigate, notificationDisplayed, api, navigate]);
 
   const handleCourseClick = async (course: Course) => {
     setSelectedCourse(course);
