@@ -79,7 +79,7 @@ const UserProfileDropdown: React.FC = () => {
 
       {/* Dropdown Menu */}
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 p-4 border border-gray-200">
+        <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg z-10 p-2 border border-gray-200">
           <ul className="space-y-2">
             <li
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded-lg"

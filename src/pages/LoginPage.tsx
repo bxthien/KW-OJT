@@ -31,7 +31,6 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      // users ���̺����� status�� is_admin �� Ȯ��
       const { data, error: profileError } = await supabase
         .from("users")
         .select("status, is_admin")
@@ -50,10 +49,8 @@ const LoginPage: React.FC = () => {
       }
 
       navigate("/", { state: { notification: "Login Successful!" } });
-    } catch (err: any) {
-      setError(
-        err.message || "Login failed. Please check your email and password."
-      );
+    } catch (err) {
+      setError("Login failed. Please check your email and password.");
       console.error("Login error:", err);
     }
   };

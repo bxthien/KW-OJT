@@ -74,6 +74,7 @@ const CoursesPage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const coursesPerPage = 9;
 
@@ -92,6 +93,7 @@ const CoursesPage: React.FC = () => {
         )
           `
         )
+        .ilike("course_name", `%${searchTerm}%`)
         .order("date_of_update", { ascending: false });
 
       if (error) {
@@ -115,7 +117,7 @@ const CoursesPage: React.FC = () => {
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [searchTerm]);
 
   const fetchChapters = async () => {
     try {
@@ -369,9 +371,18 @@ const CoursesPage: React.FC = () => {
 
   return (
     <div>
-      <div className="p-8 h-screen overflow-auto bg-gray-100">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-black">Courses</h1>
+      <div className="pt-4 h-screen overflow-auto bg-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <Input
+              className="py-2 w-[300px]"
+              placeholder="Search by course name"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
           {isDeleteMode ? (
             <div className="flex gap-2">
               <Button type="default" onClick={() => setIsDeleteMode(false)}>
@@ -386,17 +397,19 @@ const CoursesPage: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <Button type="primary" onClick={handleAddNewCourse}>
-                Add Course
-              </Button>
-              <Button
-                type="primary"
-                danger
-                onClick={() => setIsDeleteMode(true)}
-              >
-                Delete Courses
-              </Button>
+            <div className="flex">
+              <div className="flex gap-2">
+                <Button type="primary" onClick={handleAddNewCourse}>
+                  Add Course
+                </Button>
+                <Button
+                  type="primary"
+                  danger
+                  onClick={() => setIsDeleteMode(true)}
+                >
+                  Delete Courses
+                </Button>
+              </div>
             </div>
           )}
         </div>
