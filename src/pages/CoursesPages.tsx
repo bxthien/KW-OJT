@@ -19,6 +19,7 @@ interface Course {
   color: string;
   description: string;
   course_chapter?: { chapter_id: string }[];
+  date_of_update: string;
 }
 
 interface Chapter {
@@ -89,6 +90,7 @@ const CoursesPage: React.FC = () => {
         course_name, 
         course_description, 
         color,
+        date_of_update,
         course_chapter (
           chapter_id
         )
@@ -108,6 +110,7 @@ const CoursesPage: React.FC = () => {
         description: course.course_description || "No description available",
         color: course.color || "#1677ff",
         course_chapter: course.course_chapter,
+        date_of_update: course.date_of_update,
       }));
 
       setCourses(formattedCourses);
@@ -214,6 +217,8 @@ const CoursesPage: React.FC = () => {
     setNewColor("#1677ff");
     setIsAddingNewCourse(true);
     setIsDrawerOpen(true);
+
+    fetchChapters();
   };
 
   const handleSaveNewCourse = async () => {
@@ -221,7 +226,7 @@ const CoursesPage: React.FC = () => {
       alert("Please fill in all required fields.");
       return;
     }
-
+  
     try {
       const { data, error } = await supabase
         .from("courses")
@@ -230,23 +235,26 @@ const CoursesPage: React.FC = () => {
             course_name: newTitle,
             course_description: newDescription,
             color: newColor,
+            date_of_update: new Date().toISOString(), // Update date_of_update
           },
         ])
         .select();
-
+  
       if (error || !data) {
         console.error("Error adding new course:", error?.message);
         alert("Failed to add course.");
         return;
       }
-
+  
       const newCourse = {
         id: data[0].course_id,
         title: newTitle,
         color: newColor,
         description: newDescription,
+        date_of_update: data[0].date_of_update,
+        course_chapter: [],
       };
-
+  
       const { error: chapterError } = await supabase
         .from("course_chapter")
         .upsert(
@@ -256,110 +264,134 @@ const CoursesPage: React.FC = () => {
           })),
           { onConflict: "course_id,chapter_id" }
         );
-
+  
       if (chapterError) {
         console.error("Error saving course chapters:", chapterError.message);
         alert("Failed to save course chapters.");
         return;
       }
-
+  
+      // Immediately update UI to reflect the addition
+      setCourses((prevCourses) => [newCourse, ...prevCourses]);
+  
+      // Clear inputs and close drawer
       setSelectedChapters([]);
       setNewTitle("");
       setNewDescription("");
       setNewColor("#1677ff");
-
-      fetchCourses();
-
-      // setCourses([...courses, newCourse]);
       setIsDrawerOpen(false);
+  
+      // Fetch from DB to ensure consistent data
+      fetchCourses();
     } catch (err) {
       console.error("Error saving new course:", err);
       alert("An error occurred while adding the course.");
     }
   };
-
+  
   const handleSaveExistingCourse = async () => {
-    if (selectedCourse) {
-      try {
-        const { error } = await supabase
-          .from("courses")
-          .update({
-            course_name: newTitle,
-            course_description: newDescription,
-            color: newColor,
-          })
-          .eq("course_id", selectedCourse.id);
-
-        // Fetch existing chapters for the selected course
-        const { data: existingChapters, error: fetchError } = await supabase
-          .from("course_chapter")
-          .select("chapter_id")
-          .eq("course_id", selectedCourse.id);
-
-        if (fetchError) {
-          console.error(
-            "Error fetching existing chapters:",
-            fetchError.message
-          );
-          alert("Failed to fetch existing chapters.");
-          return;
-        }
-
-        // Find chapters to delete
-        const chaptersToDelete = existingChapters
-          .filter(
-            (existingChapter) =>
-              !selectedChapters.some(
-                (selectedChapter) =>
-                  selectedChapter.chapter_id === existingChapter.chapter_id
-              )
-          )
-          .map((chapter) => chapter.chapter_id);
-
-        // Delete chapters that are not in selectedChapters
-        if (chaptersToDelete.length > 0) {
-          const { error: deleteError } = await supabase
-            .from("course_chapter")
-            .delete()
-            .in("chapter_id", chaptersToDelete)
-            .eq("course_id", selectedCourse.id);
-
-          if (deleteError) {
-            console.error("Error deleting chapters:", deleteError.message);
-            alert("Failed to delete chapters.");
-            return;
-          }
-        }
-
-        // Upsert selected chapters
-        const { error: chapterError } = await supabase
-          .from("course_chapter")
-          .upsert(
-            selectedChapters.map((chapter) => ({
-              course_id: selectedCourse.id,
-              chapter_id: chapter.chapter_id,
-            })),
-            { onConflict: "course_id,chapter_id" }
-          );
-
-        if (error || chapterError) {
-          console.error(
-            "Error saving course updates:",
-            error?.message || chapterError?.message
-          );
-          alert("Failed to update course.");
-          return;
-        }
-
-        fetchCourses();
-
-        setIsDrawerOpen(false);
-      } catch (err) {
-        console.error("Error saving course updates:", err);
-        alert("An error occurred while updating the course.");
+    if (!selectedCourse) return;
+  
+    try {
+      const updatedDate = new Date().toISOString();
+  
+      const { error } = await supabase
+        .from("courses")
+        .update({
+          course_name: newTitle,
+          course_description: newDescription,
+          color: newColor,
+          date_of_update: updatedDate, // Update date_of_update
+        })
+        .eq("course_id", selectedCourse.id);
+  
+      if (error) {
+        console.error("Error updating course:", error.message);
+        alert("Failed to update course.");
+        return;
       }
+  
+      const { data: existingChapters, error: fetchError } = await supabase
+        .from("course_chapter")
+        .select("chapter_id")
+        .eq("course_id", selectedCourse.id);
+  
+      if (fetchError) {
+        console.error("Error fetching existing chapters:", fetchError.message);
+        alert("Failed to fetch existing chapters.");
+        return;
+      }
+  
+      const chaptersToDelete = existingChapters
+        .filter(
+          (existingChapter) =>
+            !selectedChapters.some(
+              (selectedChapter) =>
+                selectedChapter.chapter_id === existingChapter.chapter_id
+            )
+        )
+        .map((chapter) => chapter.chapter_id);
+  
+      if (chaptersToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("course_chapter")
+          .delete()
+          .in("chapter_id", chaptersToDelete)
+          .eq("course_id", selectedCourse.id);
+  
+        if (deleteError) {
+          console.error("Error deleting chapters:", deleteError.message);
+          alert("Failed to delete chapters.");
+          return;
+        }
+      }
+  
+      const { error: chapterError } = await supabase
+        .from("course_chapter")
+        .upsert(
+          selectedChapters.map((chapter) => ({
+            course_id: selectedCourse.id,
+            chapter_id: chapter.chapter_id,
+          })),
+          { onConflict: "course_id,chapter_id" }
+        );
+  
+      if (chapterError) {
+        console.error("Error saving course chapters:", chapterError.message);
+        alert("Failed to save course chapters.");
+        return;
+      }
+  
+      // Immediately update UI to reflect the change
+      setCourses((prevCourses) => {
+        const updatedCourses = prevCourses.map((course) =>
+          course.id === selectedCourse.id
+            ? {
+                ...course,
+                title: newTitle,
+                description: newDescription,
+                color: newColor,
+                date_of_update: updatedDate,
+              }
+            : course
+        );
+        return updatedCourses.sort(
+          (a, b) => new Date(b.date_of_update).getTime() - new Date(a.date_of_update).getTime()
+        );
+      });
+  
+      // Clear inputs and close drawer
+      setIsDrawerOpen(false);
+  
+      // Fetch from DB to ensure consistent data
+      fetchCourses();
+    } catch (err) {
+      console.error("Error saving course updates:", err);
+      alert("An error occurred while updating the course.");
     }
   };
+  
+  
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
