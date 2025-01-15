@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
+import "../app/index.css";
 
 interface Course {
   id: string;
@@ -36,9 +37,9 @@ const CourseCard: React.FC<{
       isSelected ? "border-blue-500" : "border-gray-200"
     } relative cursor-pointer transform transition-transform duration-200 hover:scale-105`}
     style={{
-      maxWidth: "20rem", // 카드�? ????��?��?���? ?��?���? 최�?? ?���? ?��?��
-      width: "100%", // �?�? ?��?��?�� 맞게 ?��비�?? ?��?��
-      boxSizing: "border-box", // ?��?���? 보더�? ?��?��?�� ?���? 계산
+      maxWidth: "20rem",
+      width: "100%",
+      boxSizing: "border-box",
     }}
     onClick={() => onClick(course.id)}
   >
@@ -75,7 +76,7 @@ const CoursesPage: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const coursesPerPage = 9;
+  const coursesPerPage = 12;
 
   const fetchCourses = async () => {
     try {
@@ -370,8 +371,8 @@ const CoursesPage: React.FC = () => {
   return (
     <div>
       <div className="p-8 h-screen overflow-auto bg-gray-100">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-black">Courses</h1>
+        <div className="page-header">
+          <h1 className="text-2xl font-bold">Course Page</h1>
           {isDeleteMode ? (
             <div className="flex gap-2">
               <Button type="default" onClick={() => setIsDeleteMode(false)}>
@@ -415,8 +416,8 @@ const CoursesPage: React.FC = () => {
         <div className="flex justify-center mt-4">
           <Pagination
             current={currentPage}
-            total={courses.length}
-            pageSize={8}
+            total={Math.ceil(courses.length / coursesPerPage) * coursesPerPage}
+            pageSize={coursesPerPage}
             onChange={handlePageChange}
           />
         </div>

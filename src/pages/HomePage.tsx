@@ -16,6 +16,7 @@ import UserProfileDropdown from "../pages/UserProfileDropdown";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 import { Session } from "@supabase/supabase-js";
+import "../app/index.css";
 
 // Supabase User Ÿ�� ����
 type SupabaseUser = Session["user"];
@@ -128,14 +129,14 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      {contextHolder}
+      {/*contextHolder*/}
       <main className="relative flex flex-col bg-gray-100 p-6 h-screen overflow-auto">
         {/* Header */}
-        <header className="flex justify-between items-center mb-6 text-black">
-          <h2 className="text-2xl font-bold text-black">Dashboard</h2>
+        <div className="page-header">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
           {/* User Profile Dropdown */}
           <UserProfileDropdown />
-        </header>
+        </div>
 
         {/* Carousel + Calendar Section */}
         <section className="grid grid-cols-4 gap-6 mb-6">

@@ -20,231 +20,257 @@ interface User {
   key: string;
   index: number;
   name: string;
-  type: string; // "Admin" ¶Ç´Â "User"
+  type: string;
   date: string;
   email: string;
-  is_admin: boolean; // °ü¸®ÀÚ ¿©ºÎ
-  contact?: string; // ¿¬¶ôÃ³ (¿É¼Ç)
-  birth?: string; // »ý³â¿ùÀÏ (¿É¼Ç)
-  age?: number; // ³ªÀÌ (¿É¼Ç)
+  is_admin: boolean;
+  contact?: string;
+  birth?: string;
+  age?: number;
 }
 
 interface Student {
   key: string;
   index: number;
   name: string;
-  type: string; // Ç×»ó "User"
+  type: string;
   email: string;
-  contact?: string; // ¿¬¶ôÃ³ (¿É¼Ç)
-  birth?: string; // »ý³â¿ùÀÏ (¿É¼Ç)
-  age?: number; // ³ªÀÌ (¿É¼Ç)
+  contact?: string;
+  birth?: string;
+  age?: number;
 }
 
-
-
-
 const UserPage: React.FC = () => {
-  const [userData, setUserData] = useState<User[]>([]); // User ¹è¿­
-  const [studentData, setStudentData] = useState<Student[]>([]); // Student ¹è¿­
+  const [userData, setUserData] = useState<User[]>([]);
+  const [studentData, setStudentData] = useState<Student[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); // ¼±ÅÃµÈ User
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null); // ¼±ÅÃµÈ Student
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [form] = Form.useForm();
   const handleSave = async () => {
-  try {
-    const values = await form.validateFields();
+    try {
+      const values = await form.validateFields();
 
-    if (currentTab === "1") {
-      if (selectedUser) {
-        // Update Existing User
-        const { error } = await supabase
-          .from("users")
-          .update({ user_name: values.name })
-          .eq("user_id", selectedUser.key);
-
-        if (error) {
-          message.error("Failed to update user.");
-          console.error("Update error:", error);
-          return;
-        }
-
-        const updatedData = userData.map((user) =>
-          user.key === selectedUser.key ? { ...user, name: values.name } : user
-        );
-        setUserData(updatedData);
-        message.success("User updated successfully.");
-      } else {
-        // Add New User
-        const { data, error } = await supabase
-          .from("users")
-          .insert([
-            {
+      if (currentTab === "1") {
+        // Add or Edit User
+        if (selectedUser) {
+          // Update existing user
+          const { error } = await supabase
+            .from("users")
+            .update({
               user_name: values.name,
               email: values.email,
-              is_admin: true, // Default to Admin
-            },
-          ])
-          .select()
-          .single();
+            })
+            .eq("user_id", selectedUser.key);
 
-        if (error || !data) {
-          message.error("Failed to add user.");
-          console.error("Insert error:", error);
-          return;
+          if (error) {
+            message.error("Failed to update user. Please try again.");
+            console.error("Update error:", error);
+            return;
+          }
+
+          const updatedData = userData.map((user) =>
+            user.key === selectedUser.key
+              ? { ...user, name: values.name, email: values.email }
+              : user
+          );
+          setUserData(updatedData);
+          message.success("User updated successfully.");
+        } else {
+          // Add new user
+          const { data, error } = await supabase
+            .from("users")
+            .insert([
+              {
+                user_name: values.name,
+                email: values.email,
+                is_admin: true, // Users tabì—ì„œëŠ” ê´€ë¦¬ìž ì„¤ì •
+              },
+            ])
+            .select()
+            .single();
+
+          if (error || !data) {
+            message.error("Failed to add user. Please try again.");
+            console.error("Insert error:", error);
+            return;
+          }
+
+          const newUser = {
+            key: data.user_id,
+            index: userData.length + 1,
+            name: data.user_name,
+            type: "Admin",
+            date: new Date().toISOString(),
+            email: data.email,
+            is_admin: true,
+          };
+
+          setUserData((prevData) => [...prevData, newUser]);
+          message.success("User added successfully.");
         }
+      } else if (currentTab === "2") {
+        // Add or Edit Student
+        if (selectedStudent) {
+          // Update existing student
+          const { error } = await supabase
+            .from("users")
+            .update({
+              user_name: values.name,
+              email: values.email,
+            })
+            .eq("user_id", selectedStudent.key);
 
-        const newUser = {
-          key: data.id,
-          index: userData.length + 1,
-          name: data.user_name,
-          type: "Admin", // Set type as Admin
-          date: new Date().toISOString(),
-          email: data.email,
-          is_admin: true,
-        };
+          if (error) {
+            message.error("Failed to update student. Please try again.");
+            console.error("Update error:", error);
+            return;
+          }
 
-        setUserData([...userData, newUser]);
-        message.success("User added successfully.");
+          const updatedData = studentData.map((student) =>
+            student.key === selectedStudent.key
+              ? { ...student, name: values.name, email: values.email }
+              : student
+          );
+          setStudentData(updatedData);
+          message.success("Student updated successfully.");
+        } else {
+          // Add new student
+          const { data, error } = await supabase
+            .from("users")
+            .insert([
+              {
+                user_name: values.name,
+                email: values.email,
+                is_admin: false, // Students tabì—ì„œëŠ” ê´€ë¦¬ìžê°€ ì•„ë‹˜
+              },
+            ])
+            .select()
+            .single();
+
+          if (error || !data) {
+            message.error("Failed to add student. Please try again.");
+            console.error("Insert error:", error);
+            return;
+          }
+
+          const newStudent = {
+            key: data.user_id,
+            index: studentData.length + 1,
+            name: data.user_name,
+            type: "Student",
+            date: new Date().toISOString(),
+            email: data.email,
+          };
+
+          setStudentData((prevData) => [...prevData, newStudent]);
+          message.success("Student added successfully.");
+        }
       }
-    } else if (currentTab === "2" && selectedStudent) {
-      // Update Existing Student
+
+      setIsDrawerOpen(false); // Close the drawer
+      form.resetFields(); // Reset the form
+    } catch (error) {
+      console.error("Validation error:", error);
+      message.error(
+        "Validation failed. Please check the fields and try again."
+      );
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const users = await getUsersData();
+
+        const formattedUsers = users
+          .filter((user) => user.is_admin)
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "Admin",
+            date: user.created_at,
+            email: user.email,
+            is_admin: user.is_admin,
+            contact: user.contact,
+            status: user.status,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setUserData(formattedUsers);
+
+        const formattedStudents = users
+          .filter((user) => !user.is_admin)
+          .map((user, index) => ({
+            key: user.user_id,
+            index: index + 1,
+            name: user.user_name,
+            type: "User",
+            date: user.created_at,
+            email: user.email,
+            contact: user.contact,
+            birth: user.birth,
+            age: user.age,
+          }));
+        setStudentData(formattedStudents);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleStatusChange = async (checked: boolean, record: User) => {
+    try {
       const { error } = await supabase
         .from("users")
-        .update({ user_name: values.name })
-        .eq("user_id", selectedStudent.key);
+        .update({ status: checked })
+        .eq("user_id", record.key);
 
       if (error) {
-        message.error("Failed to update student.");
+        message.error("Failed to update status.");
         console.error("Update error:", error);
         return;
       }
 
-      const updatedData = studentData.map((student) =>
-        student.key === selectedStudent.key
-          ? { ...student, name: values.name }
-          : student
+      const updatedData = userData.map((user) =>
+        user.key === record.key ? { ...user, status: checked } : user
       );
-      setStudentData(updatedData);
-      message.success("Student updated successfully.");
-    }
+      setUserData(updatedData);
 
-    setIsDrawerOpen(false);
-    form.resetFields();
-  } catch (error) {
-    message.error("Validation failed.");
-    console.error("Validation error:", error);
-  }
-};
-
-  
-  
-  
-  useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const users = await getUsersData();
-
-      // Admin »ç¿ëÀÚ¸¸ ÇÊÅÍ¸µÇÏ¿© Users µ¥ÀÌÅÍ·Î ¼³Á¤
-      const formattedUsers = users
-        .filter((user) => user.is_admin) // is_adminÀÌ trueÀÎ °æ¿ì
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "Admin", // AdminÀ¸·Î ¼³Á¤
-          date: user.created_at,
-          email: user.email,
-          is_admin: user.is_admin,
-          contact: user.contact,
-          status: user.status,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setUserData(formattedUsers);
-
-      // AdminÀÌ ¾Æ´Ñ »ç¿ëÀÚ¸¸ Students µ¥ÀÌÅÍ·Î ¼³Á¤
-      const formattedStudents = users
-        .filter((user) => !user.is_admin) // is_adminÀÌ falseÀÎ °æ¿ì
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "User",
-          date: user.created_at,
-          email: user.email,
-          contact: user.contact,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setStudentData(formattedStudents);
+      message.success("Status updated successfully.");
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error("Error updating status:", err);
+      message.error("An error occurred while updating the status.");
     }
   };
 
-  fetchData();
-}, []);
-
-
-const handleStatusChange = async (checked: boolean, record: User) => {
-  try {
-    // µ¥ÀÌÅÍº£ÀÌ½º ¾÷µ¥ÀÌÆ®
-    const { error } = await supabase
-      .from("users")
-      .update({ status: checked }) // status¸¦ true/false·Î ¾÷µ¥ÀÌÆ®
-      .eq("user_id", record.key); // record.key°¡ user ID¿¡ ÇØ´ç
-
-    if (error) {
-      message.error("Failed to update status.");
-      console.error("Update error:", error);
-      return;
-    }
-
-    // ·ÎÄÃ »óÅÂ ¾÷µ¥ÀÌÆ®
-    const updatedData = userData.map((user) =>
-      user.key === record.key ? { ...user, status: checked } : user
-    );
-    setUserData(updatedData);
-
-    message.success("Status updated successfully.");
-  } catch (err) {
-    console.error("Error updating status:", err);
-    message.error("An error occurred while updating the status.");
-  }
-};
-
-
-  
-  
-  
-
-const userColumns = [
-  { title: "No.", dataIndex: "index", key: "index" },
-  { title: "Name", dataIndex: "name", key: "name" },
-  { title: "Email", dataIndex: "email", key: "email" },
-  { title: "Contact", dataIndex: "contact", key: "contact" },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (status: boolean, record: User) => (
-      <Switch
-        checked={status} // Reflects the current status
-        onClick={(checked, event) => {
-          event.stopPropagation(); // Prevents row click
-        }}
-        onChange={(checked) => handleStatusChange(checked, record)} // »óÅÂ º¯°æ Ã³¸®
-
-      />
-    ),
-  },
-];
-
-
+  const userColumns = [
+    { title: "No.", dataIndex: "index", key: "index" },
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Contact", dataIndex: "contact", key: "contact" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: boolean, record: User) => (
+        <Switch
+          checked={status} // Reflects the current status
+          onClick={(checked, event) => {
+            event.stopPropagation(); // Prevents row click
+          }}
+          onChange={(checked) => handleStatusChange(checked, record)}
+        />
+      ),
+    },
+  ];
 
   const studentColumns = [
     { title: "No.", dataIndex: "index", key: "index" },
@@ -261,21 +287,18 @@ const userColumns = [
     setPageSize(pageSize);
   };
 
-
   const handleRowClick = (record: User | Student, isStudent: boolean) => {
     if (isStudent) {
-      setSelectedStudent(record as Student); // Student Å¸ÀÔÀ¸·Î Ã³¸®
-      setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
+      setSelectedStudent(record as Student);
+      setSelectedUser(null);
       form.setFieldsValue(record);
     } else {
-      setSelectedUser(record as User); // User Å¸ÀÔÀ¸·Î Ã³¸®
-      setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
+      setSelectedUser(record as User);
+      setSelectedStudent(null);
       form.setFieldsValue(record);
     }
-    setIsDrawerOpen(true); // Drawer ¿­±â
+    setIsDrawerOpen(true);
   };
-  
-  
 
   const items: TabsProps["items"] = [
     {
@@ -284,20 +307,19 @@ const userColumns = [
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
           <div className="flex justify-between mb-4">
-  <h1 className="text-2xl font-bold">Users</h1>
-  <Button
-  type="primary"
-  onClick={() => {
-    setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
-    setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
-    form.resetFields();
-    setIsDrawerOpen(true);
-  }}
->
-  Add User
-</Button>
-
-</div>
+            <h1 className="text-2xl font-bold">Users</h1>
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedUser(null);
+                setSelectedStudent(null);
+                form.resetFields();
+                setIsDrawerOpen(true);
+              }}
+            >
+              Add User
+            </Button>
+          </div>
 
           <Table
             columns={userColumns}
@@ -325,6 +347,20 @@ const userColumns = [
       label: "Students",
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
+          <div className="flex justify-between mb-4">
+            <h1 className="text-2xl font-bold">Students</h1>
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedUser(null); // ê¸°ì¡´ ì„ íƒëœ User í•´ì œ
+                setSelectedStudent(null); // ê¸°ì¡´ ì„ íƒëœ Student í•´ì œ
+                form.resetFields(); // í¼ ì´ˆê¸°í™”
+                setIsDrawerOpen(true); // Drawer ì—´ê¸°
+              }}
+            >
+              Add Student
+            </Button>
+          </div>
           <Table
             columns={studentColumns}
             dataSource={studentData.slice(
@@ -360,87 +396,60 @@ const userColumns = [
           }}
         />
       </div>
+
       <Drawer
-  title={
-    selectedUser
-      ? "Edit User"
-      : selectedStudent
-      ? "Edit Student"
-      : "Add User"
-  }
-  placement="right"
-  onClose={() => {
-    setIsDrawerOpen(false);
-    setSelectedUser(null); // Users »óÅÂ ÃÊ±âÈ­
-    setSelectedStudent(null); // Students »óÅÂ ÃÊ±âÈ­
-    form.resetFields(); // Æû ÃÊ±âÈ­
-  }}
-  open={isDrawerOpen}
-  width={500}
->
-  <Form form={form} layout="vertical">
-    {/* ÀÌ¸§ ÇÊµå - ¼öÁ¤ °¡´É */}
-    <Form.Item
-      label="Name"
-      name="name"
-      rules={[{ required: true, message: "Please enter the name" }]}
-    >
-      <Input placeholder="Enter name" />
-    </Form.Item>
-
-    {/* ÀÌ¸ÞÀÏ - ÀÐ±â Àü¿ë */}
-    {selectedUser || selectedStudent ? (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Email</label>
-        <p className="text-gray-500">
-          {selectedUser?.email || selectedStudent?.email || "Unknown"}
-        </p>
-      </div>
-    ) : (
-      <Form.Item
-        label="Email"
-        name="email"
-        rules={[{ required: true, message: "Please enter the email" }]}
+        title={
+          selectedUser
+            ? "Edit User"
+            : selectedStudent
+            ? "Edit Student"
+            : currentTab === "1"
+            ? "Add User"
+            : "Add Student"
+        }
+        placement="right"
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedUser(null);
+          setSelectedStudent(null);
+          form.resetFields();
+        }}
+        open={isDrawerOpen}
+        width={500}
       >
-        <Input placeholder="Enter email" />
-      </Form.Item>
-    )}
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: "Please enter the name" }]}
+          >
+            <Input placeholder="Enter name" />
+          </Form.Item>
 
-    {/* »ý³â¿ùÀÏ - ÀÐ±â Àü¿ë */}
-    {(selectedUser || selectedStudent) && (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Date of Birth</label>
-        <p className="text-gray-500">
-          {selectedUser?.birth || selectedStudent?.birth || "Unknown"}
-        </p>
-      </div>
-    )}
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              {
+                required: true,
+                type: "email",
+                message: "Please enter a valid email",
+              },
+            ]}
+          >
+            <Input placeholder="Enter email" />
+          </Form.Item>
+        </Form>
 
-    {/* ³ªÀÌ - ÀÐ±â Àü¿ë */}
-    {(selectedUser || selectedStudent) && (
-      <div className="mb-4">
-        <label className="block font-medium text-gray-700">Age</label>
-        <p className="text-gray-500">
-          {selectedUser?.age?.toString() || selectedStudent?.age?.toString() || "Unknown"}
-        </p>
-      </div>
-    )}
-  </Form>
-
-  {/* ÇÏ´Ü ¹öÆ° */}
-  <div className="flex justify-end mt-4">
-    <Button type="default" onClick={() => setIsDrawerOpen(false)}>
-      Cancel
-    </Button>
-    <Button
-      type="primary"
-      onClick={handleSave}
-      className="ml-2"
-    >
-      {selectedUser || selectedStudent ? "Save" : "Add"}
-    </Button>
-  </div>
-</Drawer>
+        <div className="flex justify-end mt-4">
+          <Button type="default" onClick={() => setIsDrawerOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="primary" onClick={handleSave} className="ml-2">
+            {selectedUser || selectedStudent ? "Save" : "Add"}
+          </Button>
+        </div>
+      </Drawer>
 
       <div className="absolute bottom-5 right-5">
         <ChatBot />

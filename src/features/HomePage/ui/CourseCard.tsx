@@ -8,7 +8,12 @@ const CourseCard: React.FC<{
   <div
     className="bg-white pb-4 rounded-lg shadow-lg border"
     onClick={() => onClick(course)}
-    style={{ width: "100%", height: "220px", minWidth: "15rem" }}
+    style={{
+      width: "100%",
+      height: "220px",
+      minWidth: "13rem",
+      cursor: "pointer", // 손모양 커서
+    }}
   >
     <div
       className="w-full h-32 rounded-md mb-4"
