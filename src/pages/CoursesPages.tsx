@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -77,7 +75,7 @@ const CoursesPage: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const coursesPerPage = 12;
+  const coursesPerPage = 9;
 
   const fetchCourses = async () => {
     try {
@@ -188,8 +186,8 @@ const CoursesPage: React.FC = () => {
           { onConflict: "course_id,chapter_id" }
         );
 
-      if (error) {
-        console.error("Error deleting courses:", error.message);
+      if (error || chapterError) {
+        console.error("Error deleting courses:");
         alert("Failed to delete courses. Please try again.");
         return;
       }
@@ -367,6 +365,7 @@ const CoursesPage: React.FC = () => {
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
   const currentCourses = courses.slice(indexOfFirstCourse, indexOfLastCourse);
+  // const currentCourses = courses;
 
   return (
     <div>

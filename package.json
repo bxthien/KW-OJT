@@ -24,6 +24,7 @@
     "@mui/material": "^6.3.0",
     "@supabase/supabase-js": "^2.47.12",
     "@types/react-router-dom": "^5.3.3",
+    "@uiw/react-markdown-editor": "^6.1.2",
     "antd": "^5.23.0",
     "axios": "^1.7.9",
     "firebase": "^11.1.0",

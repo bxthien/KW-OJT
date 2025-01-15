@@ -9,7 +9,7 @@ import {
   getCourseDescriptions,
   getCourseColors,
 } from "../supabase/dataService";
-import ChatBot from "./ChatBot";
+// import ChatBot from "./ChatBot";
 import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
 import UserProfileDropdown from "../pages/UserProfileDropdown";
@@ -59,6 +59,8 @@ const HomePage: React.FC = () => {
       }
     };
 
+    console.log(userName);
+
     const fetchCourses = async () => {
       try {
         const courseNames = await getCourseNames();
@@ -90,7 +92,7 @@ const HomePage: React.FC = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((_, session) => {
       if (session?.user) {
         setUser(session.user);
         getUserName(session.user.id).then((fetchedUserName) => {

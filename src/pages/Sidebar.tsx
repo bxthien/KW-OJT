@@ -86,6 +86,22 @@ const Sidebar: React.FC = () => {
         </NavLink>
 
         <NavLink
+          to="/lectures"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 rounded-lg ${
+              isActive ? "bg-blue-300" : "bg-blue-100"
+            } hover:bg-blue-300 transition-colors`
+          }
+        >
+          <img
+            src="https://img.icons8.com/?size=100&id=85767&format=png&color=000000"
+            alt="Settings Icon"
+            className="w-6 h-6 mr-2"
+          />
+          <span className={`${isOpen ? "block" : "hidden"}`}>Lectures</span>
+        </NavLink>
+
+        <NavLink
           to="/users"
           className={({ isActive }) =>
             `flex items-center py-2 px-4 rounded-lg ${
