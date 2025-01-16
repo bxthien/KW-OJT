@@ -226,7 +226,7 @@ const CoursesPage: React.FC = () => {
       alert("Please fill in all required fields.");
       return;
     }
-  
+
     try {
       const { data, error } = await supabase
         .from("courses")
@@ -239,13 +239,13 @@ const CoursesPage: React.FC = () => {
           },
         ])
         .select();
-  
+
       if (error || !data) {
         console.error("Error adding new course:", error?.message);
         alert("Failed to add course.");
         return;
       }
-  
+
       const newCourse = {
         id: data[0].course_id,
         title: newTitle,
@@ -254,7 +254,7 @@ const CoursesPage: React.FC = () => {
         date_of_update: data[0].date_of_update,
         course_chapter: [],
       };
-  
+
       const { error: chapterError } = await supabase
         .from("course_chapter")
         .upsert(
@@ -264,23 +264,23 @@ const CoursesPage: React.FC = () => {
           })),
           { onConflict: "course_id,chapter_id" }
         );
-  
+
       if (chapterError) {
         console.error("Error saving course chapters:", chapterError.message);
         alert("Failed to save course chapters.");
         return;
       }
-  
+
       // Immediately update UI to reflect the addition
       setCourses((prevCourses) => [newCourse, ...prevCourses]);
-  
+
       // Clear inputs and close drawer
       setSelectedChapters([]);
       setNewTitle("");
       setNewDescription("");
       setNewColor("#1677ff");
       setIsDrawerOpen(false);
-  
+
       // Fetch from DB to ensure consistent data
       fetchCourses();
     } catch (err) {
@@ -288,13 +288,13 @@ const CoursesPage: React.FC = () => {
       alert("An error occurred while adding the course.");
     }
   };
-  
+
   const handleSaveExistingCourse = async () => {
     if (!selectedCourse) return;
-  
+
     try {
       const updatedDate = new Date().toISOString();
-  
+
       const { error } = await supabase
         .from("courses")
         .update({
@@ -304,24 +304,24 @@ const CoursesPage: React.FC = () => {
           date_of_update: updatedDate, // Update date_of_update
         })
         .eq("course_id", selectedCourse.id);
-  
+
       if (error) {
         console.error("Error updating course:", error.message);
         alert("Failed to update course.");
         return;
       }
-  
+
       const { data: existingChapters, error: fetchError } = await supabase
         .from("course_chapter")
         .select("chapter_id")
         .eq("course_id", selectedCourse.id);
-  
+
       if (fetchError) {
         console.error("Error fetching existing chapters:", fetchError.message);
         alert("Failed to fetch existing chapters.");
         return;
       }
-  
+
       const chaptersToDelete = existingChapters
         .filter(
           (existingChapter) =>
@@ -331,21 +331,21 @@ const CoursesPage: React.FC = () => {
             )
         )
         .map((chapter) => chapter.chapter_id);
-  
+
       if (chaptersToDelete.length > 0) {
         const { error: deleteError } = await supabase
           .from("course_chapter")
           .delete()
           .in("chapter_id", chaptersToDelete)
           .eq("course_id", selectedCourse.id);
-  
+
         if (deleteError) {
           console.error("Error deleting chapters:", deleteError.message);
           alert("Failed to delete chapters.");
           return;
         }
       }
-  
+
       const { error: chapterError } = await supabase
         .from("course_chapter")
         .upsert(
@@ -355,13 +355,13 @@ const CoursesPage: React.FC = () => {
           })),
           { onConflict: "course_id,chapter_id" }
         );
-  
+
       if (chapterError) {
         console.error("Error saving course chapters:", chapterError.message);
         alert("Failed to save course chapters.");
         return;
       }
-  
+
       // Immediately update UI to reflect the change
       setCourses((prevCourses) => {
         const updatedCourses = prevCourses.map((course) =>
@@ -376,13 +376,15 @@ const CoursesPage: React.FC = () => {
             : course
         );
         return updatedCourses.sort(
-          (a, b) => new Date(b.date_of_update).getTime() - new Date(a.date_of_update).getTime()
+          (a, b) =>
+            new Date(b.date_of_update).getTime() -
+            new Date(a.date_of_update).getTime()
         );
       });
-  
+
       // Clear inputs and close drawer
       setIsDrawerOpen(false);
-  
+
       // Fetch from DB to ensure consistent data
       fetchCourses();
     } catch (err) {
@@ -390,8 +392,6 @@ const CoursesPage: React.FC = () => {
       alert("An error occurred while updating the course.");
     }
   };
-  
-  
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

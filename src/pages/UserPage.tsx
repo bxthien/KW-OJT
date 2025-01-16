@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import {
   Tabs,
@@ -9,9 +10,9 @@ import {
   message,
   Pagination,
   Switch,
+  Modal,
 } from "antd";
 import type { TabsProps } from "antd";
-import ChatBot from "./ChatBot";
 import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
@@ -44,13 +45,80 @@ const UserPage: React.FC = () => {
   const [userData, setUserData] = useState<User[]>([]);
   const [studentData, setStudentData] = useState<Student[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
+  // const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentTab, setCurrentTab] = useState("1");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [modalCourse, setModalCourse] = useState(false);
+  const [dataCourse, setDataCourse] = useState<any[]>([]);
+
   const [form] = Form.useForm();
+
+  const handleModalCourse = async (student_id: string) => {
+    try {
+      const { data: coursesData, error } = await supabase
+        .from("user_course_info")
+        .select(
+          `
+            courses:course_id (
+              course_id,
+              course_name,
+              chapters:course_chapter!inner (
+                chapter_id,
+                chapter:chapter_id (
+                  chapter_id,
+                  chapter_name,
+                  quiz_cnt,
+                  user_quiz_info:user_course_quiz_info!inner (
+                    user_id,
+                    correct_answer_cnt
+                  )
+                )
+              )
+            )
+          `
+        )
+        .eq("user_id", student_id);
+
+      if (error) {
+        message.error("Failed to fetch courses. Please try again.");
+        console.error("Fetch error:", error);
+        return [];
+      }
+
+      const filteredData = coursesData.map((course) => {
+        return {
+          ...course,
+          courses: {
+            ...course.courses,
+            chapters: course.courses.chapters.map((chapter) => {
+              return {
+                ...chapter,
+                chapter: {
+                  ...chapter.chapter,
+                  user_quiz_info: chapter?.chapter?.user_quiz_info.filter(
+                    (quiz) => quiz.user_id === student_id
+                  ),
+                },
+              };
+            }),
+          },
+        };
+      });
+      setDataCourse(filteredData);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      message.error("An error occurred while fetching the courses.");
+      return [];
+    }
+
+    setModalCourse(true);
+  };
+
+  console.log(dataCourse, "dataCourse");
+
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
@@ -253,7 +321,11 @@ const UserPage: React.FC = () => {
 
   const userColumns = [
     { title: "No.", dataIndex: "index", key: "index" },
-    { title: "Name", dataIndex: "name", key: "name" },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Contact", dataIndex: "contact", key: "contact" },
     {
@@ -274,12 +346,60 @@ const UserPage: React.FC = () => {
 
   const studentColumns = [
     { title: "No.", dataIndex: "index", key: "index" },
-    { title: "Name", dataIndex: "name", key: "name" },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (_: string, record: Student) => (
+        <a onClick={() => handleRowClick(record, false)}>{record.name}</a>
+      ),
+    },
     { title: "Date", dataIndex: "date", key: "date" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Contact", dataIndex: "contact", key: "contact" },
     { title: "Birth", dataIndex: "birth", key: "birth" },
     { title: "Age", dataIndex: "age", key: "age" },
+    {
+      title: "Courses",
+      dataIndex: "courses",
+      key: "courses",
+      render: (_: string, record: Student) => (
+        <a onClick={() => handleModalCourse(record.key)}>Course</a>
+      ),
+    },
+  ];
+
+  const coursesColumns = [
+    {
+      title: "Course ID",
+      dataIndex: ["courses", "course_id"],
+      key: "course_id",
+    },
+    {
+      title: "Course Name",
+      dataIndex: ["courses", "course_name"],
+      key: "course_name",
+    },
+    {
+      title: "Chapters",
+      dataIndex: ["courses", "chapters"],
+      key: "chapters",
+      render: (chapters) => (
+        <ul>
+          {chapters.map((chapter) => (
+            <li key={chapter.chapter_id}>
+              {chapter.chapter.chapter_name && (
+                <>
+                  {chapter.chapter.chapter_name} - Quizzes:{" "}
+                  {chapter.chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0}{" "}
+                  / {chapter.chapter.quiz_cnt || 0}
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      ),
+    },
   ];
 
   const handlePaginationChange = (page: number, pageSize: number) => {
@@ -328,9 +448,9 @@ const UserPage: React.FC = () => {
               currentPage * pageSize
             )}
             pagination={false}
-            onRow={(record) => ({
-              onClick: () => handleRowClick(record, false),
-            })}
+            // onRow={(record) => ({
+            //   onClick: () => handleRowClick(record, false),
+            // })}
           />
           <Pagination
             current={currentPage}
@@ -368,9 +488,9 @@ const UserPage: React.FC = () => {
               currentPage * pageSize
             )}
             pagination={false}
-            onRow={(record) => ({
-              onClick: () => handleRowClick(record, true),
-            })}
+            // onRow={(record) => ({
+            //   onClick: () => handleRowClick(record, true),
+            // })}
           />
           <Pagination
             current={currentPage}
@@ -451,9 +571,31 @@ const UserPage: React.FC = () => {
         </div>
       </Drawer>
 
-      <div className="absolute bottom-5 right-5">
+      {/* <div className="absolute bottom-5 right-5">
         <ChatBot />
-      </div>
+      </div> */}
+
+      <Modal
+        width={1300}
+        title="Course Modal"
+        open={modalCourse}
+        onCancel={() => setModalCourse(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setModalCourse(false)}>
+            Cancel
+          </Button>,
+          // <Button key="submit" type="primary" onClick={() => setModalCourse(false)}>
+          //   Submit
+          // </Button>,
+        ]}
+      >
+        <Table
+          columns={coursesColumns}
+          dataSource={dataCourse}
+          // rowKey={(record) => record.courses.course_id}
+          pagination={false}
+        />
+      </Modal>
     </div>
   );
 };
