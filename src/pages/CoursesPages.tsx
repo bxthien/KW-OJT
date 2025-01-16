@@ -403,8 +403,8 @@ const CoursesPage: React.FC = () => {
   // const currentCourses = courses;
 
   return (
-    <div>
-      <div className="pt-4 h-screen overflow-auto bg-gray-100">
+    <div className="">
+      <div className="pt-4 h-screen bg-gray-100">
         <div className="flex justify-between items-center mb-6">
           <div>
             <Input

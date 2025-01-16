@@ -505,7 +505,7 @@ const UserPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen font-sans bg-gray-100 overflow-auto">
+    <div className="flex h-screen font-sans bg-gray-100">
       <div className="scroll-container flex-grow bg-gray-50 p-5">
         <Tabs
           defaultActiveKey="1"

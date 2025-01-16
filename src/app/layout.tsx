@@ -37,7 +37,7 @@ const Layout = () => {
             <UserProfileDropdown />
           </div>
         </div>
-        <div className="flex-1 overflow-auto h-full">
+        <div className="flex-1 overflow-auto h-full mb-6">
           <Outlet />
         </div>
       </div>

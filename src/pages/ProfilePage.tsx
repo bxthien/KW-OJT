@@ -161,11 +161,23 @@ const ProfilePage: React.FC = () => {
           Profile Page
         </h2>
         {/* Profile Image */}
-        <div className="flex flex-col items-center mb-10">
+        <div
+          className="flex flex-col items-center mb-10 relative w-full"
+          style={{
+            backgroundImage: `url('https://cdn.pixabay.com/photo/2016/07/04/22/40/dachshund-1497662_640.jpg')`, // 배경 이미지 URL
+            backgroundSize: "cover", // 배경 이미지 크기 조정
+            backgroundPosition: "center", // 배경 이미지 위치
+            borderRadius: "1rem", // 둥근 모서리 설정
+            padding: "2rem", // 내부 여백
+          }}
+        >
           <img
             src="https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"
             alt="Profile"
-            className="w-32 h-32 rounded-full object-cover mb-4"
+            className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-white shadow-lg"
+            style={{
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.25)", // 음영 효과
+            }}
           />
           <p className="text-gray-500 text-sm">Nice to meet you everyone!</p>
         </div>
@@ -173,7 +185,7 @@ const ProfilePage: React.FC = () => {
         {/* Form Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Name */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-600 mb-2">
               Name
             </label>
@@ -240,7 +252,7 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Age */}
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-semibold text-gray-600 mb-2">
               Age
             </label>
