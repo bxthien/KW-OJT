@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { DoubleRightOutlined, DoubleLeftOutlined } from "@ant-design/icons"; // Ant Design 아이콘 가져오기
+import { logoutUser } from "../supabase/authService";
 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
-
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <aside
@@ -99,7 +107,7 @@ const Sidebar: React.FC = () => {
             }
           >
             <img
-              src="https://img.icons8.com/?size=100&id=85767&format=png&color=000000"
+              src="https://img.icons8.com/?size=100&id=8cjPyCtCMBZ0&format=png&color=000000"
               alt="Settings Icon"
               className="w-6 h-6 mr-2"
             />
@@ -139,13 +147,16 @@ const Sidebar: React.FC = () => {
           </NavLink>
         </nav>
       </div>
-      <div className="flex items-center justify-center w-full">
+      <div
+        onClick={handleLogout}
+        className="flex items-center justify-center w-full"
+      >
         <NavLink
-          to="/logout"
+          to="/login"
           className="flex items-center justify-center w-full py-3 px-3 rounded-lg bg-blue-100 hover:bg-blue-300 transition-colors"
         >
           <img
-            src="https://img.icons8.com/?size=100&id=82751&format=png&color=000000"
+            src="https://img.icons8.com/?size=100&id=2bZ3pE7PXyHB&format=png&color=000000"
             alt="Logout Icon"
             className="w-6 h-6 mr-2"
           />
