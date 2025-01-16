@@ -10,7 +10,6 @@ import {
   getCourseColors,
 } from "../supabase/dataService";
 // import ChatBot from "./ChatBot";
-import CourseCard from "../features/HomePage/ui/CourseCard";
 import { Course } from "../shared/constant/course";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
@@ -42,7 +41,6 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Notification Effect Triggered");
     if (location.state?.notification && !notificationDisplayed) {
       api.success({
         message: location.state.notification,
@@ -140,7 +138,25 @@ const HomePage: React.FC = () => {
   return (
     <div className="bg-gray-100">
       {contextHolder}
-      <main className="relative flex flex-col bg-gray-100 py-4">
+      <main className="relative flex flex-col bg-gray-100 py-4 gap-4">
+        <div className="grid grid-cols-3">
+          <div className="col-span-3 bg-white p-4 rounded-lg shadow-md">
+            <h3 className="text-2xl font-bold mb-4 text-black">
+              Overview Dashboard
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
+                <h4 className="text-lg font-semibold">Courses</h4>
+              </div>
+              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
+                <h4 className="text-lg font-semibold">Users</h4>
+              </div>
+              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
+                <h4 className="text-lg font-semibold">Chapters</h4>
+              </div>
+            </div>
+          </div>
+        </div>
         <section className="grid grid-cols-4 gap-6 mb-6">
           <div className="bg-white p-4 rounded-lg shadow-md col-span-3 flex flex-col h-full">
             <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
