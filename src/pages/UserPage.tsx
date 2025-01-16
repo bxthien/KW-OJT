@@ -16,6 +16,7 @@ import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
+import { render } from "react-dom";
 
 interface User {
   key: string;
@@ -39,6 +40,24 @@ interface Student {
   contact?: string;
   birth?: string;
   age?: number;
+}
+
+interface Course {
+  course_id: string;
+  course_name: string;
+  chapters: Chapter[];
+}
+
+interface Chapter {
+  chapter_id: string;
+  chapter_name: string;
+  quiz_cnt: number;
+  user_quiz_info: QuizInfo[];
+}
+
+interface QuizInfo {
+  user_id: string;
+  correct_answer_cnt: number;
 }
 
 const UserPage: React.FC = () => {
@@ -93,7 +112,7 @@ const UserPage: React.FC = () => {
           ...course,
           courses: {
             ...course.courses,
-            chapters: course.courses.chapters.map((chapter) => {
+            chapters: course.courses?.chapters?.map((chapter) => {
               return {
                 ...chapter,
                 chapter: {
@@ -124,65 +143,42 @@ const UserPage: React.FC = () => {
       const values = await form.validateFields();
 
       if (currentTab === "1") {
-        // Add or Edit User
-        if (selectedUser) {
-          // Update existing user
-          const { error } = await supabase
-            .from("users")
-            .update({
+        // Add new user
+        const { data, error } = await supabase
+          .from("users")
+          .insert([
+            {
               user_name: values.name,
               email: values.email,
-            })
-            .eq("user_id", selectedUser.key);
+              contact: values.contact || null, // 기본값 처리
+              status: values.status !== undefined ? values.status : true, // 기본값 true
+              is_admin: true, // Users 탭에서는 관리자 설정
+            },
+          ])
+          .select()
+          .single();
 
-          if (error) {
-            message.error("Failed to update user. Please try again.");
-            console.error("Update error:", error);
-            return;
-          }
-
-          const updatedData = userData.map((user) =>
-            user.key === selectedUser.key
-              ? { ...user, name: values.name, email: values.email }
-              : user
-          );
-          setUserData(updatedData);
-          message.success("User updated successfully.");
-        } else {
-          // Add new user
-          const { data, error } = await supabase
-            .from("users")
-            .insert([
-              {
-                user_name: values.name,
-                email: values.email,
-                is_admin: true, // Users tab에서는 관리자 설정
-              },
-            ])
-            .select()
-            .single();
-
-          if (error || !data) {
-            message.error("Failed to add user. Please try again.");
-            console.error("Insert error:", error);
-            return;
-          }
-
-          const newUser = {
-            key: data.user_id,
-            index: userData.length + 1,
-            name: data.user_name,
-            type: "Admin",
-            date: new Date().toISOString(),
-            email: data.email,
-            is_admin: true,
-          };
-
-          setUserData((prevData) => [...prevData, newUser]);
-          message.success("User added successfully.");
+        if (error || !data) {
+          message.error("Failed to add user. Please try again.");
+          console.error("Insert error:", error);
+          return;
         }
+
+        const newUser = {
+          key: data.user_id,
+          index: userData.length + 1,
+          name: data.user_name,
+          type: "Admin",
+          date: new Date().toISOString(),
+          email: data.email,
+          contact: data.contact,
+          status: data.status,
+          is_admin: true,
+        };
+
+        setUserData((prevData) => [...prevData, newUser]);
+        message.success("User added successfully.");
       } else if (currentTab === "2") {
-        // Add or Edit Student
         if (selectedStudent) {
           // Update existing student
           const { error } = await supabase
@@ -190,6 +186,9 @@ const UserPage: React.FC = () => {
             .update({
               user_name: values.name,
               email: values.email,
+              contact: values.contact || null,
+              date_of_birth: values.date_of_birth || null, // 필드명 수정
+              age: values.age,
             })
             .eq("user_id", selectedStudent.key);
 
@@ -201,7 +200,14 @@ const UserPage: React.FC = () => {
 
           const updatedData = studentData.map((student) =>
             student.key === selectedStudent.key
-              ? { ...student, name: values.name, email: values.email }
+              ? {
+                  ...student,
+                  name: values.name,
+                  email: values.email,
+                  contact: values.contact,
+                  date_of_birth: values.date_of_birth,
+                  age: values.age,
+                }
               : student
           );
           setStudentData(updatedData);
@@ -214,7 +220,10 @@ const UserPage: React.FC = () => {
               {
                 user_name: values.name,
                 email: values.email,
-                is_admin: false, // Students tab에서는 관리자가 아님
+                contact: values.contact || null,
+                date_of_birth: values.date_of_birth || null, // 필드명 수정
+                age: values.age,
+                is_admin: false,
               },
             ])
             .select()
@@ -233,64 +242,68 @@ const UserPage: React.FC = () => {
             type: "Student",
             date: new Date().toISOString(),
             email: data.email,
+            contact: data.contact,
+            age: values.age,
+            date_of_birth: data.date_of_birth, // 필드명 수정
           };
 
           setStudentData((prevData) => [...prevData, newStudent]);
+
           message.success("Student added successfully.");
         }
       }
 
-      setIsDrawerOpen(false); // Close the drawer
-      form.resetFields(); // Reset the form
+      setIsDrawerOpen(false);
+      form.resetFields();
     } catch (error) {
       console.error("Validation error:", error);
       message.error(
         "Validation failed. Please check the fields and try again."
       );
     }
+    fetchData();
   };
 
+  const fetchData = async () => {
+    try {
+      const users = await getUsersData();
+
+      const formattedUsers = users
+        .filter((user) => user.is_admin)
+        .map((user, index) => ({
+          key: user.user_id,
+          index: index + 1,
+          name: user.user_name,
+          type: "Admin",
+          date: user.created_at,
+          email: user.email,
+          is_admin: user.is_admin,
+          contact: user.contact,
+          status: user.status,
+          birth: user.birth,
+          age: user.age,
+        }));
+      setUserData(formattedUsers);
+
+      const formattedStudents = users
+        .filter((user) => !user.is_admin)
+        .map((user, index) => ({
+          key: user.user_id,
+          index: index + 1,
+          name: user.user_name,
+          type: "User",
+          date: user.created_at,
+          email: user.email,
+          contact: user.contact,
+          birth: user.birth,
+          age: user.age,
+        }));
+      setStudentData(formattedStudents);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const users = await getUsersData();
-
-        const formattedUsers = users
-          .filter((user) => user.is_admin)
-          .map((user, index) => ({
-            key: user.user_id,
-            index: index + 1,
-            name: user.user_name,
-            type: "Admin",
-            date: user.created_at,
-            email: user.email,
-            is_admin: user.is_admin,
-            contact: user.contact,
-            status: user.status,
-            birth: user.birth,
-            age: user.age,
-          }));
-        setUserData(formattedUsers);
-
-        const formattedStudents = users
-          .filter((user) => !user.is_admin)
-          .map((user, index) => ({
-            key: user.user_id,
-            index: index + 1,
-            name: user.user_name,
-            type: "User",
-            date: user.created_at,
-            email: user.email,
-            contact: user.contact,
-            birth: user.birth,
-            age: user.age,
-          }));
-        setStudentData(formattedStudents);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -327,7 +340,13 @@ const UserPage: React.FC = () => {
       key: "name",
     },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Contact", dataIndex: "contact", key: "contact" },
+    {
+      title: "Contact",
+      dataIndex: "contact",
+      key: "contact",
+      render: (contact: string | undefined) =>
+        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
+    },
     {
       title: "Status",
       dataIndex: "status",
@@ -356,9 +375,26 @@ const UserPage: React.FC = () => {
     },
     { title: "Date", dataIndex: "date", key: "date" },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Contact", dataIndex: "contact", key: "contact" },
-    { title: "Birth", dataIndex: "birth", key: "birth" },
-    { title: "Age", dataIndex: "age", key: "age" },
+    {
+      title: "Contact",
+      dataIndex: "contact",
+      key: "contact",
+      render: (contact: string | undefined) =>
+        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
+    },
+    {
+      title: "Birth",
+      dataIndex: "birth",
+      key: "birth",
+      render: (birth: string | undefined) =>
+        birth && birth.toLowerCase() !== "unknown" ? birth : "N/A", // Unknown 처리
+    },
+    {
+      title: "Age",
+      dataIndex: "age",
+      key: "age",
+      render: (age: number) => <>{age ? age : "N/A"}</>,
+    },
     {
       title: "Courses",
       dataIndex: "courses",
@@ -427,7 +463,7 @@ const UserPage: React.FC = () => {
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
           <div className="flex justify-between mb-4">
-            <h1 className="text-2xl font-bold">Users</h1>
+            <h1 className="text-2xl font-bold"> </h1>
             <Button
               type="primary"
               onClick={() => {
@@ -468,7 +504,7 @@ const UserPage: React.FC = () => {
       children: (
         <div className="bg-white p-4 rounded-lg shadow-lg">
           <div className="flex justify-between mb-4">
-            <h1 className="text-2xl font-bold">Students</h1>
+            <h1 className="text-2xl font-bold"></h1>
             <Button
               type="primary"
               onClick={() => {
@@ -559,6 +595,32 @@ const UserPage: React.FC = () => {
           >
             <Input placeholder="Enter email" />
           </Form.Item>
+
+          <Form.Item label="Contact" name="contact">
+            <Input placeholder="Enter contact (optional)" />
+          </Form.Item>
+
+          {currentTab === "1" && ( // Users 탭에서만 Status 표시
+            <Form.Item
+              label="Status"
+              name="status"
+              valuePropName="checked"
+              initialValue={true} // 기본값 설정
+            >
+              <Switch />
+            </Form.Item>
+          )}
+
+          {currentTab === "2" && (
+            <>
+              <Form.Item label="Date of Birth" name="date_of_birth">
+                <Input placeholder="Enter date of birth (optional)" />
+              </Form.Item>
+              <Form.Item label="age" name="age">
+                <Input placeholder="age(optional)" />
+              </Form.Item>
+            </>
+          )}
         </Form>
 
         <div className="flex justify-end mt-4">

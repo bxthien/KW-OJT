@@ -18,7 +18,7 @@ const CarouselComponent: React.FC<CarouselComponentProps> = ({ items }) => {
       {items.map((item) => (
         <div
           key={item.key}
-          className="relative h-[350px] rounded-lg overflow-hidden shadow-lg"
+          className="relative h-[518px] rounded-lg overflow-hidden shadow-lg"
         >
           {/* 이미지 */}
           <img
