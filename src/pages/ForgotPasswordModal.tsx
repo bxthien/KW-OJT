@@ -127,7 +127,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             </button>
           </>
         ) : (
-          <div className="text-center animate-fade-out" style={{ animationDelay: "2.5s" }}>
+          <div
+            className="text-center animate-fade-out"
+            style={{ animationDelay: "2.5s" }}
+          >
             <h1 className="text-2xl font-bold text-green-600 mb-4">
               SUCCESS TO SEND EMAIL!
             </h1>
