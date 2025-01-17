@@ -29,6 +29,7 @@ const ChapterPage: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [lectures, setLectures] = useState<Lectute[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +53,7 @@ const ChapterPage: React.FC = () => {
         )
         `
         )
+        .ilike("chapter_name", `%${searchTerm}%`)
         .order("date_of_update", { ascending: false });
 
       if (error) {
@@ -69,7 +71,7 @@ const ChapterPage: React.FC = () => {
 
   useEffect(() => {
     fetchChapters();
-  }, []);
+  }, [searchTerm]);
 
   const handleSave = async () => {
     try {
@@ -167,19 +169,31 @@ const ChapterPage: React.FC = () => {
   return (
     <div className="py-4 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl text-black font-bold"></h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setIsAdding(true);
-            setSelectedChapter(null);
-            form.resetFields();
-            setIsDrawerOpen(true);
-          }}
-        >
-          Add Chapter
-        </Button>
+        <div>
+          <Input
+            className="py-2 w-[300px]"
+            placeholder="Search by chapter name"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+        <div>
+          <h1 className="text-2xl text-black font-bold"></h1>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setIsAdding(true);
+              setSelectedChapter(null);
+              form.resetFields();
+              setIsDrawerOpen(true);
+            }}
+          >
+            Add Chapter
+          </Button>
+        </div>
       </div>
 
       <div
