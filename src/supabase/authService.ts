@@ -5,37 +5,43 @@ export const registerUser = async (
   password: string,
   additionalData?: { username: string }
 ) => {
-  // ì‚¬ìš©ìž ë“±ë¡
+  // ÀÎÁõ ´Ü°è
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
   });
 
   if (error) {
-    throw new Error(`Registration failed: ${error.message}`);
+    throw new Error(`Authentication registration failed: ${error.message}`);
   }
 
   if (!data?.user) {
-    throw new Error("Registration failed: User object is null.");
+    throw new Error("Authentication registration failed: User object is null.");
   }
 
-  // ì¶”ê°€ ë°ì´í„°ê°€ ìžˆìœ¼ë©´ ë°ì´í„°ë² ì´ìŠ¤ì— ì €ìž¥
-  if (additionalData) {
-    const { error: dbError } = await supabase.from("users").insert({
-      user_id: data.user.id, // Supabase authì—ì„œ ì œê³µí•˜ëŠ” ì‚¬ìš©ìž ID
-      email: data.user.email,
-      user_name: additionalData.username, // ì¶”ê°€ ë°ì´í„° ì €ìž¥
-      created_at: new Date(), // ìƒì„±ì¼
-      is_admin: false,
-    });
+  try {
+    // µ¥ÀÌÅÍº£ÀÌ½º »ðÀÔ ´Ü°è
+    if (additionalData) {
+      const { error: dbError } = await supabase.from("users").insert({
+        user_id: data.user.id,
+        email: data.user.email,
+        user_name: additionalData.username,
+        created_at: new Date(),
+        is_admin: false, // ±âº» °ª
+      });
 
-    if (dbError) {
-      throw new Error(`Failed to save additional data: ${dbError.message}`);
+      if (dbError) {
+        console.error("Database insertion error in registerUser:", dbError);
+        // °æ°í¸¸ ³²±â°í ÇÁ·Î¼¼½º Áß´ÜÇÏÁö ¾ÊÀ½
+      }
     }
+  } catch (dbError) {
+    console.error("Unexpected error during database update:", dbError);
   }
 
   return data.user;
 };
+
 
 export const loginUser = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
