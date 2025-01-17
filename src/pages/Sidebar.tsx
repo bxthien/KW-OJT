@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
 
           <div
             onClick={toggleSidebar}
-            className="flex items-center w-12 h-12 justify-center rounded-full hover:bg-blue-300 transition duration-300"
+            className="flex items-center w-12 h-12 justify-center rounded-full hover:bg-blue-300 transition duration-300 cursor-pointer"
           >
             {isOpen ? (
               <DoubleLeftOutlined className="text-xl" />

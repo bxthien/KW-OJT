@@ -1,5 +1,6 @@
 import React from "react";
 import { Carousel } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 interface CarouselItem {
   key: number;
@@ -14,7 +15,34 @@ interface CarouselComponentProps {
 
 const CarouselComponent: React.FC<CarouselComponentProps> = ({ items }) => {
   return (
-    <Carousel autoplay>
+    <Carousel
+      autoplay
+      arrows
+      prevArrow={
+        <button
+          style={{
+            fontSize: "24px", // 화살표 크기
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          <LeftOutlined />
+        </button>
+      }
+      nextArrow={
+        <button
+          style={{
+            fontSize: "24px", // 화살표 크기
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          <RightOutlined />
+        </button>
+      }
+    >
       {items.map((item) => (
         <div
           key={item.key}
