@@ -1,5 +1,4 @@
 import { Image } from "antd";
-import CourseIcon from "../assets/monitor.svg";
 import UpArrow from "../assets/arrow-up.png";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase/supabaseClient";
@@ -116,8 +115,14 @@ const OverviewDashboard = () => {
     <div className="col-span-3">
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-row items-center gap-3 bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-center bg-teal-200 p-3 rounded-full">
-            <Image src={CourseIcon} width={48} height={48} />
+          <div className="flex items-center justify-center bg-white p-3 rounded-full">
+            <Image
+              src={
+                "https://img.icons8.com/?size=100&id=Hvn8YMeqLM0U&format=png&color=000000"
+              }
+              width={48}
+              height={48}
+            />
           </div>
           <div className="flex flex-col">
             <h2 className="text-lg font-semibold text-gray-500">Courses</h2>
@@ -129,16 +134,24 @@ const OverviewDashboard = () => {
               <p className="text-[#00AC4F] flex items-center font-bold ">
                 <IncrementalCounter end={coursePercent} />%
               </p>
-              from last week
+              <span className="ml-2">from last week</span>{" "}
             </p>
           </div>
         </div>
         <div className="flex flex-row items-center gap-3 bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-center bg-teal-200 p-3 rounded-full">
-            <Image src={CourseIcon} width={48} height={48} />
+          <div className="flex items-center justify-center bg-white p-3 rounded-full">
+            <Image
+              src={
+                "https://img.icons8.com/?size=100&id=oSeDZRvx4vHL&format=png&color=000000"
+              }
+              width={48}
+              height={48}
+            />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-lg font-semibold text-gray-500">Users</h2>
+            <h2 className="text-lg font-semibold text-gray-500">
+              User in Course
+            </h2>
             <p className="text-4xl text-black font-bold">
               <IncrementalCounter end={userCount} />
             </p>
@@ -147,16 +160,22 @@ const OverviewDashboard = () => {
               <p className="text-[#00AC4F] flex items-center font-bold ">
                 <IncrementalCounter end={userPercent} />%
               </p>
-              from last week
+              <span className="ml-2">from last week</span>{" "}
             </p>
           </div>
         </div>{" "}
         <div className="flex flex-row items-center gap-3 bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-center bg-teal-200 p-3 rounded-full">
-            <Image src={CourseIcon} width={48} height={48} />
+          <div className="flex items-center justify-center bg-white p-3 rounded-full">
+            <Image
+              src={
+                "https://img.icons8.com/?size=100&id=Jl3TTGXuPWVx&format=png&color=000000"
+              }
+              width={48}
+              height={48}
+            />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-lg font-semibold text-gray-500">Courses</h2>
+            <h2 className="text-lg font-semibold text-gray-500">Users</h2>
             <p className="text-4xl text-black font-bold">
               <IncrementalCounter end={userCourseCount} />
             </p>
@@ -165,7 +184,7 @@ const OverviewDashboard = () => {
               <p className="text-[#00AC4F] flex items-center font-bold ">
                 <IncrementalCounter end={userCoursePercent} />%
               </p>
-              from last week
+              <span className="ml-2">from last week</span>
             </p>
           </div>
         </div>

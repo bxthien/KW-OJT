@@ -16,7 +16,6 @@ import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
-import { render } from "react-dom";
 import { registerUser } from "../supabase/authService";
 
 interface User {
@@ -87,7 +86,8 @@ const UserPage: React.FC = () => {
     try {
       const { data: coursesData, error } = await supabase
         .from("user_course_info")
-        .select(`
+        .select(
+          `
           courses:course_id (
             course_id,
             course_name,
@@ -104,21 +104,22 @@ const UserPage: React.FC = () => {
               )
             )
           )
-        `)
+        `
+        )
         .eq("user_id", student_id);
-  
+
       if (error) {
         message.error("Failed to fetch courses. Please try again.");
         console.error("Fetch error:", error);
         return;
       }
-  
+
       if (!coursesData) {
         setDataCourse([]);
         return;
       }
-  
-      // µ¥ÀÌÅÍ ÇÊÅÍ¸µ ¹× Å¸ÀÔ Á¤ÀÇ
+
+      // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
       const filteredData: UserCourseInfo[] = coursesData.map((course: any) => ({
         ...course,
         courses: {
@@ -134,16 +135,15 @@ const UserPage: React.FC = () => {
           })),
         },
       }));
-  
+
       setDataCourse(filteredData);
     } catch (err) {
       console.error("Error fetching courses:", err);
       message.error("An error occurred while fetching the courses.");
     }
-  
+
     setModalCourse(true);
   };
-  
 
   console.log(dataCourse, "dataCourse");
 
@@ -151,7 +151,7 @@ const UserPage: React.FC = () => {
     try {
       const values = await form.validateFields(); // Validate form input
       const password = "defaultPassword123"; // Default password for new accounts
-  
+
       if (currentTab === "1") {
         // Add new admin user
         const { data, error } = await supabase
@@ -167,20 +167,22 @@ const UserPage: React.FC = () => {
           ])
           .select()
           .single();
-  
+
         if (error || !data) {
-          message.error("Failed to add user to the database. Please try again.");
+          message.error(
+            "Failed to add user to the database. Please try again."
+          );
           console.error("Insert error:", error);
           return;
         }
-  
+
         // Register user in authentication
         try {
           await registerUser(values.email, password, { username: values.name });
         } catch (authError) {
           console.error("Authentication error (Admin):", authError);
         }
-  
+
         const newUser = {
           key: data.user_id,
           index: userData.length + 1,
@@ -192,7 +194,7 @@ const UserPage: React.FC = () => {
           status: data.status,
           is_admin: true,
         };
-  
+
         setUserData((prevData) => [...prevData, newUser]);
         message.success("User added successfully.");
       } else if (currentTab === "2") {
@@ -211,20 +213,22 @@ const UserPage: React.FC = () => {
           ])
           .select()
           .single();
-  
+
         if (error || !data) {
-          message.error("Failed to add student to the database. Please try again.");
+          message.error(
+            "Failed to add student to the database. Please try again."
+          );
           console.error("Insert error:", error);
           return;
         }
-  
+
         // Register student in authentication
         try {
           await registerUser(values.email, password, { username: values.name });
         } catch (authError) {
           console.error("Authentication error (Student):", authError);
         }
-  
+
         const newStudent = {
           key: data.user_id,
           index: studentData.length + 1,
@@ -236,20 +240,21 @@ const UserPage: React.FC = () => {
           age: values.age,
           date_of_birth: data.date_of_birth,
         };
-  
+
         setStudentData((prevData) => [...prevData, newStudent]);
         message.success("Student added successfully.");
       }
-  
+
       setIsDrawerOpen(false); // Close the drawer
       form.resetFields(); // Reset the form fields
     } catch (error) {
       console.error("Validation error:", error);
-      message.error("Validation failed. Please check the fields and try again.");
+      message.error(
+        "Validation failed. Please check the fields and try again."
+      );
     }
     fetchData(); // Refresh data after adding user/student
   };
-  
 
   const fetchData = async () => {
     try {
@@ -424,7 +429,6 @@ const UserPage: React.FC = () => {
       ),
     },
   ];
-  
 
   const handlePaginationChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
@@ -496,10 +500,10 @@ const UserPage: React.FC = () => {
             <Button
               type="primary"
               onClick={() => {
-                setSelectedUser(null); // ê¸°ì¡´  „  ƒ œ User  •´  œ
-                setSelectedStudent(null); // ê¸°ì¡´  „  ƒ œ Student  •´  œ
-                form.resetFields(); //  ¼ ì´ˆê¸° ™”
-                setIsDrawerOpen(true); // Drawer  —´ê¸ 
+                setSelectedUser(null); // ê¸°ì¡´  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ User  ï¿½ï¿½ ï¿½ï¿½
+                setSelectedStudent(null); // ê¸°ì¡´  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Student  ï¿½ï¿½ ï¿½ï¿½
+                form.resetFields(); //  ï¿½ï¿½ ì´ˆê¸° ï¿½ï¿½
+                setIsDrawerOpen(true); // Drawer  ï¿½ï¿½ï¿½
               }}
             >
               Add Student
@@ -521,7 +525,7 @@ const UserPage: React.FC = () => {
             pageSize={pageSize}
             total={studentData.length}
             onChange={handlePaginationChange}
-            className="flex justify-center mt-4" // ì¤‘ì•™   •  ¬
+            className="flex justify-center mt-4" // ì¤‘ì•™  ï¿½ï¿½ ï¿½ï¿½
           />
         </div>
       ),
@@ -588,12 +592,12 @@ const UserPage: React.FC = () => {
             <Input placeholder="Enter contact (optional)" />
           </Form.Item>
 
-          {currentTab === "1" && ( // Users  ƒ­ — „œë§  Status  ‘œ ‹œ
+          {currentTab === "1" && ( // Users  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½  Status  ï¿½ï¿½ ï¿½ï¿½
             <Form.Item
               label="Status"
               name="status"
               valuePropName="checked"
-              initialValue={true} // ê¸°ë³¸ê°   „¤  •
+              initialValue={true} // ê¸°ë³¸ï¿½   ï¿½ï¿½ ï¿½ï¿½
             >
               <Switch />
             </Form.Item>
