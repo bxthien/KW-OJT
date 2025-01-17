@@ -11,7 +11,7 @@ const LoginPage: React.FC = () => {
     null
   );
   const [email, setEmail] = useState<string>("on@naver.com");
-  const [password, setPassword] = useState<string>("asdf1234");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [dogPosition, setDogPosition] = useState(-200);
   const [currentDog, setCurrentDog] = useState(1); // 현재 보여지는 강아지 이미지 번호

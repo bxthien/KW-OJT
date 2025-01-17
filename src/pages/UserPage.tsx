@@ -54,13 +54,15 @@ interface Chapter {
   user_quiz_info: QuizInfo[];
 }
 
+interface Chapter_Detail {
+  chapter_id: string;
+  chapter: Chapter;
+}
+
 interface Course {
   course_id: string;
   course_name: string;
-  chapters: {
-    chapter_id: string;
-    chapter: Chapter;
-  }[];
+  chapters: Chapter_Detail[];
 }
 
 interface UserCourseInfo {
@@ -128,7 +130,7 @@ const UserPage: React.FC = () => {
             ...chapter,
             chapter: {
               ...chapter.chapter,
-              user_quiz_info: chapter.chapter.user_quiz_info.filter(
+              user_quiz_info: chapter.chapter?.user_quiz_info.filter(
                 (quiz: QuizInfo) => quiz.user_id === student_id
               ),
             },
@@ -346,7 +348,7 @@ const UserPage: React.FC = () => {
       render: (status: boolean, record: User) => (
         <Switch
           checked={status} // Reflects the current status
-          onClick={(checked, event) => {
+          onClick={(_, event) => {
             event.stopPropagation(); // Prevents row click
           }}
           onChange={(checked) => handleStatusChange(checked, record)}
@@ -412,14 +414,14 @@ const UserPage: React.FC = () => {
       title: "Chapters",
       dataIndex: ["courses", "chapters"],
       key: "chapters",
-      render: (chapters: Chapter[] | undefined) => (
+      render: (chapters: Chapter_Detail[]) => (
         <ul>
           {chapters && chapters.length > 0 ? (
-            chapters.map((chapter) => (
+            chapters.map((chapter: Chapter_Detail) => (
               <li key={chapter.chapter_id}>
-                {chapter.chapter_name} - Quizzes:{" "}
-                {chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0} /{" "}
-                {chapter.quiz_cnt || 0}
+                {chapter.chapter.chapter_name} - Quizzes:{" "}
+                {chapter?.chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0}{" "}
+                / {chapter?.chapter.quiz_cnt || 0}
               </li>
             ))
           ) : (

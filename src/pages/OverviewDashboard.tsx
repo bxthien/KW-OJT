@@ -122,6 +122,7 @@ const OverviewDashboard = () => {
               }
               width={48}
               height={48}
+              preview={false}
             />
           </div>
           <div className="flex flex-col">
@@ -130,7 +131,7 @@ const OverviewDashboard = () => {
               <IncrementalCounter end={courseCount} />
             </p>
             <p className="flex flex-row items-center justify-center text-black">
-              <Image src={UpArrow} />
+              <Image src={UpArrow} preview={false} />
               <p className="text-[#00AC4F] flex items-center font-bold ">
                 <IncrementalCounter end={coursePercent} />%
               </p>
@@ -146,6 +147,7 @@ const OverviewDashboard = () => {
               }
               width={48}
               height={48}
+              preview={false}
             />
           </div>
           <div className="flex flex-col">
@@ -156,7 +158,7 @@ const OverviewDashboard = () => {
               <IncrementalCounter end={userCount} />
             </p>
             <p className="flex flex-row items-center justify-center text-black">
-              <Image src={UpArrow} />
+              <Image src={UpArrow} preview={false} />
               <p className="text-[#00AC4F] flex items-center font-bold ">
                 <IncrementalCounter end={userPercent} />%
               </p>
@@ -172,6 +174,7 @@ const OverviewDashboard = () => {
               }
               width={48}
               height={48}
+              preview={false}
             />
           </div>
           <div className="flex flex-col">
