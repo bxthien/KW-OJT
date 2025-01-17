@@ -16,6 +16,7 @@ import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
+import { registerUser } from "../supabase/authService";
 
 interface User {
   key: string;
@@ -41,10 +42,9 @@ interface Student {
   age?: number;
 }
 
-interface Course {
-  course_id: string;
-  course_name: string;
-  chapters: Chapter[];
+interface QuizInfo {
+  user_id: string;
+  correct_answer_cnt: number;
 }
 
 interface Chapter {
@@ -54,9 +54,17 @@ interface Chapter {
   user_quiz_info: QuizInfo[];
 }
 
-interface QuizInfo {
-  user_id: string;
-  correct_answer_cnt: number;
+interface Course {
+  course_id: string;
+  course_name: string;
+  chapters: {
+    chapter_id: string;
+    chapter: Chapter;
+  }[];
+}
+
+interface UserCourseInfo {
+  courses: Course;
 }
 
 const UserPage: React.FC = () => {
@@ -80,56 +88,58 @@ const UserPage: React.FC = () => {
         .from("user_course_info")
         .select(
           `
-            courses:course_id (
-              course_id,
-              course_name,
-              chapters:course_chapter!inner (
+          courses:course_id (
+            course_id,
+            course_name,
+            chapters:course_chapter!inner (
+              chapter_id,
+              chapter:chapter_id (
                 chapter_id,
-                chapter:chapter_id (
-                  chapter_id,
-                  chapter_name,
-                  quiz_cnt,
-                  user_quiz_info:user_course_quiz_info!inner (
-                    user_id,
-                    correct_answer_cnt
-                  )
+                chapter_name,
+                quiz_cnt,
+                user_quiz_info:user_course_quiz_info!inner (
+                  user_id,
+                  correct_answer_cnt
                 )
               )
             )
-          `
+          )
+        `
         )
         .eq("user_id", student_id);
 
       if (error) {
         message.error("Failed to fetch courses. Please try again.");
         console.error("Fetch error:", error);
-        return [];
+        return;
       }
 
-      const filteredData = coursesData.map((course) => {
-        return {
-          ...course,
-          courses: {
-            ...course.courses,
-            chapters: course.courses?.chapters?.map((chapter) => {
-              return {
-                ...chapter,
-                chapter: {
-                  ...chapter.chapter,
-                  user_quiz_info: chapter?.chapter?.user_quiz_info.filter(
-                    (quiz) => quiz.user_id === student_id
-                  ),
-                },
-              };
-            }),
-          },
-        };
-      });
+      if (!coursesData) {
+        setDataCourse([]);
+        return;
+      }
+
+      // ������ ���͸� �� Ÿ�� ����
+      const filteredData: UserCourseInfo[] = coursesData.map((course: any) => ({
+        ...course,
+        courses: {
+          ...course.courses,
+          chapters: course.courses.chapters?.map((chapter: any) => ({
+            ...chapter,
+            chapter: {
+              ...chapter.chapter,
+              user_quiz_info: chapter.chapter.user_quiz_info.filter(
+                (quiz: QuizInfo) => quiz.user_id === student_id
+              ),
+            },
+          })),
+        },
+      }));
+
       setDataCourse(filteredData);
     } catch (err) {
       console.error("Error fetching courses:", err);
       message.error("An error occurred while fetching the courses.");
-      return [];
     }
 
     setModalCourse(true);
@@ -139,28 +149,38 @@ const UserPage: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await form.validateFields(); // Validate form input
+      const password = "defaultPassword123"; // Default password for new accounts
 
       if (currentTab === "1") {
-        // Add new user
+        // Add new admin user
         const { data, error } = await supabase
           .from("users")
           .insert([
             {
               user_name: values.name,
               email: values.email,
-              contact: values.contact || null, // 기본값 처리
-              status: values.status !== undefined ? values.status : true, // 기본값 true
-              is_admin: true, // Users 탭에서는 관리자 설정
+              contact: values.contact || null,
+              status: values.status !== undefined ? values.status : true,
+              is_admin: true,
             },
           ])
           .select()
           .single();
 
         if (error || !data) {
-          message.error("Failed to add user. Please try again.");
+          message.error(
+            "Failed to add user to the database. Please try again."
+          );
           console.error("Insert error:", error);
           return;
+        }
+
+        // Register user in authentication
+        try {
+          await registerUser(values.email, password, { username: values.name });
+        } catch (authError) {
+          console.error("Authentication error (Admin):", authError);
         }
 
         const newUser = {
@@ -178,89 +198,62 @@ const UserPage: React.FC = () => {
         setUserData((prevData) => [...prevData, newUser]);
         message.success("User added successfully.");
       } else if (currentTab === "2") {
-        if (selectedStudent) {
-          // Update existing student
-          const { error } = await supabase
-            .from("users")
-            .update({
+        // Add new student
+        const { data, error } = await supabase
+          .from("users")
+          .insert([
+            {
               user_name: values.name,
               email: values.email,
               contact: values.contact || null,
-              date_of_birth: values.date_of_birth || null, // 필드명 수정
+              date_of_birth: values.date_of_birth || null,
               age: values.age,
-            })
-            .eq("user_id", selectedStudent.key);
+              is_admin: false,
+            },
+          ])
+          .select()
+          .single();
 
-          if (error) {
-            message.error("Failed to update student. Please try again.");
-            console.error("Update error:", error);
-            return;
-          }
-
-          const updatedData = studentData.map((student) =>
-            student.key === selectedStudent.key
-              ? {
-                  ...student,
-                  name: values.name,
-                  email: values.email,
-                  contact: values.contact,
-                  date_of_birth: values.date_of_birth,
-                  age: values.age,
-                }
-              : student
+        if (error || !data) {
+          message.error(
+            "Failed to add student to the database. Please try again."
           );
-          setStudentData(updatedData);
-          message.success("Student updated successfully.");
-        } else {
-          // Add new student
-          const { data, error } = await supabase
-            .from("users")
-            .insert([
-              {
-                user_name: values.name,
-                email: values.email,
-                contact: values.contact || null,
-                date_of_birth: values.date_of_birth || null, // 필드명 수정
-                age: values.age,
-                is_admin: false,
-              },
-            ])
-            .select()
-            .single();
-
-          if (error || !data) {
-            message.error("Failed to add student. Please try again.");
-            console.error("Insert error:", error);
-            return;
-          }
-
-          const newStudent = {
-            key: data.user_id,
-            index: studentData.length + 1,
-            name: data.user_name,
-            type: "Student",
-            date: new Date().toISOString(),
-            email: data.email,
-            contact: data.contact,
-            age: values.age,
-            date_of_birth: data.date_of_birth, // 필드명 수정
-          };
-
-          setStudentData((prevData) => [...prevData, newStudent]);
-
-          message.success("Student added successfully.");
+          console.error("Insert error:", error);
+          return;
         }
+
+        // Register student in authentication
+        try {
+          await registerUser(values.email, password, { username: values.name });
+        } catch (authError) {
+          console.error("Authentication error (Student):", authError);
+        }
+
+        const newStudent = {
+          key: data.user_id,
+          index: studentData.length + 1,
+          name: data.user_name,
+          type: "Student",
+          date: new Date().toISOString(),
+          email: data.email,
+          contact: data.contact,
+          age: values.age,
+          date_of_birth: data.date_of_birth,
+        };
+
+        setStudentData((prevData) => [...prevData, newStudent]);
+        message.success("Student added successfully.");
       }
 
-      setIsDrawerOpen(false);
-      form.resetFields();
+      setIsDrawerOpen(false); // Close the drawer
+      form.resetFields(); // Reset the form fields
     } catch (error) {
       console.error("Validation error:", error);
       message.error(
         "Validation failed. Please check the fields and try again."
       );
     }
-    fetchData();
+    fetchData(); // Refresh data after adding user/student
   };
 
   const fetchData = async () => {
@@ -419,19 +412,19 @@ const UserPage: React.FC = () => {
       title: "Chapters",
       dataIndex: ["courses", "chapters"],
       key: "chapters",
-      render: (chapters) => (
+      render: (chapters: Chapter[] | undefined) => (
         <ul>
-          {chapters.map((chapter) => (
-            <li key={chapter.chapter_id}>
-              {chapter.chapter.chapter_name && (
-                <>
-                  {chapter.chapter.chapter_name} - Quizzes:{" "}
-                  {chapter.chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0}{" "}
-                  / {chapter.chapter.quiz_cnt || 0}
-                </>
-              )}
-            </li>
-          ))}
+          {chapters && chapters.length > 0 ? (
+            chapters.map((chapter) => (
+              <li key={chapter.chapter_id}>
+                {chapter.chapter_name} - Quizzes:{" "}
+                {chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0} /{" "}
+                {chapter.quiz_cnt || 0}
+              </li>
+            ))
+          ) : (
+            <li>No chapters available</li>
+          )}
         </ul>
       ),
     },
@@ -507,10 +500,10 @@ const UserPage: React.FC = () => {
             <Button
               type="primary"
               onClick={() => {
-                setSelectedUser(null); // 기존 선택된 User 해제
-                setSelectedStudent(null); // 기존 선택된 Student 해제
-                form.resetFields(); // 폼 초기화
-                setIsDrawerOpen(true); // Drawer 열기
+                setSelectedUser(null); // 기존  �� �� �� User  �� ��
+                setSelectedStudent(null); // 기존  �� �� �� Student  �� ��
+                form.resetFields(); //  �� 초기 ��
+                setIsDrawerOpen(true); // Drawer  ���
               }}
             >
               Add Student
@@ -532,7 +525,7 @@ const UserPage: React.FC = () => {
             pageSize={pageSize}
             total={studentData.length}
             onChange={handlePaginationChange}
-            className="flex justify-center mt-4" // 중앙 정렬
+            className="flex justify-center mt-4" // 중앙  �� ��
           />
         </div>
       ),
@@ -540,7 +533,7 @@ const UserPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen font-sans bg-gray-100">
+    <div className="flex h-screen font-sans bg-gray-100 overflow-auto">
       <div className="scroll-container flex-grow bg-gray-50 p-5">
         <Tabs
           defaultActiveKey="1"
@@ -599,12 +592,12 @@ const UserPage: React.FC = () => {
             <Input placeholder="Enter contact (optional)" />
           </Form.Item>
 
-          {currentTab === "1" && ( // Users 탭에서만 Status 표시
+          {currentTab === "1" && ( // Users  �� �� ���  Status  �� ��
             <Form.Item
               label="Status"
               name="status"
               valuePropName="checked"
-              initialValue={true} // 기본값 설정
+              initialValue={true} // 기본�   �� ��
             >
               <Switch />
             </Form.Item>

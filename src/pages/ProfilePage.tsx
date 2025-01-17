@@ -1,658 +1,441 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
-import {
-  Tabs,
-  Table,
-  Button,
-  Drawer,
-  Form,
-  Input,
-  message,
-  Pagination,
-  Switch,
-  Modal,
-} from "antd";
-import type { TabsProps } from "antd";
-import { getUsersData } from "../supabase/dataService";
-// import { courses } from "../shared/constant/course";
+import React, { useState, useEffect, useRef } from "react";
+import { Input, Modal, notification } from "antd";
 import { supabase } from "../supabase/supabaseClient";
-import { render } from "react-dom";
-import { registerUser } from "../supabase/authService";
+import { getCurrentUser } from "../supabase/authService";
 
-interface User {
-  key: string;
-  index: number;
-  name: string;
-  type: string;
-  date: string;
-  email: string;
-  is_admin: boolean;
-  contact?: string;
-  birth?: string;
-  age?: number;
-}
+const ProfilePage: React.FC = () => {
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [contact, setContact] = useState<string>("");
+  const [countryCode, setCountryCode] = useState<string>("+1"); // 국가 번호 상태
+  const [birthday, setBirthday] = useState<string>("");
+  const [age, setAge] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [dots, setDots] = useState<string>("");
 
-interface Student {
-  key: string;
-  index: number;
-  name: string;
-  type: string;
-  email: string;
-  contact?: string;
-  birth?: string;
-  age?: number;
-}
+  const [api, contextHolder] = notification.useNotification();
+  const birthdayInputRef = useRef<HTMLInputElement>(null);
 
-interface QuizInfo {
-  user_id: string;
-  correct_answer_cnt: number;
-}
+  // 현재 로그인한 유저 ID 저장
+  const [userId, setUserId] = useState<string | null>(null);
 
-interface Chapter {
-  chapter_id: string;
-  chapter_name: string;
-  quiz_cnt: number;
-  user_quiz_info: QuizInfo[];
-}
+  // 비밀번호 변경 모달 관련 상태
+  const [isPasswordModalOpen, setIsPasswordModalOpen] =
+    useState<boolean>(false);
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
-interface Course {
-  course_id: string;
-  course_name: string;
-  chapters: {
-    chapter_id: string;
-    chapter: Chapter;
-  }[];
-}
-
-interface UserCourseInfo {
-  courses: Course;
-}
-
-const UserPage: React.FC = () => {
-  const [userData, setUserData] = useState<User[]>([]);
-  const [studentData, setStudentData] = useState<Student[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  // const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [currentTab, setCurrentTab] = useState("1");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [modalCourse, setModalCourse] = useState(false);
-  const [dataCourse, setDataCourse] = useState<any[]>([]);
-
-  const [form] = Form.useForm();
-
-  const handleModalCourse = async (student_id: string) => {
-    try {
-      const { data: coursesData, error } = await supabase
-        .from("user_course_info")
-        .select(
-          `
-          courses:course_id (
-            course_id,
-            course_name,
-            chapters:course_chapter!inner (
-              chapter_id,
-              chapter:chapter_id (
-                chapter_id,
-                chapter_name,
-                quiz_cnt,
-                user_quiz_info:user_course_quiz_info!inner (
-                  user_id,
-                  correct_answer_cnt
-                )
-              )
-            )
-          )
-        `
-        )
-        .eq("user_id", student_id);
-
-      if (error) {
-        message.error("Failed to fetch courses. Please try again.");
-        console.error("Fetch error:", error);
-        return;
-      }
-
-      if (!coursesData) {
-        setDataCourse([]);
-        return;
-      }
-
-      // ������ ���͸� �� Ÿ�� ����
-      const filteredData: UserCourseInfo[] = coursesData.map((course: any) => ({
-        ...course,
-        courses: {
-          ...course.courses,
-          chapters: course.courses.chapters?.map((chapter: any) => ({
-            ...chapter,
-            chapter: {
-              ...chapter.chapter,
-              user_quiz_info: chapter.chapter.user_quiz_info.filter(
-                (quiz: QuizInfo) => quiz.user_id === student_id
-              ),
-            },
-          })),
-        },
-      }));
-
-      setDataCourse(filteredData);
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-      message.error("An error occurred while fetching the courses.");
-    }
-
-    setModalCourse(true);
-  };
-
-  console.log(dataCourse, "dataCourse");
-
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields(); // Validate form input
-      const password = "defaultPassword123"; // Default password for new accounts
-
-      if (currentTab === "1") {
-        // Add new admin user
-        const { data, error } = await supabase
-          .from("users")
-          .insert([
-            {
-              user_name: values.name,
-              email: values.email,
-              contact: values.contact || null,
-              status: values.status !== undefined ? values.status : true,
-              is_admin: true,
-            },
-          ])
-          .select()
-          .single();
-
-        if (error || !data) {
-          message.error(
-            "Failed to add user to the database. Please try again."
-          );
-          console.error("Insert error:", error);
-          return;
-        }
-
-        // Register user in authentication
-        try {
-          await registerUser(values.email, password, { username: values.name });
-        } catch (authError) {
-          console.error("Authentication error (Admin):", authError);
-        }
-
-        const newUser = {
-          key: data.user_id,
-          index: userData.length + 1,
-          name: data.user_name,
-          type: "Admin",
-          date: new Date().toISOString(),
-          email: data.email,
-          contact: data.contact,
-          status: data.status,
-          is_admin: true,
-        };
-
-        setUserData((prevData) => [...prevData, newUser]);
-        message.success("User added successfully.");
-      } else if (currentTab === "2") {
-        // Add new student
-        const { data, error } = await supabase
-          .from("users")
-          .insert([
-            {
-              user_name: values.name,
-              email: values.email,
-              contact: values.contact || null,
-              date_of_birth: values.date_of_birth || null,
-              age: values.age,
-              is_admin: false,
-            },
-          ])
-          .select()
-          .single();
-
-        if (error || !data) {
-          message.error(
-            "Failed to add student to the database. Please try again."
-          );
-          console.error("Insert error:", error);
-          return;
-        }
-
-        // Register student in authentication
-        try {
-          await registerUser(values.email, password, { username: values.name });
-        } catch (authError) {
-          console.error("Authentication error (Student):", authError);
-        }
-
-        const newStudent = {
-          key: data.user_id,
-          index: studentData.length + 1,
-          name: data.user_name,
-          type: "Student",
-          date: new Date().toISOString(),
-          email: data.email,
-          contact: data.contact,
-          age: values.age,
-          date_of_birth: data.date_of_birth,
-        };
-
-        setStudentData((prevData) => [...prevData, newStudent]);
-        message.success("Student added successfully.");
-      }
-
-      setIsDrawerOpen(false); // Close the drawer
-      form.resetFields(); // Reset the form fields
-    } catch (error) {
-      console.error("Validation error:", error);
-      message.error(
-        "Validation failed. Please check the fields and try again."
-      );
-    }
-    fetchData(); // Refresh data after adding user/student
-  };
-
-  const fetchData = async () => {
-    try {
-      const users = await getUsersData();
-
-      const formattedUsers = users
-        .filter((user) => user.is_admin)
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "Admin",
-          date: user.created_at,
-          email: user.email,
-          is_admin: user.is_admin,
-          contact: user.contact,
-          status: user.status,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setUserData(formattedUsers);
-
-      const formattedStudents = users
-        .filter((user) => !user.is_admin)
-        .map((user, index) => ({
-          key: user.user_id,
-          index: index + 1,
-          name: user.user_name,
-          type: "User",
-          date: user.created_at,
-          email: user.email,
-          contact: user.contact,
-          birth: user.birth,
-          age: user.age,
-        }));
-      setStudentData(formattedStudents);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    }
-  };
+  // 점 애니메이션 효과 설정
   useEffect(() => {
-    fetchData();
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setDots((prevDots) => (prevDots.length < 3 ? prevDots + "." : ""));
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      setDots("");
+    }
+  }, [isLoading]);
+
+  // 유저 데이터 가져오기
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user) throw new Error("No user is logged in.");
+
+        setUserId(user.id);
+
+        const { data, error } = await supabase
+          .from("users")
+          .select("user_name, email, contact, date_of_birth, age")
+          .eq("user_id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user data:", error.message);
+          return;
+        }
+
+        setName(data.user_name || "");
+        setEmail(data.email || "");
+        setContact(data.contact || "");
+        setBirthday(data.date_of_birth || "");
+        setAge(data.age || null);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
-  const handleStatusChange = async (checked: boolean, record: User) => {
+  const handlePasswordModal = () =>
+    setIsPasswordModalOpen(!isPasswordModalOpen);
+
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      api.error({
+        message: "Password Mismatch",
+        description: "New password and confirm password do not match.",
+      });
+      return;
+    }
+
+    try {
+      // 1. 현재 비밀번호 확인
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email, // 유저의 이메일 (이미 상태로 관리 중)
+        password: currentPassword, // 사용자가 입력한 현재 비밀번호
+      });
+
+      if (signInError) {
+        console.error(
+          "Current password verification failed:",
+          signInError.message
+        );
+        api.error({
+          message: "Invalid Current Password",
+          description: "The current password you entered is incorrect.",
+        });
+        return;
+      }
+
+      // 2. 새 비밀번호 업데이트
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        console.error("Error updating password:", updateError.message);
+        api.error({
+          message: "Password Update Failed",
+          description: "An error occurred while updating the password.",
+        });
+        return;
+      }
+
+      api.success({
+        message: "Password Changed Successfully",
+        description: "Your password has been updated!",
+      });
+      handlePasswordModal(); // 모달 닫기
+    } catch (err) {
+      console.error("Unexpected error while changing password:", err);
+      api.error({
+        message: "Password Update Error",
+        description: "Something went wrong while changing the password.",
+      });
+    }
+  };
+
+  // 전화번호 입력 시 자동 하이픈 추가
+  const handleContactChange = (value: string) => {
+    const onlyNumbers = value.replace(/[^0-9]/g, "");
+    let formattedContact = onlyNumbers;
+
+    if (onlyNumbers.length <= 3) {
+      formattedContact = onlyNumbers;
+    } else if (onlyNumbers.length <= 7) {
+      formattedContact = `${onlyNumbers.slice(0, 3)}-${onlyNumbers.slice(3)}`;
+    } else {
+      formattedContact = `${onlyNumbers.slice(0, 3)}-${onlyNumbers.slice(
+        3,
+        7
+      )}-${onlyNumbers.slice(7)}`;
+    }
+
+    setContact(formattedContact);
+  };
+
+  // 생년월일 입력 시 나이 자동 계산
+  const handleBirthdayChange = (value: string) => {
+    setBirthday(value);
+
+    if (value) {
+      const birthDate = new Date(value);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        calculatedAge--;
+      }
+
+      setAge(calculatedAge >= 0 ? calculatedAge : null);
+    } else {
+      setAge(null);
+    }
+  };
+
+  // 프로필 수정 저장
+  const handleSaveChanges = async () => {
+    setIsLoading(true);
+
     try {
       const { error } = await supabase
         .from("users")
-        .update({ status: checked })
-        .eq("user_id", record.key);
+        .update({
+          user_name: name,
+          contact,
+          date_of_birth: birthday,
+          age,
+        })
+        .eq("user_id", userId);
 
       if (error) {
-        message.error("Failed to update status.");
-        console.error("Update error:", error);
+        console.error("Error updating user data:", error.message);
+        alert("Failed to save changes.");
         return;
       }
 
-      const updatedData = userData.map((user) =>
-        user.key === record.key ? { ...user, status: checked } : user
-      );
-      setUserData(updatedData);
-
-      message.success("Status updated successfully.");
+      setIsEditing(false);
+      api.success({
+        message: "Profile Changes Saved",
+        description: "Your profile has been successfully saved!",
+        placement: "topRight",
+      });
     } catch (err) {
-      console.error("Error updating status:", err);
-      message.error("An error occurred while updating the status.");
+      console.error("Error saving profile:", err);
+      alert("An error occurred while saving your profile.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const userColumns = [
-    { title: "No.", dataIndex: "index", key: "index" },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    { title: "Email", dataIndex: "email", key: "email" },
-    {
-      title: "Contact",
-      dataIndex: "contact",
-      key: "contact",
-      render: (contact: string | undefined) =>
-        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: boolean, record: User) => (
-        <Switch
-          checked={status} // Reflects the current status
-          onClick={(checked, event) => {
-            event.stopPropagation(); // Prevents row click
-          }}
-          onChange={(checked) => handleStatusChange(checked, record)}
-        />
-      ),
-    },
-  ];
-
-  const studentColumns = [
-    { title: "No.", dataIndex: "index", key: "index" },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (_: string, record: Student) => (
-        <a onClick={() => handleRowClick(record, false)}>{record.name}</a>
-      ),
-    },
-    { title: "Date", dataIndex: "date", key: "date" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    {
-      title: "Contact",
-      dataIndex: "contact",
-      key: "contact",
-      render: (contact: string | undefined) =>
-        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
-    },
-    {
-      title: "Birth",
-      dataIndex: "birth",
-      key: "birth",
-      render: (birth: string | undefined) =>
-        birth && birth.toLowerCase() !== "unknown" ? birth : "N/A", // Unknown 처리
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-      render: (age: number) => <>{age ? age : "N/A"}</>,
-    },
-    {
-      title: "Courses",
-      dataIndex: "courses",
-      key: "courses",
-      render: (_: string, record: Student) => (
-        <a onClick={() => handleModalCourse(record.key)}>Course</a>
-      ),
-    },
-  ];
-
-  const coursesColumns = [
-    {
-      title: "Course ID",
-      dataIndex: ["courses", "course_id"],
-      key: "course_id",
-    },
-    {
-      title: "Course Name",
-      dataIndex: ["courses", "course_name"],
-      key: "course_name",
-    },
-    {
-      title: "Chapters",
-      dataIndex: ["courses", "chapters"],
-      key: "chapters",
-      render: (chapters: Chapter[] | undefined) => (
-        <ul>
-          {chapters && chapters.length > 0 ? (
-            chapters.map((chapter) => (
-              <li key={chapter.chapter_id}>
-                {chapter.chapter_name} - Quizzes:{" "}
-                {chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0} /{" "}
-                {chapter.quiz_cnt || 0}
-              </li>
-            ))
-          ) : (
-            <li>No chapters available</li>
-          )}
-        </ul>
-      ),
-    },
-  ];
-
-  const handlePaginationChange = (page: number, pageSize: number) => {
-    setCurrentPage(page);
-    setPageSize(pageSize);
-  };
-
-  const handleRowClick = (record: User | Student, isStudent: boolean) => {
-    if (isStudent) {
-      setSelectedStudent(record as Student);
-      setSelectedUser(null);
-      form.setFieldsValue(record);
-    } else {
-      setSelectedUser(record as User);
-      setSelectedStudent(null);
-      form.setFieldsValue(record);
+  // 생년월일 필드 클릭 시 달력 표시
+  const handleBirthdayClick = () => {
+    if (birthdayInputRef.current) {
+      birthdayInputRef.current.showPicker();
     }
-    setIsDrawerOpen(true);
   };
-
-  const items: TabsProps["items"] = [
-    {
-      key: "1",
-      label: "Users",
-      children: (
-        <div className="bg-white p-4 rounded-lg shadow-lg">
-          <div className="flex justify-between mb-4">
-            <h1 className="text-2xl font-bold"> </h1>
-            <Button
-              type="primary"
-              onClick={() => {
-                setSelectedUser(null);
-                setSelectedStudent(null);
-                form.resetFields();
-                setIsDrawerOpen(true);
-              }}
-            >
-              Add User
-            </Button>
-          </div>
-
-          <Table
-            columns={userColumns}
-            dataSource={userData.slice(
-              (currentPage - 1) * pageSize,
-              currentPage * pageSize
-            )}
-            pagination={false}
-            // onRow={(record) => ({
-            //   onClick: () => handleRowClick(record, false),
-            // })}
-          />
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={userData.length}
-            onChange={handlePaginationChange}
-            className="flex justify-center mt-4"
-          />
-        </div>
-      ),
-    },
-    {
-      key: "2",
-      label: "Students",
-      children: (
-        <div className="bg-white p-4 rounded-lg shadow-lg">
-          <div className="flex justify-between mb-4">
-            <h1 className="text-2xl font-bold"></h1>
-            <Button
-              type="primary"
-              onClick={() => {
-                setSelectedUser(null); // 기존  �� �� �� User  �� ��
-                setSelectedStudent(null); // 기존  �� �� �� Student  �� ��
-                form.resetFields(); //  �� 초기 ��
-                setIsDrawerOpen(true); // Drawer  ���
-              }}
-            >
-              Add Student
-            </Button>
-          </div>
-          <Table
-            columns={studentColumns}
-            dataSource={studentData.slice(
-              (currentPage - 1) * pageSize,
-              currentPage * pageSize
-            )}
-            pagination={false}
-            // onRow={(record) => ({
-            //   onClick: () => handleRowClick(record, true),
-            // })}
-          />
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={studentData.length}
-            onChange={handlePaginationChange}
-            className="flex justify-center mt-4" // 중앙  �� ��
-          />
-        </div>
-      ),
-    },
-  ];
 
   return (
-    <div className="flex h-screen font-sans bg-gray-100 overflow-auto">
-      <div className="scroll-container flex-grow bg-gray-50 p-5">
-        <Tabs
-          defaultActiveKey="1"
-          items={items}
-          onChange={(key) => {
-            setCurrentTab(key);
-            setCurrentPage(1);
+    <div
+      className={`w-full flex justify-center items-center bg-gray-100 ${
+        isLoading ? "pointer-events-none" : ""
+      }`}
+    >
+      {contextHolder}
+      <div className="max-w-3xl w-full p-8 bg-white rounded-xl shadow-lg mt-10">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+          Profile Page
+        </h2>
+        {/* Profile Image */}
+        <div
+          className="flex flex-col items-center mb-10 relative w-full"
+          style={{
+            backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`, // 배경 이미지 URL
+            backgroundSize: "cover", // 배경 이미지 크기 조정
+            backgroundPosition: "center", // 배경 이미지 위치
+            borderRadius: "1rem", // 둥근 모서리 설정
+            padding: "2rem", // 내부 여백
           }}
-        />
-      </div>
-
-      <Drawer
-        title={
-          selectedUser
-            ? "Edit User"
-            : selectedStudent
-            ? "Edit Student"
-            : currentTab === "1"
-            ? "Add User"
-            : "Add Student"
-        }
-        placement="right"
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedUser(null);
-          setSelectedStudent(null);
-          form.resetFields();
-        }}
-        open={isDrawerOpen}
-        width={500}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter the name" }]}
-          >
-            <Input placeholder="Enter name" />
-          </Form.Item>
-
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              {
-                required: true,
-                type: "email",
-                message: "Please enter a valid email",
-              },
-            ]}
-          >
-            <Input placeholder="Enter email" />
-          </Form.Item>
-
-          <Form.Item label="Contact" name="contact">
-            <Input placeholder="Enter contact (optional)" />
-          </Form.Item>
-
-          {currentTab === "1" && ( // Users  �� �� ���  Status  �� ��
-            <Form.Item
-              label="Status"
-              name="status"
-              valuePropName="checked"
-              initialValue={true} // 기본�   �� ��
-            >
-              <Switch />
-            </Form.Item>
-          )}
-
-          {currentTab === "2" && (
-            <>
-              <Form.Item label="Date of Birth" name="date_of_birth">
-                <Input placeholder="Enter date of birth (optional)" />
-              </Form.Item>
-              <Form.Item label="age" name="age">
-                <Input placeholder="age(optional)" />
-              </Form.Item>
-            </>
-          )}
-        </Form>
-
-        <div className="flex justify-end mt-4">
-          <Button type="default" onClick={() => setIsDrawerOpen(false)}>
-            Cancel
-          </Button>
-          <Button type="primary" onClick={handleSave} className="ml-2">
-            {selectedUser || selectedStudent ? "Save" : "Add"}
-          </Button>
+        >
+          <img
+            src="https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-white shadow-lg"
+            style={{
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.25)", // 음영 효과
+            }}
+          />
+          <p className="text-gray-500 text-sm">Nice to meet you everyone!</p>
         </div>
-      </Drawer>
 
-      {/* <div className="absolute bottom-5 right-5">
-        <ChatBot />
-      </div> */}
+        {/* Form Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Name */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600 mb-2">
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEditing || isLoading}
+              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                isEditing && !isLoading ? "" : "bg-gray-200"
+              }`}
+              placeholder="Enter your name"
+            />
+          </div>
 
+          {/* Email */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={!isEditing || isLoading}
+              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                isEditing && !isLoading ? "" : "bg-gray-200"
+              }`}
+              placeholder="Enter your email"
+            />
+          </div>
+
+          {/* Contact */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600 mb-2">
+              Contact
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                disabled={!isEditing || isLoading}
+                placeholder="+1"
+                maxLength={4}
+                className={`w-20 p-4 text-center bg-gray-50 text-gray-800 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  isEditing && !isLoading ? "" : "bg-gray-200"
+                }`}
+              />
+              <input
+                type="text"
+                placeholder="Enter your phone number"
+                value={contact}
+                onChange={(e) => handleContactChange(e.target.value)}
+                disabled={!isEditing || isLoading}
+                maxLength={13}
+                className={`flex-1 p-4 bg-gray-50 text-gray-800 border-t border-b border-r border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  isEditing && !isLoading ? "" : "bg-gray-200"
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Birthday */}
+          <div onClick={handleBirthdayClick} className="cursor-pointer">
+            <label className="block text-sm font-semibold text-gray-600 mb-2">
+              Birthday
+            </label>
+            <input
+              ref={birthdayInputRef}
+              type="date"
+              value={birthday}
+              onChange={(e) => handleBirthdayChange(e.target.value)}
+              disabled={!isEditing || isLoading}
+              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                isEditing && !isLoading ? "" : "bg-gray-200"
+              }`}
+            />
+          </div>
+
+          {/* Age */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">
+              Age
+            </label>
+            <input
+              type="number"
+              value={age || ""}
+              disabled
+              className="w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg"
+            />
+          </div>
+        </div>
+
+        <p
+          onClick={handlePasswordModal}
+          className="text-center text-blue-500 underline cursor-pointer mb-6 hover:text-blue-600 transition"
+        >
+          Change Password
+        </p>
+
+        {/* Buttons */}
+        {!isEditing ? (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="w-full bg-green-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-green-500 transition duration-300"
+            disabled={isLoading}
+          >
+            Edit Profile
+          </button>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={handleSaveChanges}
+              className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300"
+              disabled={isLoading}
+            >
+              {isLoading ? `Saving Profile${dots}` : "Save Changes"}
+            </button>
+          </div>
+        )}
+      </div>
       <Modal
-        width={1300}
-        title="Course Modal"
-        open={modalCourse}
-        onCancel={() => setModalCourse(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setModalCourse(false)}>
-            Cancel
-          </Button>,
-          // <Button key="submit" type="primary" onClick={() => setModalCourse(false)}>
-          //   Submit
-          // </Button>,
-        ]}
+        title={
+          <h2 className="text-xl font-semibold text-gray-800">
+            Change Password
+          </h2>
+        }
+        visible={isPasswordModalOpen}
+        onOk={handlePasswordChange}
+        onCancel={handlePasswordModal}
+        okText="Change Password"
+        cancelText="Cancel"
+        okButtonProps={{
+          className: "bg-blue-600 hover:bg-blue-500 text-white font-semibold",
+        }}
+        cancelButtonProps={{
+          className: "hover:text-blue-600 font-semibold",
+        }}
+        className="rounded-lg overflow-hidden"
       >
-        <Table
-          columns={coursesColumns}
-          dataSource={dataCourse}
-          // rowKey={(record) => record.courses.course_id}
-          pagination={false}
-        />
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              Current Password
+            </label>
+            <Input.Password
+              placeholder="Enter your current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              prefix={<i className="ri-lock-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              New Password
+            </label>
+            <Input.Password
+              placeholder="Enter a new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              prefix={<i className="ri-key-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              Confirm New Password
+            </label>
+            <Input.Password
+              placeholder="Re-enter the new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              prefix={<i className="ri-check-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+        </div>
       </Modal>
     </div>
   );
 };
 
-export default UserPage;
+export default ProfilePage;
