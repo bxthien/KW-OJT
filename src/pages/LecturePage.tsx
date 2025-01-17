@@ -21,12 +21,20 @@ const LecturePage = () => {
   const [selectedLecture, setSelectedLecture] = useState<Lectute | null>(null);
   const [updatedLectureName, setUpdatedLectureName] = useState("");
   const [markdown, setMarkdown] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchLectures = async () => {
-    const { data, error } = await supabase.from("lecture").select(`
+    const { data, error } = await supabase
+      .from("lecture")
+      .select(
+        `
       *,
       chapter:chapter_id (chapter_name, chapter_id) 
-    `);
+    `
+      )
+      .or(
+        `lecture_name.ilike.%${searchTerm}%,lecture_document.ilike.%${searchTerm}%`
+      );
 
     if (data) {
       setLectures(data);
@@ -38,7 +46,7 @@ const LecturePage = () => {
   };
   useEffect(() => {
     fetchLectures();
-  }, []);
+  }, [searchTerm]);
 
   const columns = [
     {
@@ -96,6 +104,16 @@ const LecturePage = () => {
 
   return (
     <div className="py-4 bg-gray-100 min-h-screen">
+      <div className="mb-4">
+        <Input
+          className="py-2 w-[300px]"
+          placeholder="Search by lecture name or document"
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            // setCurrentPage(1);
+          }}
+        />
+      </div>
       <div className="bg-white p-5 rounded-xl shadow-md">
         <Table
           dataSource={lectures}

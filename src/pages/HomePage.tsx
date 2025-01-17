@@ -15,6 +15,7 @@ import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
 import { Session } from "@supabase/supabase-js";
 import "../app/index.css";
+import OverviewDashboard from "./OverviewDashboard";
 
 // Supabase User Ÿ�� ����
 type SupabaseUser = Session["user"];
@@ -27,6 +28,7 @@ const HomePage: React.FC = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+
   const [notificationDisplayed, setNotificationDisplayed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,22 +142,7 @@ const HomePage: React.FC = () => {
       {contextHolder}
       <main className="relative flex flex-col bg-gray-100 py-4 gap-4">
         <div className="grid grid-cols-3">
-          <div className="col-span-3 bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-2xl font-bold mb-4 text-black">
-              Overview Dashboard
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
-                <h4 className="text-lg font-semibold">Courses</h4>
-              </div>
-              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
-                <h4 className="text-lg font-semibold">Users</h4>
-              </div>
-              <div className="bg-gray-200 p-4 rounded-lg shadow-inner">
-                <h4 className="text-lg font-semibold">Chapters</h4>
-              </div>
-            </div>
-          </div>
+          <OverviewDashboard />
         </div>
         <section className="grid grid-cols-10 gap-6 mb-6">
           {/* Welcome Section - 6 부분 */}
