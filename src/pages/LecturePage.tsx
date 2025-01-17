@@ -104,7 +104,7 @@ const LecturePage = () => {
           onRow={(record) => ({
             onClick: () => {
               handleRowClick(record);
-              setMarkdown(record.lecture_document);
+              setMarkdown(record.lecture_document || "");
             },
           })}
         />
