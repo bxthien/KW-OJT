@@ -16,7 +16,6 @@ import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
-import { render } from "react-dom";
 
 interface User {
   key: string;

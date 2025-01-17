@@ -9,7 +9,6 @@ import {
   getCourseDescriptions,
   getCourseColors,
 } from "../supabase/dataService";
-// import ChatBot from "./ChatBot";
 import { Course } from "../shared/constant/course";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
@@ -17,7 +16,7 @@ import { Session } from "@supabase/supabase-js";
 import "../app/index.css";
 import OverviewDashboard from "./OverviewDashboard";
 
-// Supabase User Ÿ�� ����
+// Supabase User
 type SupabaseUser = Session["user"];
 
 const HomePage: React.FC = () => {
@@ -117,7 +116,14 @@ const HomePage: React.FC = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [location.state, api, navigate, notificationDisplayed, api, navigate]);
+  }, [
+    location.state,
+    api,
+    navigate,
+    notificationDisplayed,
+    location.pathname,
+    userName,
+  ]);
 
   const handleCourseClick = async (course: Course) => {
     setSelectedCourse(course);
@@ -188,22 +194,6 @@ const HomePage: React.FC = () => {
             <CalendarComponent />
           </div>
         </section>
-
-        {/* Courses Section */}
-        {/* {user && (
-          <section className="mb-6">
-            <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  onClick={handleCourseClick}
-                />
-              ))}
-            </div>
-          </section>
-        )} */}
       </main>
 
       {selectedCourse && (
