@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { notification } from "antd";
+import { Input, Modal, notification } from "antd";
 import { supabase } from "../supabase/supabaseClient";
 import { getCurrentUser } from "../supabase/authService";
-import ChatBot from "./ChatBot";
 
 const ProfilePage: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [contact, setContact] = useState<string>("");
+  const [countryCode, setCountryCode] = useState<string>("+1"); // 국가 번호 상태
   const [birthday, setBirthday] = useState<string>("");
   const [age, setAge] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -19,6 +19,13 @@ const ProfilePage: React.FC = () => {
 
   // 현재 로그인한 유저 ID 저장
   const [userId, setUserId] = useState<string | null>(null);
+
+  // 비밀번호 변경 모달 관련 상태
+  const [isPasswordModalOpen, setIsPasswordModalOpen] =
+    useState<boolean>(false);
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   // 점 애니메이션 효과 설정
   useEffect(() => {
@@ -64,6 +71,65 @@ const ProfilePage: React.FC = () => {
 
     fetchUserData();
   }, []);
+
+  const handlePasswordModal = () =>
+    setIsPasswordModalOpen(!isPasswordModalOpen);
+
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      api.error({
+        message: "Password Mismatch",
+        description: "New password and confirm password do not match.",
+      });
+      return;
+    }
+
+    try {
+      // 1. 현재 비밀번호 확인
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email, // 유저의 이메일 (이미 상태로 관리 중)
+        password: currentPassword, // 사용자가 입력한 현재 비밀번호
+      });
+
+      if (signInError) {
+        console.error(
+          "Current password verification failed:",
+          signInError.message
+        );
+        api.error({
+          message: "Invalid Current Password",
+          description: "The current password you entered is incorrect.",
+        });
+        return;
+      }
+
+      // 2. 새 비밀번호 업데이트
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        console.error("Error updating password:", updateError.message);
+        api.error({
+          message: "Password Update Failed",
+          description: "An error occurred while updating the password.",
+        });
+        return;
+      }
+
+      api.success({
+        message: "Password Changed Successfully",
+        description: "Your password has been updated!",
+      });
+      handlePasswordModal(); // 모달 닫기
+    } catch (err) {
+      console.error("Unexpected error while changing password:", err);
+      api.error({
+        message: "Password Update Error",
+        description: "Something went wrong while changing the password.",
+      });
+    }
+  };
 
   // 전화번호 입력 시 자동 하이픈 추가
   const handleContactChange = (value: string) => {
@@ -151,12 +217,12 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div
-      className={`h-screen w-full flex justify-center items-center bg-gray-100 ${
+      className={`w-full flex justify-center items-center bg-gray-100 ${
         isLoading ? "pointer-events-none" : ""
       }`}
     >
       {contextHolder}
-      <div className="max-w-3xl w-full p-8 bg-white rounded-xl shadow-lg">
+      <div className="max-w-3xl w-full p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
           Profile Page
         </h2>
@@ -164,7 +230,7 @@ const ProfilePage: React.FC = () => {
         <div
           className="flex flex-col items-center mb-10 relative w-full"
           style={{
-            backgroundImage: `url('https://cdn.pixabay.com/photo/2016/07/04/22/40/dachshund-1497662_640.jpg')`, // 배경 이미지 URL
+            backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`, // 배경 이미지 URL
             backgroundSize: "cover", // 배경 이미지 크기 조정
             backgroundPosition: "center", // 배경 이미지 위치
             borderRadius: "1rem", // 둥근 모서리 설정
@@ -197,11 +263,12 @@ const ProfilePage: React.FC = () => {
               className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                 isEditing && !isLoading ? "" : "bg-gray-200"
               }`}
+              placeholder="Enter your name"
             />
           </div>
 
           {/* Email */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-600 mb-2">
               Email
             </label>
@@ -218,20 +285,34 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-600 mb-2">
               Contact
             </label>
-            <input
-              type="text"
-              value={contact}
-              onChange={(e) => handleContactChange(e.target.value)}
-              disabled={!isEditing || isLoading}
-              maxLength={13}
-              className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isEditing && !isLoading ? "" : "bg-gray-200"
-              }`}
-            />
+            <div className="flex">
+              <input
+                type="text"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                disabled={!isEditing || isLoading}
+                placeholder="+1"
+                maxLength={4}
+                className={`w-20 p-4 text-center bg-gray-50 text-gray-800 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  isEditing && !isLoading ? "" : "bg-gray-200"
+                }`}
+              />
+              <input
+                type="text"
+                placeholder="Enter your phone number"
+                value={contact}
+                onChange={(e) => handleContactChange(e.target.value)}
+                disabled={!isEditing || isLoading}
+                maxLength={13}
+                className={`flex-1 p-4 bg-gray-50 text-gray-800 border-t border-b border-r border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  isEditing && !isLoading ? "" : "bg-gray-200"
+                }`}
+              />
+            </div>
           </div>
 
           {/* Birthday */}
@@ -265,6 +346,13 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
 
+        <p
+          onClick={handlePasswordModal}
+          className="text-center text-blue-500 underline cursor-pointer mb-6 hover:text-blue-600 transition"
+        >
+          Change Password
+        </p>
+
         {/* Buttons */}
         {!isEditing ? (
           <button
@@ -275,16 +363,77 @@ const ProfilePage: React.FC = () => {
             Edit Profile
           </button>
         ) : (
-          <button
-            onClick={handleSaveChanges}
-            className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300"
-            disabled={isLoading}
-          >
-            {isLoading ? `Saving Profile${dots}` : "Save Changes"}
-          </button>
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={handleSaveChanges}
+              className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300"
+              disabled={isLoading}
+            >
+              {isLoading ? `Saving Profile${dots}` : "Save Changes"}
+            </button>
+          </div>
         )}
       </div>
-      <ChatBot />
+      <Modal
+        title={
+          <h2 className="text-xl font-semibold text-gray-800">
+            Change Password
+          </h2>
+        }
+        visible={isPasswordModalOpen}
+        onOk={handlePasswordChange}
+        onCancel={handlePasswordModal}
+        okText="Change Password"
+        cancelText="Cancel"
+        okButtonProps={{
+          className: "bg-blue-600 hover:bg-blue-500 text-white font-semibold",
+        }}
+        cancelButtonProps={{
+          className: "hover:text-blue-600 font-semibold",
+        }}
+        className="rounded-lg overflow-hidden"
+      >
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              Current Password
+            </label>
+            <Input.Password
+              placeholder="Enter your current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              prefix={<i className="ri-lock-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              New Password
+            </label>
+            <Input.Password
+              placeholder="Enter a new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              prefix={<i className="ri-key-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1">
+              Confirm New Password
+            </label>
+            <Input.Password
+              placeholder="Re-enter the new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              prefix={<i className="ri-check-line text-gray-400"></i>}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

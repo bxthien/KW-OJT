@@ -8,14 +8,15 @@ import { supabase } from "./supabaseClient";
 export const getUserName = async (userId: string): Promise<string | null> => {
   const { data, error } = await supabase
     .from("users") // Supabase �����ͺ��̽��� "users" ���̺�
-    .select("user_name") // ������ �÷� ����
-    .eq("user_id", userId) // ����: user_id�� ��ġ
-    .single(); // ���� ����� ��ȯ
+    .select("*")
+    .eq("user_id", userId)
+    .single();
 
   if (error) {
     console.error("Error fetching user name:", error.message);
     return null;
   }
+  console.log("object", data);
 
   return data?.user_name || null;
 };
@@ -118,16 +119,14 @@ export const addUserData = async (user: {
   date: string;
   contact: string;
 }) => {
-  const { error } = await supabase
-    .from("users")
-    .insert([
-      {
-        user_name: user.name,
-        is_admin: user.type === "Admin",
-        created_at: user.date,
-        email: user.contact,
-      },
-    ]);
+  const { error } = await supabase.from("users").insert([
+    {
+      user_name: user.name,
+      is_admin: user.type === "Admin",
+      created_at: user.date,
+      email: user.contact,
+    },
+  ]);
 
   if (error) {
     throw new Error(error.message);

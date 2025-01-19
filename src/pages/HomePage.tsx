@@ -3,31 +3,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { notification } from "antd";
 import { getCurrentUser } from "../supabase/authService";
 import { supabase } from "../supabase/supabaseClient";
-import {
-  getUserName,
-  getCourseNames,
-  getCourseDescriptions,
-  getCourseColors,
-} from "../supabase/dataService";
-// import ChatBot from "./ChatBot";
+import { getUserName } from "../supabase/dataService";
 import { Course } from "../shared/constant/course";
 import CalendarComponent from "../features/HomePage/ui/CalendarComponent";
 import CarouselComponent from "../features/HomePage/ui/CarouselComponent";
-import { Session } from "@supabase/supabase-js";
 import "../app/index.css";
 import OverviewDashboard from "./OverviewDashboard";
-
-// Supabase User Ÿ�� ����
-type SupabaseUser = Session["user"];
 
 const HomePage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedDescription, setSelectedDescription] = useState<string | null>(
     null
   );
-  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
 
   const [notificationDisplayed, setNotificationDisplayed] = useState(false);
   const navigate = useNavigate();
@@ -58,7 +46,6 @@ const HomePage: React.FC = () => {
       try {
         const currentUser = await getCurrentUser();
         if (currentUser) {
-          setUser(currentUser);
           const fetchedUserName = await getUserName(currentUser.id);
           setUserName(fetchedUserName || "Username");
         } else {
@@ -70,42 +57,12 @@ const HomePage: React.FC = () => {
       }
     };
 
-    console.log(userName);
-
-    const fetchCourses = async () => {
-      try {
-        const courseNames = await getCourseNames();
-        const courseDescriptions = await getCourseDescriptions();
-        const courseColors = await getCourseColors();
-        const formattedCourses: Course[] = courseNames.map(
-          (courseName, index) => ({
-            id: (index + 1).toString(),
-            title: courseName,
-            description:
-              courseDescriptions[index] || "No description available",
-            tag: "General",
-            chapters: Math.floor(Math.random() * 10) + 1,
-            orders: Math.floor(Math.random() * 50) + 1,
-            color: courseColors[index],
-            certificates: 0,
-            reviews: 0,
-            addedToShelf: 0,
-          })
-        );
-        setCourses(formattedCourses);
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-      }
-    };
-
     fetchUserData();
-    fetchCourses();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_, session) => {
       if (session?.user) {
-        setUser(session.user);
         getUserName(session.user.id).then((fetchedUserName) => {
           setUserName(fetchedUserName || "Username");
         });
@@ -117,20 +74,14 @@ const HomePage: React.FC = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [location.state, api, navigate, notificationDisplayed, api, navigate]);
-
-  const handleCourseClick = async (course: Course) => {
-    setSelectedCourse(course);
-
-    try {
-      const descriptions = await getCourseDescriptions();
-      const description = descriptions[parseInt(course.id) - 1]; // Assuming course IDs are sequential
-      setSelectedDescription(description || "No description available");
-    } catch (err) {
-      console.error("Error fetching course description:", err);
-      setSelectedDescription("Error fetching description");
-    }
-  };
+  }, [
+    location.state,
+    api,
+    navigate,
+    notificationDisplayed,
+    location.pathname,
+    userName,
+  ]);
 
   const closeModal = () => {
     setSelectedCourse(null);
@@ -188,22 +139,6 @@ const HomePage: React.FC = () => {
             <CalendarComponent />
           </div>
         </section>
-
-        {/* Courses Section */}
-        {/* {user && (
-          <section className="mb-6">
-            <h3 className="text-xl font-bold mb-4 text-black">Courses</h3>
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide p-2">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  onClick={handleCourseClick}
-                />
-              ))}
-            </div>
-          </section>
-        )} */}
       </main>
 
       {selectedCourse && (
