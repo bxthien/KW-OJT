@@ -11,6 +11,8 @@ import {
   Pagination,
   Switch,
   Modal,
+  Select,
+  notification,
 } from "antd";
 import type { TabsProps } from "antd";
 import { getUsersData } from "../supabase/dataService";
@@ -69,6 +71,12 @@ interface UserCourseInfo {
   courses: Course;
 }
 
+interface CourseList {
+  course_id: string;
+  course_name: string;
+  course_chapter: { chapter_id: string }[];
+}
+
 const UserPage: React.FC = () => {
   const [userData, setUserData] = useState<User[]>([]);
   const [studentData, setStudentData] = useState<Student[]>([]);
@@ -81,8 +89,91 @@ const UserPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [modalCourse, setModalCourse] = useState(false);
   const [dataCourse, setDataCourse] = useState<any[]>([]);
+  const [modalAddCourse, setModalAddCourse] = useState(false);
+  const [courses, setCourses] = useState<CourseList[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<
+    { course_id: string }[]
+  >([]);
 
   const [form] = Form.useForm();
+
+  const handleAddUserCourse = async () => {
+    if (selectedCourses.length === 0) {
+      message.error("Please select at least one course.");
+      return;
+    }
+
+    try {
+      const userCourseInfo = selectedCourses.map(({ course_id }) => ({
+        user_id: selectedStudent?.key,
+        course_id,
+        status_of_learning: "In Progress",
+        student_enrollment_date: new Date().toISOString(),
+      }));
+
+      const userCourseQuizInfo = selectedCourses.flatMap(({ course_id }) => {
+        const course = courses.find((c) => c.course_id === course_id);
+        return (
+          course?.course_chapter.map((chapter) => ({
+            user_id: selectedStudent?.key,
+            chapter_id: chapter.chapter_id,
+            course_id,
+            correct_answer_cnt: 0,
+          })) || []
+        );
+      });
+
+      const { error: quizError } = await supabase
+        .from("user_course_quiz_info")
+        .insert(userCourseQuizInfo);
+
+      if (quizError) {
+        message.error("Failed to add course quiz info. Please try again.");
+        console.error("Insert error:", quizError);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("user_course_info")
+        .insert(userCourseInfo);
+
+      if (error) {
+        message.error("Failed to add courses. Please try again.");
+        console.error("Insert error:", error);
+        return;
+      }
+
+      notification.success({ message: "Courses added successfully." });
+      setModalAddCourse(false);
+      setSelectedCourses([]);
+      setSelectedStudent(null);
+    } catch (err) {
+      console.error("Error adding courses:", err);
+      message.error("An error occurred while adding the courses.");
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("courses")
+        .select(
+          `course_id, course_name,  
+          course_chapter (
+          chapter_id
+        )`
+        )
+        .order("date_of_update", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching courses:", error.message);
+        return;
+      }
+      setCourses(data);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    }
+  };
 
   const handleModalCourse = async (student_id: string) => {
     try {
@@ -390,21 +481,34 @@ const UserPage: React.FC = () => {
       render: (age: number) => <>{age ? age : "N/A"}</>,
     },
     {
-      title: "Courses",
+      title: "Action",
       dataIndex: "courses",
       key: "courses",
       render: (_: string, record: Student) => (
-        <a onClick={() => handleModalCourse(record.key)}>Course</a>
+        <div className="flex flex-row gap-1">
+          <img
+            src="https://img.icons8.com/?size=100&id=85927&format=png&color=000000"
+            alt="Courses Icon"
+            className="w-5 h-5"
+            onClick={() => handleModalCourse(record.key)}
+          />
+
+          <img
+            src="https://img.icons8.com/?size=100&id=102397&format=png&color=000000"
+            alt="Edit Icon"
+            className="w-5 h-5"
+            onClick={() => {
+              setModalAddCourse(true);
+              fetchCourses();
+              setSelectedStudent(record);
+            }}
+          />
+        </div>
       ),
     },
   ];
 
   const coursesColumns = [
-    {
-      title: "Course ID",
-      dataIndex: ["courses", "course_id"],
-      key: "course_id",
-    },
     {
       title: "Course Name",
       dataIndex: ["courses", "course_name"],
@@ -417,13 +521,37 @@ const UserPage: React.FC = () => {
       render: (chapters: Chapter_Detail[]) => (
         <ul>
           {chapters && chapters.length > 0 ? (
-            chapters.map((chapter: Chapter_Detail) => (
-              <li key={chapter.chapter_id}>
-                {chapter.chapter.chapter_name} - Quizzes:{" "}
-                {chapter?.chapter.user_quiz_info?.[0]?.correct_answer_cnt || 0}{" "}
-                / {chapter?.chapter.quiz_cnt || 0}
-              </li>
-            ))
+            chapters.map(
+              (chapter: Chapter_Detail) =>
+                chapter.chapter.user_quiz_info && (
+                  <li key={chapter.chapter_id}>
+                    {chapter.chapter.chapter_name}
+                  </li>
+                )
+            )
+          ) : (
+            <li>No chapters available</li>
+          )}
+        </ul>
+      ),
+    },
+    {
+      title: "Quizzes",
+      dataIndex: ["courses", "chapters"],
+      key: "chapters",
+      render: (chapters: Chapter_Detail[]) => (
+        <ul>
+          {chapters && chapters.length > 0 ? (
+            chapters.map(
+              (chapter: Chapter_Detail) =>
+                chapter.chapter.user_quiz_info && (
+                  <li key={chapter.chapter_id}>
+                    {chapter?.chapter.user_quiz_info?.[0]?.correct_answer_cnt ||
+                      0}{" "}
+                    / {chapter?.chapter.quiz_cnt || 0}
+                  </li>
+                )
+            )
           ) : (
             <li>No chapters available</li>
           )}
@@ -632,7 +760,7 @@ const UserPage: React.FC = () => {
       </div> */}
 
       <Modal
-        width={1300}
+        width={900}
         title="Course Modal"
         open={modalCourse}
         onCancel={() => setModalCourse(false)}
@@ -640,9 +768,6 @@ const UserPage: React.FC = () => {
           <Button key="cancel" onClick={() => setModalCourse(false)}>
             Cancel
           </Button>,
-          // <Button key="submit" type="primary" onClick={() => setModalCourse(false)}>
-          //   Submit
-          // </Button>,
         ]}
       >
         <Table
@@ -650,6 +775,34 @@ const UserPage: React.FC = () => {
           dataSource={dataCourse}
           // rowKey={(record) => record.courses.course_id}
           pagination={false}
+        />
+      </Modal>
+
+      <Modal
+        width={500}
+        title="Add Course"
+        open={modalAddCourse}
+        onOk={handleAddUserCourse}
+        onCancel={() => {
+          setModalAddCourse(false);
+          setSelectedCourses([]);
+          setSelectedStudent(null);
+        }}
+      >
+        <Select
+          mode="multiple"
+          placeholder="Select chapters to add"
+          style={{ width: "100%", marginBottom: "16px" }}
+          options={courses.map((course) => ({
+            label: course.course_name,
+            value: course.course_id,
+          }))}
+          onChange={(selectedCourseIds) =>
+            setSelectedCourses(
+              selectedCourseIds.map((id) => ({ course_id: id }))
+            )
+          }
+          value={selectedCourses.map((course) => course.course_id)}
         />
       </Modal>
     </div>

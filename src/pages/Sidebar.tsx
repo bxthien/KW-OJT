@@ -53,15 +53,15 @@ const Sidebar: React.FC = () => {
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
-                isActive ? "bg-blue-300" : "bg-blue-100"
+              `flex items-center p-3 rounded-lg ${
+                isActive ? "bg-blue-300 " : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
           >
             <img
               src="https://img.icons8.com/?size=100&id=TPXhNjRudwmY&format=png&color=000000"
               alt="Dashboard Icon"
-              className="w-6 h-6 mr-2"
+              className="w-6 h-6"
             />
             <span className={`${isOpen ? "block" : "hidden"}`}>Dashboard</span>
           </NavLink>
