@@ -23,32 +23,37 @@ const LecturePage = () => {
   const [updatedLectureName, setUpdatedLectureName] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false); // Add modal ìƒíƒœ
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false); // Add modal ?ƒ?ƒœ
   const [newLectureName, setNewLectureName] = useState("");
   const [newLectureMarkdown, setNewLectureMarkdown] = useState("");
   const [selectedChapter, setSelectedChapter] = useState<string>(""); // Selected chapter
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const fetchLectures = async () => {
     const { data, error } = await supabase
       .from("lecture")
       .select(
-        `
-      *,
-      chapter:chapter_id (chapter_name, chapter_id) 
-    `
+        `*,
+         chapter:chapter_id (chapter_name, chapter_id)`
       )
       .or(
         `lecture_name.ilike.%${searchTerm}%,lecture_document.ilike.%${searchTerm}%`
-      );
-
+      ).order('date_of_update');
+  
     if (data) {
-      setLectures(data);
+      const sortedData = data.sort(
+        (a, b) => new Date(b.date_of_update).getTime() - new Date(a.date_of_update).getTime()
+      ); // ÃÖ½Å µ¥ÀÌÅÍ ¿ì¼± Á¤·Ä
+      setLectures(sortedData);
     }
-
+  
     if (error) {
       console.error("Error fetching lectures:", error);
     }
   };
+  
+  
 
   const fetchChapters = async () => {
     const { data, error } = await supabase.from("chapter").select("*");
@@ -80,17 +85,18 @@ const LecturePage = () => {
         lecture_name: newLectureName.trim(),
         lecture_document: newLectureMarkdown.trim(),
         chapter_id: selectedChapter, // Save selected chapter ID
+        date_of_update: new Date(),
       },
     ]);
 
     if (!error) {
       notification.success({ message: "Lecture added successfully!" });
-      fetchLectures();
       setIsAddModalVisible(false);
       setNewLectureName("");
       setNewLectureMarkdown("");
       setSelectedChapter("");
-      fetchLectures();
+      await fetchLectures();
+      setCurrentPage(1);
     } else {
       console.error("Error adding lecture:", error);
       notification.error({
@@ -127,7 +133,7 @@ const LecturePage = () => {
           type="link"
           danger
           onClick={(e) => {
-            e.stopPropagation(); // ì´ë²¤íŠ¸ ì „íŒŒ ì¤‘ë‹¨
+            e.stopPropagation(); // ?´ë²¤íŠ¸ ? „?ŒŒ ì¤‘ë‹¨
             handleDeleteLecture(record.lecture_id);
           }}
         >
@@ -149,22 +155,28 @@ const LecturePage = () => {
       const { error } = await supabase
         .from("lecture")
         .update({
-          lecture_name: updatedLectureName,
-          lecture_document: markdown,
+          lecture_name: updatedLectureName.trim(),
+          lecture_document: markdown.trim(),
+          date_of_update: new Date(),
         })
         .eq("lecture_id", selectedLecture.lecture_id);
-
-      fetchLectures();
-      notification.success({ message: "Lecture updated successfully!" });
-
-      if (error) {
+  
+      if (!error) {
+        notification.success({ message: "Lecture updated successfully!" });
+        await fetchLectures(); // µ¥ÀÌÅÍ °»½Å
+        setCurrentPage(1); // Ã¹ ÆäÀÌÁö·Î ÀÌµ¿
+        setSelectedLecture(null);
+        setIsModalVisible(false);
+      } else {
         console.error("Error updating lecture:", error);
+        notification.error({
+          message: "Failed to update lecture",
+          description: error.message,
+        });
       }
-
-      setIsModalVisible(false);
-      setSelectedLecture(null);
     }
   };
+  
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -181,7 +193,7 @@ const LecturePage = () => {
       notification.success({
         message: "Lecture deleted successfully!",
       });
-      fetchLectures(); // ê°•ì˜ ëª©ë¡ ìƒˆë¡œê³ ì¹¨
+      fetchLectures(); // ê°•ì˜ ëª©ë¡ ?ƒˆë¡œê³ ì¹?
     } else {
       notification.error({
         message: "Failed to delete lecture",
@@ -210,19 +222,24 @@ const LecturePage = () => {
       </div>
 
       <div className="bg-white p-5 rounded-xl shadow-md">
-        <Table
-          dataSource={lectures}
-          columns={columns}
-          rowKey="lecture_id"
-          onRow={(record) => ({
-            onClick: () => {
-              handleRowClick(record);
-            },
-          })}
-          pagination={{
-            position: ["bottomCenter"],
-          }}
-        />
+      <Table
+  dataSource={lectures}
+  columns={columns}
+  rowKey="lecture_id"
+  onRow={(record) => ({
+    onClick: () => {
+      handleRowClick(record);
+    },
+  })}
+  pagination={{
+    position: ["bottomCenter"],
+    current: currentPage, // Bind to state
+    pageSize: 10, // Adjust as needed
+    total: lectures.length,
+    onChange: (page) => setCurrentPage(page), // Update current page
+  }}
+/>
+
       </div>
 
       <Modal
