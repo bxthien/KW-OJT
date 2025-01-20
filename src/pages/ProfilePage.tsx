@@ -401,7 +401,7 @@ const ProfilePage: React.FC = () => {
         <div className="p-4 space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-600 mb-1">
-              Current Password
+              <span className="text-red-500">* </span>Current Password
             </label>
             <Input.Password
               placeholder="Enter your current password"
@@ -414,7 +414,7 @@ const ProfilePage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-semibold text-gray-600 mb-1">
-              New Password
+              <span className="text-red-500">* </span>New Password
             </label>
             <Input.Password
               placeholder="Enter a new password"
@@ -427,7 +427,7 @@ const ProfilePage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-semibold text-gray-600 mb-1">
-              Confirm New Password
+              <span className="text-red-500">* </span>Confirm New Password
             </label>
             <Input.Password
               placeholder="Re-enter the new password"

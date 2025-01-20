@@ -53,8 +53,10 @@ const Sidebar: React.FC = () => {
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex items-center p-3 rounded-lg ${
-                isActive ? "bg-blue-300 " : "bg-blue-100"
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-2 px-2 rounded-md ${
+                isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
           >
@@ -63,13 +65,21 @@ const Sidebar: React.FC = () => {
               alt="Dashboard Icon"
               className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Dashboard</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Dashboard
+            </span>
           </NavLink>
 
           <NavLink
             to="/courses"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-3 px-3 rounded-md ${
                 isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
@@ -77,47 +87,71 @@ const Sidebar: React.FC = () => {
             <img
               src="https://img.icons8.com/?size=100&id=85927&format=png&color=000000"
               alt="Courses Icon"
-              className="w-6 h-6 mr-2"
+              className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Courses</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Courses
+            </span>
           </NavLink>
 
           <NavLink
             to="/chapters"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-3 px-3 rounded-md ${
                 isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
           >
             <img
               src="https://img.icons8.com/?size=100&id=85767&format=png&color=000000"
-              alt="Settings Icon"
-              className="w-6 h-6 mr-2"
+              alt="Chapters Icon"
+              className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Chapters</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Chapters
+            </span>
           </NavLink>
 
           <NavLink
             to="/lectures"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-3 px-3 rounded-md ${
                 isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
           >
             <img
               src="https://img.icons8.com/?size=100&id=8cjPyCtCMBZ0&format=png&color=000000"
-              alt="Settings Icon"
-              className="w-6 h-6 mr-2"
+              alt="Lectures Icon"
+              className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Lectures</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Lectures
+            </span>
           </NavLink>
 
           <NavLink
             to="/users"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-3 px-3 rounded-md ${
                 isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
@@ -125,25 +159,39 @@ const Sidebar: React.FC = () => {
             <img
               src="https://img.icons8.com/?size=100&id=82751&format=png&color=000000"
               alt="Users Icon"
-              className="w-6 h-6 mr-2"
+              className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Users</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Users
+            </span>
           </NavLink>
 
           <NavLink
             to="/profile"
             className={({ isActive }) =>
-              `flex items-center py-3 px-3 rounded-lg ${
+              `flex items-center ${
+                isOpen ? "justify-start" : "justify-center"
+              } py-3 px-3 rounded-md ${
                 isActive ? "bg-blue-300" : "bg-blue-100"
               } hover:bg-blue-300 transition-colors`
             }
           >
             <img
               src="https://img.icons8.com/?size=100&id=tiTDCgtmOFZL&format=png&color=000000"
-              alt="Communication Icon"
-              className="w-6 h-6 mr-2"
+              alt="Profile Icon"
+              className="w-6 h-6"
             />
-            <span className={`${isOpen ? "block" : "hidden"}`}>Profile</span>
+            <span
+              className={`ml-2 ${
+                isOpen ? "block" : "hidden"
+              } transition-all duration-300`}
+            >
+              Profile
+            </span>
           </NavLink>
         </nav>
       </div>

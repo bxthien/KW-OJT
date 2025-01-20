@@ -147,6 +147,7 @@ const LoginPage: React.FC = () => {
           <p className="mt-6 text-gray-600">
             Don't have an account?{" "}
             <button
+              type="button"
               onClick={() => openModal("register")}
               className="text-indigo-600 font-semibold hover:underline"
             >

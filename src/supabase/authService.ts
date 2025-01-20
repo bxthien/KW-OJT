@@ -5,7 +5,6 @@ export const registerUser = async (
   password: string,
   additionalData?: { username: string }
 ) => {
-  // 인증 단계
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -20,19 +19,18 @@ export const registerUser = async (
   }
 
   try {
-    // 데이터베이스 삽입 단계
     if (additionalData) {
       const { error: dbError } = await supabase.from("users").insert({
         user_id: data.user.id,
         email: data.user.email,
         user_name: additionalData.username,
         created_at: new Date(),
-        is_admin: false, // 기본 값
+        is_admin: true,
+        status: false,
       });
 
       if (dbError) {
         console.error("Database insertion error in registerUser:", dbError);
-        // 경고만 남기고 프로세스 중단하지 않음
       }
     }
   } catch (dbError) {
@@ -41,7 +39,6 @@ export const registerUser = async (
 
   return data.user;
 };
-
 
 export const loginUser = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
