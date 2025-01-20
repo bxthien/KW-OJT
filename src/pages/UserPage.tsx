@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Tabs,
   Table,
@@ -15,7 +15,6 @@ import {
   notification,
 } from "antd";
 import type { TabsProps } from "antd";
-import { getUsersData } from "../supabase/dataService";
 // import { courses } from "../shared/constant/course";
 import { supabase } from "../supabase/supabaseClient";
 import { registerUser } from "../supabase/authService";
@@ -94,6 +93,9 @@ const UserPage: React.FC = () => {
   const [selectedCourses, setSelectedCourses] = useState<
     { course_id: string }[]
   >([]);
+  const [birthday, setBirthday] = useState<string>("");
+  const [age, setAge] = useState<number | null>(null);
+  const birthdayInputRef = useRef<HTMLInputElement>(null);
 
   const [form] = Form.useForm();
 
@@ -213,21 +215,23 @@ const UserPage: React.FC = () => {
       }
 
       // ������ ���͸� �� Ÿ�� ����
-      const filteredData: UserCourseInfo[] = coursesData.map((course: any) => ({
-        ...course,
-        courses: {
-          ...course.courses,
-          chapters: course.courses.chapters?.map((chapter: any) => ({
-            ...chapter,
-            chapter: {
-              ...chapter.chapter,
-              user_quiz_info: chapter.chapter?.user_quiz_info.filter(
-                (quiz: QuizInfo) => quiz.user_id === student_id
-              ),
-            },
-          })),
-        },
-      }));
+      const filteredData: UserCourseInfo[] = coursesData
+        .filter((item) => item.courses)
+        .map((course: any) => ({
+          ...course,
+          courses: {
+            ...course.courses,
+            chapters: course.courses.chapters?.map((chapter: any) => ({
+              ...chapter,
+              chapter: {
+                ...chapter.chapter,
+                user_quiz_info: chapter.chapter?.user_quiz_info.filter(
+                  (quiz: QuizInfo) => quiz.user_id === student_id
+                ),
+              },
+            })),
+          },
+        }));
 
       setDataCourse(filteredData);
     } catch (err) {
@@ -240,13 +244,46 @@ const UserPage: React.FC = () => {
 
   console.log(dataCourse, "dataCourse");
 
-  const handleSave = async () => {
+  const handleBirthdayChange = (value: string) => {
+    if (value) {
+      const birthDate = new Date(value);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        calculatedAge--;
+      }
+
+      setBirthday(value); // ���� ������Ʈ
+      setAge(calculatedAge >= 0 ? calculatedAge : null); // ���� ������Ʈ
+
+      form.setFieldsValue({
+        birthday: value,
+        age: calculatedAge >= 0 ? calculatedAge : null,
+      });
+    } else {
+      setBirthday("");
+      setAge(null);
+
+      form.setFieldsValue({
+        birthday: null,
+        age: null,
+      });
+    }
+  };
+
+  const handleAdd = async () => {
     try {
-      const values = await form.validateFields(); // Validate form input
-      const password = "defaultPassword123"; // Default password for new accounts
+      const values = await form.validateFields();
+      const password = "defaultPassword123";
+
+      const currentTimestamp = new Date().toISOString(); // Add current timestamp
 
       if (currentTab === "1") {
-        // Add new admin user
         const { data, error } = await supabase
           .from("users")
           .insert([
@@ -256,42 +293,32 @@ const UserPage: React.FC = () => {
               contact: values.contact || null,
               status: values.status !== undefined ? values.status : true,
               is_admin: true,
+              date_of_update: currentTimestamp, // Set date_of_update
+              date_of_birth: birthday || null,
+              age: age || null,
             },
           ])
           .select()
           .single();
 
         if (error || !data) {
-          message.error(
-            "Failed to add user to the database. Please try again."
-          );
+          message.error("Failed to add user to the database.");
           console.error("Insert error:", error);
           return;
         }
 
-        // Register user in authentication
-        try {
-          await registerUser(values.email, password, { username: values.name });
-        } catch (authError) {
-          console.error("Authentication error (Admin):", authError);
-        }
+        await registerUser(values.email, password, { username: values.name });
 
-        const newUser = {
-          key: data.user_id,
-          index: userData.length + 1,
-          name: data.user_name,
-          type: "Admin",
-          date: new Date().toISOString(),
-          email: data.email,
-          contact: data.contact,
-          status: data.status,
-          is_admin: true,
-        };
+        setUserData((prevData) =>
+          [...prevData, { ...data, date_of_update: currentTimestamp }].sort(
+            (a, b) =>
+              new Date(b.date_of_update).getTime() -
+              new Date(a.date_of_update).getTime()
+          )
+        );
 
-        setUserData((prevData) => [...prevData, newUser]);
         message.success("User added successfully.");
       } else if (currentTab === "2") {
-        // Add new student
         const { data, error } = await supabase
           .from("users")
           .insert([
@@ -299,59 +326,144 @@ const UserPage: React.FC = () => {
               user_name: values.name,
               email: values.email,
               contact: values.contact || null,
-              date_of_birth: values.date_of_birth || null,
-              age: values.age,
+              date_of_birth: birthday || null,
+              age: age || null,
               is_admin: false,
+              date_of_update: currentTimestamp, // Set date_of_update
             },
           ])
           .select()
           .single();
 
         if (error || !data) {
-          message.error(
-            "Failed to add student to the database. Please try again."
-          );
+          message.error("Failed to add student to the database.");
           console.error("Insert error:", error);
           return;
         }
 
-        // Register student in authentication
-        try {
-          await registerUser(values.email, password, { username: values.name });
-        } catch (authError) {
-          console.error("Authentication error (Student):", authError);
-        }
+        await registerUser(values.email, password, { username: values.name });
 
-        const newStudent = {
-          key: data.user_id,
-          index: studentData.length + 1,
-          name: data.user_name,
-          type: "Student",
-          date: new Date().toISOString(),
-          email: data.email,
-          contact: data.contact,
-          age: values.age,
-          date_of_birth: data.date_of_birth,
-        };
+        setStudentData((prevData) =>
+          [...prevData, { ...data, date_of_update: currentTimestamp }].sort(
+            (a, b) =>
+              new Date(b.date_of_update).getTime() -
+              new Date(a.date_of_update).getTime()
+          )
+        );
 
-        setStudentData((prevData) => [...prevData, newStudent]);
         message.success("Student added successfully.");
       }
 
-      setIsDrawerOpen(false); // Close the drawer
-      form.resetFields(); // Reset the form fields
+      setIsDrawerOpen(false);
+      form.resetFields();
+
+      await fetchData();
+      setCurrentPage(1);
     } catch (error) {
       console.error("Validation error:", error);
-      message.error(
-        "Validation failed. Please check the fields and try again."
-      );
+      message.error("Validation failed. Please check the fields.");
     }
-    fetchData(); // Refresh data after adding user/student
+  };
+
+  const handleEdit = async () => {
+    try {
+      const values = await form.validateFields();
+      const currentTimestamp = new Date().toISOString(); // Add current timestamp
+
+      if (selectedUser) {
+        const { error } = await supabase
+          .from("users")
+          .update({
+            user_name: values.name,
+            email: values.email,
+            contact: values.contact || null,
+            status: values.status,
+            date_of_update: currentTimestamp, // Update date_of_update
+            date_of_birth: birthday || null,
+            age,
+          })
+          .eq("user_id", selectedUser.key);
+
+        if (error) {
+          message.error("Failed to update user.");
+          console.error("Update error:", error);
+          return;
+        }
+
+        setUserData((prevData) =>
+          prevData
+            .map((user) =>
+              user.key === selectedUser.key
+                ? { ...user, ...values, date_of_update: currentTimestamp }
+                : user
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.date_of_update).getTime() -
+                new Date(a.date_of_update).getTime()
+            )
+        );
+
+        message.success("User updated successfully.");
+      } else if (selectedStudent) {
+        const { error } = await supabase
+          .from("users")
+          .update({
+            user_name: values.name,
+            email: values.email,
+            contact: values.contact || null,
+            date_of_birth: birthday || null,
+            age,
+            date_of_update: currentTimestamp, // Update date_of_update
+          })
+          .eq("user_id", selectedStudent.key);
+
+        if (error) {
+          message.error("Failed to update student.");
+          console.error("Update error:", error);
+          return;
+        }
+
+        setStudentData((prevData) =>
+          prevData
+            .map((student) =>
+              student.key === selectedStudent.key
+                ? { ...student, ...values, date_of_update: currentTimestamp }
+                : student
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.date_of_update).getTime() -
+                new Date(a.date_of_update).getTime()
+            )
+        );
+
+        message.success("Student updated successfully.");
+        fetchData();
+      }
+
+      setIsDrawerOpen(false);
+      form.resetFields();
+
+      await fetchData();
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Validation error:", error);
+      message.error("Validation failed. Please check the fields.");
+    }
   };
 
   const fetchData = async () => {
     try {
-      const users = await getUsersData();
+      const { data: users, error } = await supabase
+        .from("users")
+        .select("*")
+        .order("date_of_update", { ascending: false }); // Sort by date_of_update
+
+      if (error) {
+        console.error("Error fetching users:", error);
+        return;
+      }
 
       const formattedUsers = users
         .filter((user) => user.is_admin)
@@ -365,10 +477,10 @@ const UserPage: React.FC = () => {
           is_admin: user.is_admin,
           contact: user.contact,
           status: user.status,
-          birth: user.birth,
+          birth: user.date_of_birth,
           age: user.age,
+          date_of_update: user.date_of_update,
         }));
-      setUserData(formattedUsers);
 
       const formattedStudents = users
         .filter((user) => !user.is_admin)
@@ -380,14 +492,18 @@ const UserPage: React.FC = () => {
           date: user.created_at,
           email: user.email,
           contact: user.contact,
-          birth: user.birth,
+          birth: user.date_of_birth,
           age: user.age,
+          date_of_update: user.date_of_update,
         }));
+
+      setUserData(formattedUsers);
       setStudentData(formattedStudents);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
   };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -426,11 +542,24 @@ const UserPage: React.FC = () => {
     },
     { title: "Email", dataIndex: "email", key: "email" },
     {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) =>
+        date
+          ? new Date(date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : "N/A",
+    },
+    {
       title: "Contact",
       dataIndex: "contact",
       key: "contact",
       render: (contact: string | undefined) =>
-        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
+        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A",
     },
     {
       title: "Status",
@@ -438,9 +567,9 @@ const UserPage: React.FC = () => {
       key: "status",
       render: (status: boolean, record: User) => (
         <Switch
-          checked={status} // Reflects the current status
+          checked={status}
           onClick={(_, event) => {
-            event.stopPropagation(); // Prevents row click
+            event.stopPropagation();
           }}
           onChange={(checked) => handleStatusChange(checked, record)}
         />
@@ -458,21 +587,39 @@ const UserPage: React.FC = () => {
         <a onClick={() => handleRowClick(record, false)}>{record.name}</a>
       ),
     },
-    { title: "Date", dataIndex: "date", key: "date" },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) =>
+        date
+          ? new Date(date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : "N/A",
+    },
     { title: "Email", dataIndex: "email", key: "email" },
     {
       title: "Contact",
       dataIndex: "contact",
       key: "contact",
       render: (contact: string | undefined) =>
-        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A", // Unknown 처리
+        contact && contact.toLowerCase() !== "unknown" ? contact : "N/A",
     },
     {
       title: "Birth",
       dataIndex: "birth",
       key: "birth",
       render: (birth: string | undefined) =>
-        birth && birth.toLowerCase() !== "unknown" ? birth : "N/A", // Unknown 처리
+        birth
+          ? new Date(birth).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : "N/A",
     },
     {
       title: "Age",
@@ -633,7 +780,7 @@ const UserPage: React.FC = () => {
                 setSelectedUser(null); // 기존  �� �� �� User  �� ��
                 setSelectedStudent(null); // 기존  �� �� �� Student  �� ��
                 form.resetFields(); //  �� 초기 ��
-                setIsDrawerOpen(true); // Drawer  ���
+                setIsDrawerOpen(true); // Drawer  ���?
               }}
             >
               Add Student
@@ -695,7 +842,7 @@ const UserPage: React.FC = () => {
         open={isDrawerOpen}
         width={500}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" onFinish={handleAdd}>
           <Form.Item
             label="Name"
             name="name"
@@ -715,19 +862,27 @@ const UserPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Enter email" />
+            <Input
+              readOnly={!!(selectedUser || selectedStudent)} // Edit �� �б� ����
+              placeholder={
+                selectedUser || selectedStudent
+                  ? "Email will be displayed here"
+                  : "Enter email"
+              }
+              value={selectedUser?.email || selectedStudent?.email || undefined}
+            />
           </Form.Item>
 
           <Form.Item label="Contact" name="contact">
             <Input placeholder="Enter contact (optional)" />
           </Form.Item>
 
-          {currentTab === "1" && ( // Users  �� �� ���  Status  �� ��
+          {currentTab === "1" && ( // Users  �� �� ���?  Status  �� ��
             <Form.Item
               label="Status"
               name="status"
               valuePropName="checked"
-              initialValue={true} // 기본�   �� ��
+              initialValue={true} // 기본�?   �� ��
             >
               <Switch />
             </Form.Item>
@@ -735,11 +890,24 @@ const UserPage: React.FC = () => {
 
           {currentTab === "2" && (
             <>
-              <Form.Item label="Date of Birth" name="date_of_birth">
-                <Input placeholder="Enter date of birth (optional)" />
+              <Form.Item
+                label="Birthday"
+                name="birthday"
+                initialValue={birthday} // �ʱ� �� ����
+              >
+                <Input
+                  type="date"
+                  value={birthday} // ���� ��
+                  onChange={(e) => handleBirthdayChange(e.target.value)} // ���� ������Ʈ
+                />
               </Form.Item>
-              <Form.Item label="age" name="age">
-                <Input placeholder="age(optional)" />
+
+              <Form.Item
+                label="Age"
+                name="age"
+                initialValue={age} // �ʱ� �� ����
+              >
+                <Input type="number" value={age || ""} readOnly />
               </Form.Item>
             </>
           )}
@@ -749,7 +917,13 @@ const UserPage: React.FC = () => {
           <Button type="default" onClick={() => setIsDrawerOpen(false)}>
             Cancel
           </Button>
-          <Button type="primary" onClick={handleSave} className="ml-2">
+          <Button
+            type="primary"
+            onClick={() =>
+              selectedUser || selectedStudent ? handleEdit() : handleAdd()
+            }
+            className="ml-2"
+          >
             {selectedUser || selectedStudent ? "Save" : "Add"}
           </Button>
         </div>

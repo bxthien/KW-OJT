@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { supabase } from "../supabase/supabaseClient";
+import dayjs from "dayjs";
 
 interface Lectute {
   lecture_id: string;
@@ -209,7 +210,13 @@ const ChapterPage: React.FC = () => {
             { title: "ID", dataIndex: "chapter_id", key: "id" },
             { title: "Chapter Name", dataIndex: "chapter_name", key: "name" },
             { title: "Quiz Count", dataIndex: "quiz_cnt", key: "quiz" },
-            { title: "Last Updated", dataIndex: "date_of_update", key: "date" },
+            {
+              title: "Last Updated",
+              dataIndex: "date_of_update",
+              key: "date",
+              render: (date: string) =>
+                dayjs(date).format("hh:mm A MM/DD/YYYY"), // 날짜 형식 지정
+            },
             {
               title: "Action",
               key: "action",
@@ -281,19 +288,6 @@ const ChapterPage: React.FC = () => {
           >
             <Input type="number" placeholder="Enter quiz count" />
           </Form.Item>
-          <div className="flex flex-col">
-            <div>Lectures:</div>
-            <div className="flex gap-2 py-2">
-              {lectures.map((lecture) => (
-                <div
-                  className="bg-slate-300 rounded-md p-2"
-                  key={lecture.lecture_id}
-                >
-                  {lecture.lecture_name}
-                </div>
-              ))}
-            </div>
-          </div>
         </Form>
 
         <div className="flex justify-end mt-4 gap-2">
