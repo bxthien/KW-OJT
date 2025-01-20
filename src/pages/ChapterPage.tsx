@@ -298,7 +298,7 @@ const ChapterPage: React.FC = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="primary" disabled danger icon={<DeleteOutlined />}>
+              <Button type="primary" danger icon={<DeleteOutlined />}>
                 Delete
               </Button>
             </Popconfirm>

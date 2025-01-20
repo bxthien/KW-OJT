@@ -171,46 +171,30 @@ const CoursesPage: React.FC = () => {
       alert("No courses selected for deletion.");
       return;
     }
-
+  
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from("courses")
         .delete()
         .in("course_id", selectedCourses);
-
-      if (!selectedCourse) {
-        console.error("No course selected.");
-        return;
-      }
-
-      const { error: chapterError } = await supabase
-        .from("course_chapter")
-        .upsert(
-          selectedChapters.map((chapter) => ({
-            course_id: selectedCourse.id,
-            chapter_id: chapter.chapter_id,
-          })),
-          { onConflict: "course_id,chapter_id" }
-        );
-
-      if (error || chapterError) {
-        console.error("Error deleting courses:");
+  
+      if (deleteError) {
+        console.error("Error deleting courses:", deleteError.message);
         alert("Failed to delete courses. Please try again.");
         return;
       }
-
+  
       setCourses((prevCourses) =>
         prevCourses.filter((course) => !selectedCourses.includes(course.id))
       );
       setSelectedCourses([]);
       setIsDeleteMode(false);
-      alert("Selected courses have been deleted.");
+      notification.success({message: "Selected courses deleted successfully!"});
     } catch (err) {
       console.error("Error deleting selected courses:", err);
       alert("An error occurred. Please try again.");
     }
   };
-
   const handleAddNewCourse = () => {
     setSelectedCourse(null);
     setNewTitle("");
@@ -428,7 +412,7 @@ const CoursesPage: React.FC = () => {
                 type="default"
                 onClick={() => {
                   setIsDeleteMode(false);
-                  setSelectedCourses([]); // 체크된 코스 초기화
+                  setSelectedCourses([]); // 체크 �� 코스 초기 ��
                 }}
               >
                 Cancel
