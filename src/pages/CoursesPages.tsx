@@ -8,6 +8,7 @@ import {
   Checkbox,
   List,
   Select,
+  notification,
 } from "antd";
 import { supabase } from "../supabase/supabaseClient";
 import { MinusCircleOutlined } from "@ant-design/icons";
@@ -273,6 +274,11 @@ const CoursesPage: React.FC = () => {
 
       // Immediately update UI to reflect the addition
       setCourses((prevCourses) => [newCourse, ...prevCourses]);
+      notification.success({
+        message: "Course Added",
+        description: `The course "${newTitle}" has been successfully added.`,
+        placement: "topRight",
+      });
 
       // Clear inputs and close drawer
       setSelectedChapters([]);
@@ -418,9 +424,16 @@ const CoursesPage: React.FC = () => {
           </div>
           {isDeleteMode ? (
             <div className="flex gap-2">
-              <Button type="default" onClick={() => setIsDeleteMode(false)}>
+              <Button
+                type="default"
+                onClick={() => {
+                  setIsDeleteMode(false);
+                  setSelectedCourses([]); // 체크된 코스 초기화
+                }}
+              >
                 Cancel
               </Button>
+
               <Button
                 type="primary"
                 danger
