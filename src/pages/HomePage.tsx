@@ -97,7 +97,7 @@ const HomePage: React.FC = () => {
         </div>
         <section className="grid grid-cols-10 gap-6 mb-6">
           {/* Welcome Section - 6 부분 */}
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col h-full col-span-6">
+          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col h-[60vh] col-span-6">
             <h3 className="text-3xl font-bold mb-2 text-black">Welcome!</h3>
             <CarouselComponent
               items={[
@@ -134,7 +134,7 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Calendar Section - 4 부분 */}
-          <div className="bg-white p-6 rounded-lg shadow-md h-full col-span-4">
+          <div className="bg-white p-6 rounded-lg shadow-md h-[60vh] col-span-4">
             <h3 className="text-3xl font-bold mb-2 text-black">Calendar</h3>
             <CalendarComponent />
           </div>

@@ -44,7 +44,7 @@ const dateCellRender = (value: Dayjs) => {
 
 const CalendarComponent: React.FC = () => {
   return (
-    <div className="w-full max-w-[600px] aspect-square bg-white p-4 rounded-lg shadow-lg">
+    <div className="w-full max-w-[350px] aspect-square bg-white p-4 rounded-lg shadow-lg">
       <Calendar
         fullscreen={false}
         headerRender={() => null}
