@@ -1,13 +1,8 @@
 import { supabase } from "./supabaseClient";
 
-/**
- * �����ͺ��̽����� ���� �̸� ��������
- * @param userId ���� ID (Supabase Auth�� user ID)
- * @returns ���� �̸�
- */
 export const getUserName = async (userId: string): Promise<string | null> => {
   const { data, error } = await supabase
-    .from("users") // Supabase �����ͺ��̽��� "users" ���̺�
+    .from("users")
     .select("*")
     .eq("user_id", userId)
     .single();
@@ -21,95 +16,46 @@ export const getUserName = async (userId: string): Promise<string | null> => {
   return data?.user_name || null;
 };
 
-/**
- * �����ͺ��̽����� ��� user_name, email, created_at, is_admin ��������
- * @returns user_name, email, created_at, is_admin �迭
- */
-export const getUsersData = async (): Promise<
-  {
-    user_id: string;
-    user_name: string;
-    is_admin: boolean;
-    created_at: string;
-    email: string;
-    contact: string;
-    birth: string;
-    age: number;
-    status: boolean;
-  }[]
-> => {
-  const { data, error } = await supabase
-    .from("users") // Supabase �����ͺ��̽��� "users" ���̺�
-    .select(
-      "user_id, user_name, email, created_at, is_admin, contact, date_of_birth, age, status"
-    ); // ������ �÷� ����
-
-  if (error) {
-    console.error("Error fetching users data:", error.message);
-    return [];
-  }
-
-  // user_name, email, created_at, is_admin �����͸� �迭�� ��ȯ
-  return data.map((user) => ({
-    user_id: user.user_id || "Unknown",
-    user_name: user.user_name || "Unknown",
-    is_admin: user.is_admin || false,
-    created_at: user.created_at || "Unknown",
-    email: user.email || "Unknown",
-    contact: user.contact || "Unknown",
-    birth: user.date_of_birth || "Unknown",
-    age: user.age || 0, // age�� ������ 0���� �⺻�� ����\
-    status: !!user.status,
-  }));
-};
-
-/**
- * �����ͺ��̽����� ��� course_name ��������
- * @returns course_name �迭
- */
 export const getCourseNames = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase �����ͺ��̽��� "courses" ���̺�
-    .select("course_name"); // ������ �÷� ����
+    .from("courses")
+    .select("course_name");
 
   if (error) {
     console.error("Error fetching course names:", error.message);
     return [];
   }
 
-  // course_name�� �����Ͽ� �迭�� ��ȯ
+
   return data.map((course) => course.course_name);
 };
 
 export const getCourseColors = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase �����ͺ��̽��� "courses" ���̺�
-    .select("color"); // ������ �÷��� "color"�� ����
+    .from("courses")
+    .select("color");
 
   if (error) {
     console.error("Error fetching course colors:", error.message);
     return [];
   }
 
-  // color�� �����Ͽ� �迭�� ��ȯ
-  return data.map((course) => course.color || "#1677ff"); // �⺻ ������ ����
+
+  return data.map((course) => course.color || "#1677ff");
 };
 
-/**
- * �����ͺ��̽����� ��� course_description ��������
- * @returns course_description �迭
- */
+
 export const getCourseDescriptions = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("courses") // Supabase �����ͺ��̽��� "courses" ���̺�
-    .select("course_description"); // ������ �÷� ����
+    .from("courses") 
+    .select("course_description"); 
 
   if (error) {
     console.error("Error fetching course descriptions:", error.message);
     return [];
   }
 
-  // course_description�� �����Ͽ� �迭�� ��ȯ
+
   return data.map((course) => course.course_description);
 };
 
