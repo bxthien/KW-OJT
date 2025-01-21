@@ -334,7 +334,7 @@ const ProfilePage: React.FC = () => {
     className="w-40 h-40 rounded-full bg-gray-200 flex justify-center items-center relative overflow-hidden border-4 border-white shadow-md"
   >
     <img
-      src={profileImageUrl || "https://via.placeholder.com/128"} // 프로필 이미지 또는 기본 이미지
+      src={profileImageUrl || "https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"} // 프로필 이미지 또는 기본 이미지
       alt="Profile"
       className="w-full h-full object-cover"
     />
