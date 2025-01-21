@@ -59,8 +59,12 @@ const CourseCard: React.FC<{
     <h2 className="text-lg font-bold mb-2 text-gray-800 px-4">
       {course.title}
     </h2>
+    <p className="text-xs text-gray-600 px-4 mt-2">
+      <strong>Chapters:</strong> {course.course_chapter?.length || 0}
+    </p>
   </div>
 );
+
 
 const CoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
