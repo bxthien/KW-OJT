@@ -265,8 +265,26 @@ const ProfilePage: React.FC = () => {
   const handleUploadProfileImage = async (file: File) => {
     if (!file || !userId) return;
   
-    const filePath = `profile-${userId}-${Date.now()}.png`; // 새 파일 이름
+    // 새 파일 경로 생성
+    const filePath = `profile-${userId}-${Date.now()}.png`;
+  
     try {
+      // 이전 프로필 이미지 제거
+      if (_profileImageFilePath) {
+        const { error: deleteError } = await supabase.storage
+          .from("profile_img")
+          .remove([_profileImageFilePath]);
+        
+        if (deleteError) {
+          console.error("Error removing old image:", deleteError.message);
+          api.warning({
+            message: "Old Image Not Removed",
+            description: "The previous profile image could not be deleted.",
+            placement: "topRight",
+          });
+        }
+      }
+  
       // 새 이미지 업로드
       const { error: uploadError } = await supabase.storage
         .from("profile_img")
@@ -274,30 +292,53 @@ const ProfilePage: React.FC = () => {
   
       if (uploadError) {
         console.error("Error uploading new image:", uploadError.message);
+        api.error({
+          message: "Image Upload Failed",
+          description: "An error occurred while uploading the new profile image.",
+          placement: "topRight",
+        });
         return;
       }
   
-      // 데이터베이스에 파일 경로 저장
+      // 데이터베이스에 새 파일 경로 업데이트
       const { error: updateError } = await supabase
         .from("users")
-        .update({ profile_image: filePath }) // profile_image 필드에 저장
+        .update({ profile_image: filePath }) // profile_image 필드에 새 경로 저장
         .eq("user_id", userId);
   
       if (updateError) {
         console.error("Error updating profile image path:", updateError.message);
+        api.error({
+          message: "Image Update Failed",
+          description: "An error occurred while updating the profile image path.",
+          placement: "topRight",
+        });
         return;
       }
   
-      // 상태 업데이트 및 캐시 방지 URL 설정
+      // 상태 업데이트 및 캐시 방지 URL 생성
       setProfileImageFilePath(filePath);
       const { data } = supabase.storage.from("profile_img").getPublicUrl(filePath);
       if (data?.publicUrl) {
         setProfileImageUrl(`${data.publicUrl}?t=${Date.now()}`);
       }
+  
+      // 성공 알림
+      api.success({
+        message: "Profile Image Updated",
+        description: "Your profile image has been successfully updated!",
+        placement: "topRight",
+      });
     } catch (err) {
       console.error("Unexpected error during upload:", err);
+      api.error({
+        message: "Unexpected Error",
+        description: "Something went wrong while updating your profile image.",
+        placement: "topRight",
+      });
     }
   };
+  
   
   
   
@@ -334,7 +375,7 @@ const ProfilePage: React.FC = () => {
     className="w-40 h-40 rounded-full bg-gray-200 flex justify-center items-center relative overflow-hidden border-4 border-white shadow-md"
   >
     <img
-      src={profileImageUrl || "https://via.placeholder.com/128"} // 프로필 이미지 또는 기본 이미지
+      src={profileImageUrl || "https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"} // 프로필 이미지 또는 기본 이미지
       alt="Profile"
       className="w-full h-full object-cover"
     />
