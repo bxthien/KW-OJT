@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Tabs,
   Table,
@@ -213,7 +213,7 @@ const UserPage: React.FC = () => {
         return;
       }
 
-      // ������ ���͸� �� Ÿ�� ����
+      // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
       const filteredData: UserCourseInfo[] = coursesData
         .filter((item) => item.courses)
         .map((course: any) => ({
@@ -257,8 +257,8 @@ const UserPage: React.FC = () => {
         calculatedAge--;
       }
 
-      setBirthday(value); // ���� ������Ʈ
-      setAge(calculatedAge >= 0 ? calculatedAge : null); // ���� ������Ʈ
+      setBirthday(value); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+      setAge(calculatedAge >= 0 ? calculatedAge : null); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 
       form.setFieldsValue({
         birthday: value,
@@ -776,10 +776,10 @@ const UserPage: React.FC = () => {
             <Button
               type="primary"
               onClick={() => {
-                setSelectedUser(null); // 기존  �� �� �� User  �� ��
-                setSelectedStudent(null); // 기존  �� �� �� Student  �� ��
-                form.resetFields(); //  �� 초기 ��
-                setIsDrawerOpen(true); // Drawer  ���??
+                setSelectedUser(null); // ê¸°ì¡´  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ User  ï¿½ï¿½ ï¿½ï¿½
+                setSelectedStudent(null); // ê¸°ì¡´  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Student  ï¿½ï¿½ ï¿½ï¿½
+                form.resetFields(); //  ï¿½ï¿½ ì´ê¸° ï¿½ï¿½
+                setIsDrawerOpen(true); // Drawer  ï¿½ï¿½ï¿??
               }}
             >
               Add Student
@@ -801,7 +801,7 @@ const UserPage: React.FC = () => {
             pageSize={pageSize}
             total={studentData.length}
             onChange={handlePaginationChange}
-            className="flex justify-center mt-4" // 중앙  �� ��
+            className="flex justify-center mt-4" // ì¤ì  ï¿½ï¿½ ï¿½ï¿½
           />
         </div>
       ),
@@ -862,7 +862,7 @@ const UserPage: React.FC = () => {
             ]}
           >
             <Input
-              readOnly={!!(selectedUser || selectedStudent)} // Edit �� �б� ����
+              readOnly={!!(selectedUser || selectedStudent)} // Edit ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½
               placeholder={
                 selectedUser || selectedStudent
                   ? "Email will be displayed here"
@@ -876,12 +876,12 @@ const UserPage: React.FC = () => {
             <Input placeholder="Enter contact (optional)" />
           </Form.Item>
 
-          {currentTab === "1" && ( // Users  �� �� ���??  Status  �� ��
+          {currentTab === "1" && ( // Users  ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿??  Status  ï¿½ï¿½ ï¿½ï¿½
             <Form.Item
               label="Status"
               name="status"
               valuePropName="checked"
-              initialValue={true} // 기본�??   �� ��
+              initialValue={true} // ê¸°ë³¸ï¿??   ï¿½ï¿½ ï¿½ï¿½
             >
               <Switch />
             </Form.Item>
@@ -892,19 +892,19 @@ const UserPage: React.FC = () => {
               <Form.Item
                 label="Birthday"
                 name="birth"
-                initialValue={birthday} // �ʱ� �� ����
+                initialValue={birthday} // ï¿½Ê±ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
               >
                 <Input
                   type="date"
-                  value={birthday} // ���� ��
-                  onChange={(e) => handleBirthdayChange(e.target.value)} // ���� ������Ʈ
+                  value={birthday} // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+                  onChange={(e) => handleBirthdayChange(e.target.value)} // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
                 />
               </Form.Item>
 
               <Form.Item
                 label="Age"
                 name="age"
-                initialValue={age} // �ʱ� �� ����
+                initialValue={age} // ï¿½Ê±ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
               >
                 <Input type="number" value={age || ""} readOnly />
               </Form.Item>
