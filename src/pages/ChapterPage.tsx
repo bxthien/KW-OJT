@@ -188,6 +188,7 @@ const ChapterPage: React.FC = () => {
             onClick={() => {
               setIsAdding(true);
               setSelectedChapter(null);
+              setLectures([]);
               form.resetFields();
               setIsDrawerOpen(true);
             }}
@@ -288,6 +289,20 @@ const ChapterPage: React.FC = () => {
           >
             <Input type="number" placeholder="Enter quiz count" />
           </Form.Item>
+          <div className="flex flex-col">
+            <div>Lectures:</div>
+            <div className="flex gap-2 py-2">
+              {lectures.map((lecture) => (
+                <div
+                  className="bg-slate-300 rounded-md p-2"
+                  key={lecture.lecture_id}
+                >
+                  {lecture.lecture_name}
+                </div>
+              ))}
+            </div>
+          </div>
+
         </Form>
 
         <div className="flex justify-end mt-4 gap-2">
