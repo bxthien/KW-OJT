@@ -95,7 +95,6 @@ const UserPage: React.FC = () => {
   >([]);
   const [birthday, setBirthday] = useState<string>("");
   const [age, setAge] = useState<number | null>(null);
-  const birthdayInputRef = useRef<HTMLInputElement>(null);
 
   const [form] = Form.useForm();
 
@@ -780,7 +779,7 @@ const UserPage: React.FC = () => {
                 setSelectedUser(null); // 기존  �� �� �� User  �� ��
                 setSelectedStudent(null); // 기존  �� �� �� Student  �� ��
                 form.resetFields(); //  �� 초기 ��
-                setIsDrawerOpen(true); // Drawer  ���?
+                setIsDrawerOpen(true); // Drawer  ���??
               }}
             >
               Add Student
@@ -877,12 +876,12 @@ const UserPage: React.FC = () => {
             <Input placeholder="Enter contact (optional)" />
           </Form.Item>
 
-          {currentTab === "1" && ( // Users  �� �� ���?  Status  �� ��
+          {currentTab === "1" && ( // Users  �� �� ���??  Status  �� ��
             <Form.Item
               label="Status"
               name="status"
               valuePropName="checked"
-              initialValue={true} // 기본�?   �� ��
+              initialValue={true} // 기본�??   �� ��
             >
               <Switch />
             </Form.Item>
@@ -892,7 +891,7 @@ const UserPage: React.FC = () => {
             <>
               <Form.Item
                 label="Birthday"
-                name="birthday"
+                name="birth"
                 initialValue={birthday} // �ʱ� �� ����
               >
                 <Input
