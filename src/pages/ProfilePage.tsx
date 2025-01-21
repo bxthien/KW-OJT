@@ -27,6 +27,11 @@ const ProfilePage: React.FC = () => {
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null); // 프로필 이미지 URL
+  const [_profileImageFilePath, setProfileImageFilePath] = useState<string | null>(null);
+  const [_imageFile, setImageFile] = useState<File | null>(null); // 업로드할 파일
+
+
   // 점 애니메이션 효과 설정
   useEffect(() => {
     if (isLoading) {
@@ -71,6 +76,40 @@ const ProfilePage: React.FC = () => {
 
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    const fetchProfileImagePath = async () => {
+      if (!userId) return;
+  
+      const { data, error } = await supabase
+        .from("users")
+        .select("profile_image")
+        .eq("user_id", userId)
+        .single();
+  
+      if (error) {
+        console.error("Error fetching profile image path:", error.message);
+        return;
+      }
+  
+      if (data?.profile_image) {
+        setProfileImageFilePath(data.profile_image);
+  
+        // 캐시 방지 URL 생성
+        const { data: publicUrl } = supabase.storage
+          .from("profile_img")
+          .getPublicUrl(data.profile_image);
+        if (publicUrl?.publicUrl) {
+          setProfileImageUrl(`${publicUrl.publicUrl}?t=${Date.now()}`);
+        }
+      }
+    };
+  
+    fetchProfileImagePath();
+  }, [userId]);
+  
+  
+  
 
   const handlePasswordModal = () =>
     setIsPasswordModalOpen(!isPasswordModalOpen);
@@ -215,6 +254,59 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]); // 선택한 파일 저장
+
+      handleUploadProfileImage(e.target.files[0]);
+    }
+  };
+  
+  const handleUploadProfileImage = async (file: File) => {
+    if (!file || !userId) return;
+  
+    const filePath = `profile-${userId}-${Date.now()}.png`; // 새 파일 이름
+    try {
+      // 새 이미지 업로드
+      const { error: uploadError } = await supabase.storage
+        .from("profile_img")
+        .upload(filePath, file, { upsert: true });
+  
+      if (uploadError) {
+        console.error("Error uploading new image:", uploadError.message);
+        return;
+      }
+  
+      // 데이터베이스에 파일 경로 저장
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ profile_image: filePath }) // profile_image 필드에 저장
+        .eq("user_id", userId);
+  
+      if (updateError) {
+        console.error("Error updating profile image path:", updateError.message);
+        return;
+      }
+  
+      // 상태 업데이트 및 캐시 방지 URL 설정
+      setProfileImageFilePath(filePath);
+      const { data } = supabase.storage.from("profile_img").getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        setProfileImageUrl(`${data.publicUrl}?t=${Date.now()}`);
+      }
+    } catch (err) {
+      console.error("Unexpected error during upload:", err);
+    }
+  };
+  
+  
+  
+  
+  
+  
+  
+  
+
   return (
     <div
       className={`w-full flex justify-center items-center bg-gray-100 ${
@@ -227,26 +319,61 @@ const ProfilePage: React.FC = () => {
           Profile Page
         </h2>
         <div className="grid grid-cols-2 w-full justify-center items-center">
-          <div
-            className="flex flex-col items-center mb-10 relative w-full"
-            style={{
-              backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`, // 배경 이미지 URL
-              backgroundSize: "cover", // 배경 이미지 크기 조정
-              backgroundPosition: "center", // 배경 이미지 위치
-              borderRadius: "1rem", // 둥근 모서리 설정
-              padding: "2rem", // 내부 여백
-            }}
-          >
-            <img
-              src="https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"
-              alt="Profile"
-              className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-white shadow-lg"
-              style={{
-                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.25)", // 음영 효과
-              }}
-            />
-            <p className="text-gray-500 text-sm">Nice to meet you everyone!</p>
-          </div>
+        <div
+  className="flex flex-col items-center relative w-full"
+  style={{
+    backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    borderRadius: "1rem",
+    padding: "2rem",
+  }}
+>
+  {/* 원형 프로필 이미지 */}
+  <div
+    className="w-40 h-40 rounded-full bg-gray-200 flex justify-center items-center relative overflow-hidden border-4 border-white shadow-md"
+  >
+    <img
+      src={profileImageUrl || "https://via.placeholder.com/128"} // 프로필 이미지 또는 기본 이미지
+      alt="Profile"
+      className="w-full h-full object-cover"
+    />
+
+    {/* 수정 아이콘 */}
+    <label
+      htmlFor="upload-button"
+      className="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-400 shadow"
+      style={{ width: "36px", height: "36px" }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        stroke="currentColor"
+        className="w-4 h-4 mx-auto"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M16.862 3.487l3.651 3.65M6.375 16.25h.008v.008h-.008v-.008zm1.63-1.617l9.506-9.506a2.121 2.121 0 113.001 3l-9.506 9.507a4.242 4.242 0 01-1.695.972l-3.621.906a.424.424 0 01-.525-.526l.906-3.62a4.243 4.243 0 01.972-1.695z"
+        />
+      </svg>
+      <input
+        id="upload-button"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange} // 파일 선택 핸들러
+      />
+    </label>
+  </div>
+
+  {/* 아래 텍스트 */}
+  <p className="text-gray-500 text-sm mt-4">Click the icon to change your profile picture.</p>
+</div>
+
+
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -356,31 +483,31 @@ const ProfilePage: React.FC = () => {
 
                 {/* Buttons */}
                 {!isEditing ? (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="w-full bg-green-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-green-500 transition duration-300"
-                    disabled={isLoading}
-                  >
-                    Edit Profile
-                  </button>
-                ) : (
-                  <div className="w-full flex flex-col gap-4">
-                    <button
-                      onClick={handleSaveChanges}
-                      className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? `Saving Profile${dots}` : "Save Changes"}
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="w-full bg-gray-400 text-white text-lg font-semibold py-3 rounded-lg hover:bg-gray-300 transition duration-300"
-                      disabled={isLoading}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+      <button
+        onClick={() => setIsEditing(true)}
+        className="bg-green-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-green-500 transition duration-300 w-full"
+        disabled={isLoading}
+      >
+        Edit Profile
+      </button>
+    ) : (
+      <div className="flex gap-4 w-full">
+        <button
+          onClick={handleSaveChanges}
+          className="bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300 flex-1"
+          disabled={isLoading}
+        >
+          {isLoading ? `Saving Profile${dots}` : "Save Changes"}
+        </button>
+        <button
+          onClick={() => setIsEditing(false)}
+          className="bg-gray-400 text-white text-lg font-semibold py-3 rounded-lg hover:bg-gray-300 transition duration-300 flex-1"
+          disabled={isLoading}
+        >
+          Cancel
+        </button>
+      </div>
+    )}
               </div>
             </div>
           </div>
