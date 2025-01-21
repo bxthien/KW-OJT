@@ -364,13 +364,20 @@ const ProfilePage: React.FC = () => {
                     Edit Profile
                   </button>
                 ) : (
-                  <div className="flex flex-col gap-4">
+                  <div className="w-full flex flex-col gap-4">
                     <button
                       onClick={handleSaveChanges}
                       className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-lg hover:bg-blue-500 transition duration-300"
                       disabled={isLoading}
                     >
                       {isLoading ? `Saving Profile${dots}` : "Save Changes"}
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="w-full bg-gray-400 text-white text-lg font-semibold py-3 rounded-lg hover:bg-gray-300 transition duration-300"
+                      disabled={isLoading}
+                    >
+                      Cancel
                     </button>
                   </div>
                 )}
