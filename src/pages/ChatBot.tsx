@@ -65,7 +65,7 @@ const ChatBot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://kw-ojt-flask.onrender.com/api/chat", {
+      const response = await fetch("https://kw-ojt-flask.onrender.com/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

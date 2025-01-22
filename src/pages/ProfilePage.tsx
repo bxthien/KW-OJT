@@ -366,7 +366,7 @@ const ProfilePage: React.FC = () => {
   className="flex flex-col items-center relative w-full"
   style={{
     backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`,
-    backgroundSize: "750px 1000px", // 이미지 크기를 100px × 100px로 조정
+    backgroundSize: "650px 1000px", // 이미지 크기를 100px × 100px로 조정
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
     borderRadius: "1rem",
