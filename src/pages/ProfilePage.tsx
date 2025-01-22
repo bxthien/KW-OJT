@@ -44,35 +44,37 @@ const ProfilePage: React.FC = () => {
     }
   }, [isLoading]);
 
+  const fetchUserData = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) throw new Error("No user is logged in.");
+
+      setUserId(user.id);
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("user_name, email, contact, date_of_birth, age")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user data:", error.message);
+        return;
+      }
+
+      setName(data.user_name || "");
+      setEmail(data.email || "");
+      setContact(data.contact || "");
+      setBirthday(data.date_of_birth || "");
+      setAge(data.age || null);
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+    }
+  };
+
   // 유저 데이터 가져오기
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (!user) throw new Error("No user is logged in.");
-
-        setUserId(user.id);
-
-        const { data, error } = await supabase
-          .from("users")
-          .select("user_name, email, contact, date_of_birth, age")
-          .eq("user_id", user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching user data:", error.message);
-          return;
-        }
-
-        setName(data.user_name || "");
-        setEmail(data.email || "");
-        setContact(data.contact || "");
-        setBirthday(data.date_of_birth || "");
-        setAge(data.age || null);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-      }
-    };
+    
 
     fetchUserData();
   }, []);
@@ -364,11 +366,14 @@ const ProfilePage: React.FC = () => {
   className="flex flex-col items-center relative w-full"
   style={{
     backgroundImage: `url('https://cdn.pixabay.com/photo/2024/01/17/11/56/dog-8514297_1280.png')`,
-    backgroundSize: "cover",
+    backgroundSize: "750px 1000px", // 이미지 크기를 100px × 100px로 조정
+    backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
     borderRadius: "1rem",
     padding: "2rem",
   }}
+  
+  
 >
   {/* 원형 프로필 이미지 */}
   <div
@@ -466,7 +471,7 @@ const ProfilePage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={!isEditing || isLoading}
+                disabled
                 className={`w-full p-4 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                   isEditing && !isLoading ? "" : "bg-gray-200"
                 }`}
@@ -563,7 +568,10 @@ const ProfilePage: React.FC = () => {
           {isLoading ? `Saving Profile${dots}` : "Save Changes"}
         </button>
         <button
-          onClick={() => setIsEditing(false)}
+          onClick={() => {
+            setIsEditing(false);
+            fetchUserData();
+          }}
           className="bg-gray-400 text-white text-lg font-semibold py-3 rounded-lg hover:bg-gray-300 transition duration-300 flex-1"
           disabled={isLoading}
         >
