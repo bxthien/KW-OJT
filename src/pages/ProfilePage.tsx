@@ -372,43 +372,65 @@ const ProfilePage: React.FC = () => {
 >
   {/* 원형 프로필 이미지 */}
   <div
-    className="w-40 h-40 rounded-full bg-gray-200 flex justify-center items-center relative overflow-hidden border-4 border-white shadow-md"
+  className="relative w-40 h-40"
+  style={{
+    borderRadius: "50%",
+  }}
+>
+  {/* 프로필 이미지 */}
+  <div
+    className="w-full h-full bg-gray-200 border-4 border-white shadow-md overflow-hidden"
+    style={{
+      borderRadius: "50%", // 원 형태 유지
+    }}
   >
     <img
-      src={profileImageUrl || "https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"} // 프로필 이미지 또는 기본 이미지
+      src={profileImageUrl || "https://img.icons8.com/?size=100&id=z-JBA_KtSkxG&format=png&color=000000"}
       alt="Profile"
       className="w-full h-full object-cover"
     />
-
-    {/* 수정 아이콘 */}
-    <label
-      htmlFor="upload-button"
-      className="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-400 shadow"
-      style={{ width: "36px", height: "36px" }}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        stroke="currentColor"
-        className="w-4 h-4 mx-auto"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16.862 3.487l3.651 3.65M6.375 16.25h.008v.008h-.008v-.008zm1.63-1.617l9.506-9.506a2.121 2.121 0 113.001 3l-9.506 9.507a4.242 4.242 0 01-1.695.972l-3.621.906a.424.424 0 01-.525-.526l.906-3.62a4.243 4.243 0 01.972-1.695z"
-        />
-      </svg>
-      <input
-        id="upload-button"
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange} // 파일 선택 핸들러
-      />
-    </label>
   </div>
+
+  {/* 수정 아이콘 */}
+  <label
+    htmlFor="upload-button"
+    className="absolute bg-white text-gray-700 p-2 rounded-full shadow-lg cursor-pointer hover:bg-gray-100"
+    style={{
+      width: "40px",
+      height: "40px",
+      bottom: "5px", // 원 아래로 위치
+      right: "5px", // 원 오른쪽 바깥으로 위치
+      zIndex: 10, // 이미지 위에 표시
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      border: "2px solid #fff",
+    }}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth="2"
+      stroke="currentColor"
+      className="w-5 h-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.862 3.487l3.651 3.65M6.375 16.25h.008v.008h-.008v-.008zm1.63-1.617l9.506-9.506a2.121 2.121 0 113.001 3l-9.506 9.507a4.242 4.242 0 01-1.695.972l-3.621.906a.424.424 0 01-.525-.526l.906-3.62a4.243 4.243 0 01.972-1.695z"
+      />
+    </svg>
+    <input
+      id="upload-button"
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleFileChange}
+    />
+  </label>
+</div>
+
 
   {/* 아래 텍스트 */}
   <p className="text-gray-500 text-sm mt-4">Click the icon to change your profile picture.</p>

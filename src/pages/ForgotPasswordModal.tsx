@@ -37,7 +37,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://localhost:5173/change-password",
+        redirectTo: "http://kw-ojt-flask.onrender.com/change-password",
       });
 
       if (error) {
